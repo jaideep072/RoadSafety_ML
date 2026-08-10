@@ -1,0 +1,227 @@
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+    <meta charset="UTF-8">
+    <title>Road Safety Analysis Project</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    </head>
+    <body>
+
+    <header class="topbar">
+        <h1>Road Safety Analysis Project</h1>
+    </header>
+
+    <div class="layout">
+        <!-- Left panel -->
+        <nav class="sidebar">
+            <ul>
+                <li>
+                    <a href="{{ url_for('data_loading') }}"
+                       class="menu-item {% if active == 'data-loading' %}active{% endif %}">
+                        Data Loading
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('eda') }}"
+                       class="menu-item {% if active == 'eda' %}active{% endif %}">
+                        EDA
+                    </a>
+                </li>
+                <li class="menu-item disabled">Preprocessing (coming soon)</li>
+                <li class="menu-item disabled">Model Training (coming soon)</li>
+                <li class="menu-item disabled">Prediction (coming soon)</li>
+            </ul>
+        </nav>
+
+        <!-- Main content -->
+        <main class="content">
+            <h2>Exploratory Data Analysis Dashboard (15 Tasks)</h2>
+
+            {% if error %}
+                <div class="error">{{ error }}</div>
+            {% endif %}
+
+            {% if results %}
+                <!-- TASK 1: DATA LOADED -->
+                <div class="section-group">
+                    <h3>Task 1: Data Loading & Shape</h3>
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <span class="metric-label">Dataset Rows (Sampled)</span>
+                            <span class="metric-value">{{ results.n_rows }}</span>
+                        </div>
+                        <div class="metric-card">
+                            <span class="metric-label">Dataset Columns</span>
+                            <span class="metric-value">{{ results.n_cols }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TASK 2: BASIC INFO -->
+                <div class="section-group">
+                    <h3>Task 2: Basic Dataset Structure</h3>
+                    <p class="text-description">The US Accidents dataset contains 49 features including location coordinates, environmental metrics, and point-of-interest indicators. A downsampled subset of 100,000 rows has been loaded successfully to ensure fast presentation rendering.</p>
+                </div>
+
+                <!-- TASK 3: MISSING VALUES -->
+                <div class="section-group">
+                    <h3>Task 3: Missing Values Analysis</h3>
+                    <div class="two-column-row">
+                        <div class="column-card">
+                            {% if results.missing %}
+                                <div class="table-wrapper">
+                                    <table class="data-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Column Name</th>
+                                                <th>Missing Count</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for col, count in results.missing.items() %}
+                                            <tr>
+                                                <td>{{ col }}</td>
+                                                <td>{{ count }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <p class="no-data-msg">No missing values in this dataset portion.</p>
+                            {% endif %}
+                        </div>
+                        <div class="column-card">
+                            {% for chart in results.charts if chart.filename == 'missing_values.png' %}
+                                <img src="{{ url_for('static', filename='charts/' + chart.filename) }}" alt="{{ chart.title }}" class="task-img">
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TASK 4: DUPLICATE ROWS -->
+                <div class="section-group">
+                    <h3>Task 4: Duplicate Rows Check</h3>
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <span class="metric-label">Duplicate Row Count</span>
+                            <span class="metric-value">{{ results.duplicate_count }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TASK 5: TARGET VARIABLE - SEVERITY -->
+                <div class="section-group">
+                    <h3>Task 5: Target Variable Distribution (Accident Severity)</h3>
+                    <div class="two-column-row">
+                        <div class="column-card">
+                            <table class="summary-table">
+                                <thead>
+                                    <tr>
+                                        <th>Severity Level</th>
+                                        <th>Accident Count</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                {% for status, count in results.target_counts.items() %}
+                                    <tr>
+                                        <td>Level {{ status }} ({{ 'Low' if status == '1' else 'Moderate' if status == '2' else 'High' if status == '3' else 'Critical' }})</td>
+                                        <td>{{ count }}</td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="column-card">
+                            {% for chart in results.charts if chart.filename == 'severity_distribution.png' %}
+                                <img src="{{ url_for('static', filename='charts/' + chart.filename) }}" alt="{{ chart.title }}" class="task-img">
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TASK 6: HOURLY TREND -->
+                <div class="section-group">
+                    <h3>Task 6: Hourly Accident Trend (Peak Hours)</h3>
+                    {% for chart in results.charts if chart.filename == 'accidents_by_hour.png' %}
+                        <img src="{{ url_for('static', filename='charts/' + chart.filename) }}" alt="{{ chart.title }}" class="task-img-full">
+                    {% endfor %}
+                </div>
+
+                <!-- TASK 7: DAY OF WEEK TREND -->
+                <div class="section-group">
+                    <h3>Task 7: Weekly Accident Trend (Accidents by Day of Week)</h3>
+                    {% for chart in results.charts if chart.filename == 'accidents_by_dayofweek.png' %}
+                        <img src="{{ url_for('static', filename='charts/' + chart.filename) }}" alt="{{ chart.title }}" class="task-img-full">
+                    {% endfor %}
+                </div>
+
+                <!-- TASK 8: MONTHLY SEASONAL TREND -->
+                <div class="section-group">
+                    <h3>Task 8: Monthly Seasonal Trend</h3>
+                    {% for chart in results.charts if chart.filename == 'accidents_by_month.png' %}
+                        <img src="{{ url_for('static', filename='charts/' + chart.filename) }}" alt="{{ chart.title }}" class="task-img-full">
+                    {% endfor %}
+                </div>
+
+                <!-- TASK 9: WEATHER CONDITION -->
+                <div class="section-group">
+                    <h3>Task 9: Weather Condition Analysis (Top 10)</h3>
+                    {% for chart in results.charts if chart.filename == 'weather_conditions.png' %}
+                        <img src="{{ url_for('static', filename='charts/' + chart.filename) }}" alt="{{ chart.title }}" class="task-img-full">
+                    {% endfor %}
+                </div>
+
+                <!-- TASK 10: STATE-WISE DISTRIBUTION -->
+                <div class="section-group">
+                    <h3>Task 10: State-wise Accident Distribution (Top 10)</h3>
+                    {% for chart in results.charts if chart.filename == 'top_states.png' %}
+                        <img src="{{ url_for('static', filename='charts/' + chart.filename) }}" alt="{{ chart.title }}" class="task-img-full">
+                    {% endfor %}
+                </div>
+
+                <!-- TASK 11: TEMPERATURE VS SEVERITY -->
+                <div class="section-group">
+                    <h3>Task 11: Impact of Temperature on Accident Severity</h3>
+                    {% for chart in results.charts if chart.filename == 'temperature_by_severity.png' %}
+                        <img src="{{ url_for('static', filename='charts/' + chart.filename) }}" alt="{{ chart.title }}" class="task-img-full">
+                    {% endfor %}
+                </div>
+
+                <!-- TASK 12: VISIBILITY VS SEVERITY -->
+                <div class="section-group">
+                    <h3>Task 12: Impact of Visibility on Accident Severity</h3>
+                    {% for chart in results.charts if chart.filename == 'visibility_by_severity.png' %}
+                        <img src="{{ url_for('static', filename='charts/' + chart.filename) }}" alt="{{ chart.title }}" class="task-img-full">
+                    {% endfor %}
+                </div>
+
+                <!-- TASK 13: INFRASTRUCTURE IMPACT -->
+                <div class="section-group">
+                    <h3>Task 13: Road Infrastructure Element Analysis</h3>
+                    {% for chart in results.charts if chart.filename == 'infrastructure_impact.png' %}
+                        <img src="{{ url_for('static', filename='charts/' + chart.filename) }}" alt="{{ chart.title }}" class="task-img-full">
+                    {% endfor %}
+                </div>
+
+                <!-- TASK 14: DAY VS NIGHT SEVERITY -->
+                <div class="section-group">
+                    <h3>Task 14: Day vs. Night Accident Severity Comparison</h3>
+                    {% for chart in results.charts if chart.filename == 'day_night_vs_severity.png' %}
+                        <img src="{{ url_for('static', filename='charts/' + chart.filename) }}" alt="{{ chart.title }}" class="task-img-full">
+                    {% endfor %}
+                </div>
+
+                <!-- TASK 15: ACCIDENT GEOGRAPHIC HEATMAP -->
+                <div class="section-group">
+                    <h3>Task 15: Geographic Distribution of Accidents (Sampled Heatmap)</h3>
+                    {% for chart in results.charts if chart.filename == 'accident_heatmap.png' %}
+                        <img src="{{ url_for('static', filename='charts/' + chart.filename) }}" alt="{{ chart.title }}" class="task-img-full">
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </main>
+    </div>
+
+    </body>
+    </html>
