@@ -2,7 +2,7 @@ import os
 import pandas as pd
 import numpy as np
 
-DATA_PATH = r"C:\Users\jdeep\Downloads\PythonProject9 (1)\PythonProject9\data\US_Accidents_March23.csv"
+DATA_PATH = r"C:\Users\P.V.N.Sai kumar\PycharmProjects\PythonProject15\US_Accidents_March23.csv"
 
 def load_data(path: str = DATA_PATH, nrows: int = 100000) -> pd.DataFrame:
     if not os.path.exists(path):
