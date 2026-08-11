@@ -1,6 +1,7 @@
 import os
 import json
 import matplotlib
+
 matplotlib.use("Agg")  # Non-interactive backend for web application
 
 import matplotlib.pyplot as plt
@@ -20,14 +21,17 @@ CHARTS_DIR = os.path.join(
 )
 CACHE_FILE = os.path.join(CHARTS_DIR, "results_cache.json")
 
+
 def _chart_path(filename: str) -> str:
     os.makedirs(CHARTS_DIR, exist_ok=True)
     return os.path.join(CHARTS_DIR, filename)
+
 
 def _save(filename: str):
     plt.tight_layout()
     plt.savefig(_chart_path(filename), bbox_inches="tight")
     plt.close("all")
+
 
 def run_eda(force_run: bool = False) -> dict:
     # 0. CHECK CACHE
@@ -35,7 +39,7 @@ def run_eda(force_run: bool = False) -> dict:
         try:
             with open(CACHE_FILE, "r") as f:
                 cached_results = json.load(f)
-            
+
             charts_list = cached_results.get("charts", [])
             all_exist = True
             for c in charts_list:
@@ -43,9 +47,9 @@ def run_eda(force_run: bool = False) -> dict:
                 if not os.path.exists(os.path.join(CHARTS_DIR, fname)):
                     all_exist = False
                     break
-                    
+
             is_new_format = len(charts_list) > 0 and isinstance(charts_list[0], dict)
-            
+
             if all_exist and is_new_format:
                 print("\n========== RETURNING CACHED EDA RESULTS INSTANTLY ==========")
                 return cached_results
@@ -83,7 +87,7 @@ def run_eda(force_run: bool = False) -> dict:
 
     # 3. MISSING VALUES
     print("\n" + "=" * 80)
-    print("3. MISSING VALUES")
+    print("1. MISSING VALUES")
     print("=" * 80)
     missing = data.isnull().sum()
     missing_pct = (missing / len(data)) * 100
@@ -104,14 +108,14 @@ def run_eda(force_run: bool = False) -> dict:
 
     # 4. DUPLICATES
     print("\n" + "=" * 80)
-    print("4. Duplicate Rows")
+    print("2. Duplicate Rows")
     print("=" * 80)
     duplicate_count = int(data.duplicated().sum())
     print("Duplicate rows:", duplicate_count)
 
     # 5. TARGET VARIABLE - SEVERITY DISTRIBUTION
     print("\n" + "=" * 80)
-    print("5. TARGET VARIABLE - SEVERITY")
+    print("3. TARGET VARIABLE - SEVERITY")
     print("=" * 80)
     target_counts = {}
     if "Severity" in data.columns:
@@ -128,7 +132,7 @@ def run_eda(force_run: bool = False) -> dict:
 
     # 6. HOURLY TREND
     print("\n" + "=" * 80)
-    print("6. HOURLY TREND ANALYSIS")
+    print("4. HOURLY TREND ANALYSIS")
     print("=" * 80)
     if "Start_Time" in data.columns:
         data["Hour"] = data["Start_Time"].dt.hour
@@ -145,7 +149,7 @@ def run_eda(force_run: bool = False) -> dict:
 
     # 7. DAY OF WEEK TREND
     print("\n" + "=" * 80)
-    print("7. DAY OF WEEK ANALYSIS")
+    print("5. DAY OF WEEK ANALYSIS")
     print("=" * 80)
     if "Start_Time" in data.columns:
         data["DayOfWeek"] = data["Start_Time"].dt.day_name()
@@ -162,7 +166,7 @@ def run_eda(force_run: bool = False) -> dict:
 
     # 8. MONTHLY TREND (SEASONALITY)
     print("\n" + "=" * 80)
-    print("8. MONTHLY SEASONAL TREND")
+    print("6. MONTHLY SEASONAL TREND")
     print("=" * 80)
     if "Start_Time" in data.columns:
         data["Month"] = data["Start_Time"].dt.month_name()
@@ -172,7 +176,7 @@ def run_eda(force_run: bool = False) -> dict:
         ]
         # Only order by months present in dataset
         present_months = [m for m in months_order if m in data["Month"].dropna().unique()]
-        
+
         plt.figure(figsize=(10, 5))
         sns.countplot(x="Month", data=data, order=present_months, palette="magma")
         plt.title("Accidents by Month")
@@ -184,7 +188,7 @@ def run_eda(force_run: bool = False) -> dict:
 
     # 9. WEATHER CONDITIONS ANALYSIS
     print("\n" + "=" * 80)
-    print("9. WEATHER CONDITION ANALYSIS")
+    print("7. WEATHER CONDITION ANALYSIS")
     print("=" * 80)
     if "Weather_Condition" in data.columns:
         weather_counts = data["Weather_Condition"].value_counts().head(10)
@@ -200,7 +204,7 @@ def run_eda(force_run: bool = False) -> dict:
 
     # 10. STATE-WISE ACCIDENT COUNTS
     print("\n" + "=" * 80)
-    print("10. STATE-WISE ACCIDENT DISTRIBUTION")
+    print("8. STATE-WISE ACCIDENT DISTRIBUTION")
     print("=" * 80)
     if "State" in data.columns:
         state_counts = data["State"].value_counts().head(10)
@@ -216,7 +220,7 @@ def run_eda(force_run: bool = False) -> dict:
 
     # 11. TEMPERATURE VS SEVERITY
     print("\n" + "=" * 80)
-    print("11. TEMPERATURE VS SEVERITY")
+    print("9. TEMPERATURE VS SEVERITY")
     print("=" * 80)
     if "Temperature(F)" in data.columns and "Severity" in data.columns:
         plt.figure(figsize=(10, 6))
@@ -229,7 +233,7 @@ def run_eda(force_run: bool = False) -> dict:
 
     # 12. VISIBILITY VS SEVERITY
     print("\n" + "=" * 80)
-    print("12. VISIBILITY VS SEVERITY")
+    print("10. VISIBILITY VS SEVERITY")
     print("=" * 80)
     if "Visibility(mi)" in data.columns and "Severity" in data.columns:
         plt.figure(figsize=(10, 6))
@@ -242,15 +246,16 @@ def run_eda(force_run: bool = False) -> dict:
 
     # 13. INFRASTRUCTURE IMPACT
     print("\n" + "=" * 80)
-    print("13. INFRASTRUCTURE FACTOR ANALYSIS")
+    print("11. INFRASTRUCTURE FACTOR ANALYSIS")
     print("=" * 80)
     infra_cols = ["Crossing", "Junction", "Railway", "Station", "Stop", "Traffic_Signal"]
     infra_cols = [c for c in infra_cols if c in data.columns]
-    
+
     if infra_cols:
         # Sum Boolean values to get count of True values
         infra_counts = {col: int(data[col].sum()) for col in infra_cols}
-        infra_df = pd.DataFrame(list(infra_counts.items()), columns=["Feature", "Count"]).sort_values(by="Count", ascending=False)
+        infra_df = pd.DataFrame(list(infra_counts.items()), columns=["Feature", "Count"]).sort_values(by="Count",
+                                                                                                      ascending=False)
         print("Accidents occurred near infrastructure elements:\n", infra_df)
 
         plt.figure(figsize=(10, 5))
@@ -263,7 +268,7 @@ def run_eda(force_run: bool = False) -> dict:
 
     # 14. DAY VS NIGHT SEVERITY
     print("\n" + "=" * 80)
-    print("14. DAY/NIGHT SEVERITY ANALYSIS")
+    print("12. DAY/NIGHT SEVERITY ANALYSIS")
     print("=" * 80)
     if "Sunrise_Sunset" in data.columns and "Severity" in data.columns:
         plt.figure(figsize=(8, 5))
@@ -277,7 +282,7 @@ def run_eda(force_run: bool = False) -> dict:
 
     # 15. ACCIDENT HEATMAP (GEOGRAPHIC DISPERSAL)
     print("\n" + "=" * 80)
-    print("15. ACCIDENT GEOGRAPHIC HEATMAP")
+    print("13. ACCIDENT GEOGRAPHIC HEATMAP")
     print("=" * 80)
     if "Start_Lat" in data.columns and "Start_Lng" in data.columns:
         # Downsample to maximum 5,000 points to plot quickly
@@ -287,7 +292,7 @@ def run_eda(force_run: bool = False) -> dict:
 
         plt.figure(figsize=(12, 8))
         sns.scatterplot(
-            x="Start_Lng", y="Start_Lat", hue="Severity", 
+            x="Start_Lng", y="Start_Lat", hue="Severity",
             palette="plasma", data=heatmap_df, alpha=0.5, s=15
         )
         plt.title("Geographic Clustering of Accidents (Sampled)")
@@ -315,7 +320,7 @@ def run_eda(force_run: bool = False) -> dict:
         "day_night_vs_severity.png": "Accident Severity: Day vs. Night",
         "accident_heatmap.png": "Geographic Clustering of Accidents (Sampled)"
     }
-    
+
     formatted_charts = []
     for fname in charts:
         formatted_charts.append({
@@ -342,6 +347,7 @@ def run_eda(force_run: bool = False) -> dict:
         print("Failed to save EDA results to cache:", e)
 
     return results
+
 
 if __name__ == "__main__":
     results = run_eda()
