@@ -1,40 +1,167 @@
 import os
-from flask import Flask, jsonify, send_from_directory
+
+from flask import Flask, jsonify, render_template, send_from_directory
 from flask_cors import CORS
+
 from load_data import get_data_summary
 from roadsafety_eda import run_eda
 
+
 app = Flask(__name__)
-# Enable CORS for all routes (to allow React to fetch data during development)
+
+# Enable CORS
 CORS(app)
 
-@app.route("/api/data-summary")
+
+# =========================================================
+# HOME / DATA LOADING PAGE
+# =========================================================
+@app.route("/")
+def home():
+    return data_loading()
+
+
+# =========================================================
+# DATA LOADING PAGE
+# =========================================================
+@app.route("/data-loading")
 def data_loading():
-    """Returns the dataset summary as JSON."""
+    try:
+        # Load dataset summary
+        summary = get_data_summary()
+
+        return render_template(
+            "index.html",
+            active="data-loading",
+            summary=summary,
+            error=None
+        )
+
+    except FileNotFoundError as e:
+        return render_template(
+            "index.html",
+            active="data-loading",
+            summary=None,
+            error=str(e)
+        )
+
+    except Exception as e:
+        return render_template(
+            "index.html",
+            active="data-loading",
+            summary=None,
+            error=f"Unexpected error: {e}"
+        )
+
+
+# =========================================================
+# DATA SUMMARY API
+# =========================================================
+@app.route("/api/data-summary")
+def data_loading_api():
     try:
         summary = get_data_summary()
-        return jsonify({"success": True, "data": summary})
-    except FileNotFoundError as e:
-        return jsonify({"success": False, "error": str(e)}), 404
-    except Exception as e:
-        return jsonify({"success": False, "error": f"Unexpected error: {e}"}), 500
 
-@app.route("/api/eda")
+        return jsonify({
+            "success": True,
+            "data": summary
+        })
+
+    except FileNotFoundError as e:
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 404
+
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": f"Unexpected error: {e}"
+        }), 500
+
+
+# =========================================================
+# EDA PAGE
+# =========================================================
+@app.route("/eda")
 def eda():
-    """Runs exploratory data analysis and returns results as JSON."""
+    try:
+        # Run EDA
+        eda_output = run_eda()
+
+        return render_template(
+            "eda.html",
+            results=eda_output,
+            active="eda",
+            error=None
+        )
+
+    except FileNotFoundError as e:
+        return render_template(
+            "eda.html",
+            results=None,
+            active="eda",
+            error=str(e)
+        )
+
+    except Exception as e:
+        return render_template(
+            "eda.html",
+            results=None,
+            active="eda",
+            error=f"Unexpected error: {e}"
+        )
+
+
+# =========================================================
+# EDA API
+# =========================================================
+@app.route("/api/eda")
+def eda_api():
     try:
         eda_output = run_eda()
-        return jsonify({"success": True, "data": eda_output})
+
+        return jsonify({
+            "success": True,
+            "data": eda_output
+        })
+
     except FileNotFoundError as e:
-        return jsonify({"success": False, "error": str(e)}), 404
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 404
+
     except Exception as e:
-        return jsonify({"success": False, "error": f"Unexpected error: {e}"}), 500
+        return jsonify({
+            "success": False,
+            "error": f"Unexpected error: {e}"
+        }), 500
 
-@app.route("/api/charts/<path:filename>")
+
+# =========================================================
+# SERVE EDA CHARTS
+# =========================================================
+@app.route("/api/charts/<filename>")
 def serve_charts(filename):
-    """Serves the generated charts for the frontend to display."""
-    charts_dir = os.path.join(os.path.dirname(__file__), "static", "charts")
-    return send_from_directory(charts_dir, filename)
 
+    charts_dir = os.path.join(
+        os.path.dirname(__file__),
+        "static",
+        "charts"
+    )
+
+    return send_from_directory(
+        charts_dir,
+        filename
+    )
+
+
+# =========================================================
+# RUN FLASK APPLICATION
+# =========================================================
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    app.run(
+        debug=True,
+        port=5000
+    )
