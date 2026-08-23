@@ -1,0 +1,211 @@
+{
+    "missing": {
+        "per_column": {
+            "End_Lat": "100.000% (80000 rows)",
+            "End_Lng": "100.000% (80000 rows)",
+            "Wind_Chill(F)": "95.668% (76534 rows)",
+            "Precipitation(in)": "92.705% (74164 rows)",
+            "Wind_Speed(mph)": "23.822% (19058 rows)",
+            "Humidity(%)": "1.901% (1521 rows)",
+            "Visibility(mi)": "1.886% (1509 rows)",
+            "Temperature(F)": "1.628% (1302 rows)",
+            "Weather_Condition": "1.625% (1300 rows)",
+            "Pressure(in)": "1.307% (1046 rows)",
+            "Wind_Direction": "1.084% (867 rows)",
+            "Weather_Timestamp": "1.075% (860 rows)",
+            "Airport_Code": "0.006% (5 rows)",
+            "Zipcode": "0.006% (5 rows)",
+            "Timezone": "0.006% (5 rows)",
+            "City": "0.001% (1 rows)",
+            "Sunrise_Sunset": "0.001% (1 rows)",
+            "Civil_Twilight": "0.001% (1 rows)",
+            "Nautical_Twilight": "0.001% (1 rows)",
+            "Astronomical_Twilight": "0.001% (1 rows)"
+        },
+        "grouped": {
+            "Day": "1.54%",
+            "Night": "1.78%"
+        }
+    },
+    "listwise": {
+        "before_rows": 80000,
+        "after_rows": 60109,
+        "discarded_pct": "24.9%",
+        "accuracy": "55.10%"
+    },
+    "imputation": [
+        {
+            "strategy": "Listwise Deletion",
+            "rows": "60,109",
+            "accuracy": "55.10%"
+        },
+        {
+            "strategy": "Median Imputation",
+            "rows": "80,000",
+            "accuracy": "55.01%"
+        },
+        {
+            "strategy": "KNN Imputation (k=5)",
+            "rows": "80,000",
+            "accuracy": "55.02%"
+        },
+        {
+            "strategy": "Median + Missing Indicator",
+            "rows": "80,000",
+            "accuracy": "55.12%"
+        }
+    ],
+    "outliers": [
+        {
+            "column": "Temperature(F)",
+            "bounds": "[32.25, 100.65]",
+            "capped": 634
+        },
+        {
+            "column": "Visibility(mi)",
+            "bounds": "[10.00, 10.00]",
+            "capped": 13633
+        },
+        {
+            "column": "Wind_Speed(mph)",
+            "bounds": "[0.70, 14.30]",
+            "capped": 4921
+        }
+    ],
+    "encoding": {
+        "nominal_count": 1,
+        "ohe_count": 24,
+        "ohe_features": [
+            "Wind_Direction_Calm",
+            "Wind_Direction_E",
+            "Wind_Direction_ENE",
+            "Wind_Direction_ESE",
+            "Wind_Direction_East",
+            "Wind_Direction_N",
+            "Wind_Direction_NE",
+            "Wind_Direction_NNE"
+        ]
+    },
+    "minmax": {
+        "columns": [
+            "Temperature(F)",
+            "Visibility(mi)",
+            "Wind_Speed(mph)"
+        ],
+        "before": [
+            {
+                "Temperature(F)": 66.9,
+                "Visibility(mi)": 10.0,
+                "Wind_Speed(mph)": 3.5
+            },
+            {
+                "Temperature(F)": 84.0,
+                "Visibility(mi)": 10.0,
+                "Wind_Speed(mph)": 6.9
+            },
+            {
+                "Temperature(F)": 60.1,
+                "Visibility(mi)": 10.0,
+                "Wind_Speed(mph)": 6.9
+            },
+            {
+                "Temperature(F)": 54.0,
+                "Visibility(mi)": 10.0,
+                "Wind_Speed(mph)": 6.9
+            },
+            {
+                "Temperature(F)": 89.6,
+                "Visibility(mi)": 10.0,
+                "Wind_Speed(mph)": 4.6
+            }
+        ],
+        "after": [
+            {
+                "Temperature(F)": 0.5066,
+                "Visibility(mi)": 0.0,
+                "Wind_Speed(mph)": 0.2059
+            },
+            {
+                "Temperature(F)": 0.7566,
+                "Visibility(mi)": 0.0,
+                "Wind_Speed(mph)": 0.4559
+            },
+            {
+                "Temperature(F)": 0.4072,
+                "Visibility(mi)": 0.0,
+                "Wind_Speed(mph)": 0.4559
+            },
+            {
+                "Temperature(F)": 0.318,
+                "Visibility(mi)": 0.0,
+                "Wind_Speed(mph)": 0.4559
+            },
+            {
+                "Temperature(F)": 0.8385,
+                "Visibility(mi)": 0.0,
+                "Wind_Speed(mph)": 0.2868
+            }
+        ]
+    },
+    "standard": {
+        "columns": [
+            "Temperature(F)",
+            "Visibility(mi)",
+            "Wind_Speed(mph)"
+        ],
+        "before": [
+            {
+                "Temperature(F)": 66.9,
+                "Visibility(mi)": 10.0,
+                "Wind_Speed(mph)": 3.5
+            },
+            {
+                "Temperature(F)": 84.0,
+                "Visibility(mi)": 10.0,
+                "Wind_Speed(mph)": 6.9
+            },
+            {
+                "Temperature(F)": 60.1,
+                "Visibility(mi)": 10.0,
+                "Wind_Speed(mph)": 6.9
+            },
+            {
+                "Temperature(F)": 54.0,
+                "Visibility(mi)": 10.0,
+                "Wind_Speed(mph)": 6.9
+            },
+            {
+                "Temperature(F)": 89.6,
+                "Visibility(mi)": 10.0,
+                "Wind_Speed(mph)": 4.6
+            }
+        ],
+        "after": [
+            {
+                "Temperature(F)": 0.0187,
+                "Visibility(mi)": 0.0,
+                "Wind_Speed(mph)": -1.3461
+            },
+            {
+                "Temperature(F)": 1.3867,
+                "Visibility(mi)": 0.0,
+                "Wind_Speed(mph)": -0.219
+            },
+            {
+                "Temperature(F)": -0.5253,
+                "Visibility(mi)": 0.0,
+                "Wind_Speed(mph)": -0.219
+            },
+            {
+                "Temperature(F)": -1.0133,
+                "Visibility(mi)": 0.0,
+                "Wind_Speed(mph)": -0.219
+            },
+            {
+                "Temperature(F)": 1.8347,
+                "Visibility(mi)": 0.0,
+                "Wind_Speed(mph)": -0.9814
+            }
+        ]
+    }
+}

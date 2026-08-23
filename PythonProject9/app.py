@@ -158,10 +158,33 @@ def serve_charts(filename):
 
 
 # =========================================================
+# PREPROCESSING PAGE
+# =========================================================
+@app.route("/preprocessing")
+def preprocessing():
+    from preprocessing_pipeline import run_preprocessing_pipeline
+    error = None
+    preprocess_output = None
+    try:
+        preprocess_output = run_preprocessing_pipeline()
+    except FileNotFoundError as e:
+        error = str(e)
+    except Exception as e:
+        error = f"Unexpected error: {e}"
+
+    return render_template(
+        "preprocessing.html",
+        active="preprocessing",
+        results=preprocess_output,
+        error=error,
+    )
+
+
+# =========================================================
 # RUN FLASK APPLICATION
 # =========================================================
 if __name__ == "__main__":
     app.run(
         debug=True,
-        port=5000
+        port=5004
     )

@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Road Safety Analysis Project - Preprocessing</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<header class="topbar">
+    <h1>Road Safety Analysis Project</h1>
+</header>
+
+<div class="layout">
+    <!-- Left panel -->
+    <nav class="sidebar">
+        <ul>
+            <li>
+                <a href="{{ url_for('data_loading') }}"
+                   class="menu-item {% if active == 'data-loading' %}active{% endif %}">
+                    Data Loading
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('eda') }}"
+                   class="menu-item {% if active == 'eda' %}active{% endif %}">
+                    EDA
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('preprocessing') }}"
+                   class="menu-item {% if active == 'preprocessing' %}active{% endif %}">
+                    Preprocessing
+                </a>
+            </li>
+            <li class="menu-item disabled">Preprocessing (coming soon)</li>
+            <li class="menu-item disabled">Model Training (coming soon)</li>
+            <li class="menu-item disabled">Prediction (coming soon)</li>
+        </ul>
+    </nav>
+
+    <!-- Main content -->
+    <main class="content">
+        <h2>Data Preprocessing Outputs</h2>
+
+        {% if error %}
+            <div class="error">{{ error }}</div>
+        {% endif %}
+
+        {% if results %}
+            <!-- 1. missing.py Results -->
+            <div class="section-group">
+                <h3 style="color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px;">Missing Values Analysis</h3>
+                <div class="two-column-row" style="margin-top: 16px;">
+                    <div class="column-card">
+                        <h4 style="margin-bottom: 8px; color: #1f3a5f;">Missing Values per Column</h4>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Column Name</th>
+                                    <th>Missing % (Training Split)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for col, pct in results.missing.per_column.items() %}
+                                <tr>
+                                    <td>{{ col }}</td>
+                                    <td><strong style="color: #b00020;">{{ pct }}</strong></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="column-card">
+                        <h4 style="margin-bottom: 8px; color: #1f3a5f;">Temperature(F) Missingness by Sunrise_Sunset</h4>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Sunrise_Sunset</th>
+                                    <th>Missing %</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for sunset, pct in results.missing.grouped.items() %}
+                                <tr>
+                                    <td>{{ sunset }}</td>
+                                    <td><strong>{{ pct }}</strong></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. listwisedeletion.py Results -->
+            <div class="section-group">
+                <h3 style="color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px;">Listwise Deletion Analysis</h3>
+                <table class="data-table" style="margin-top: 16px;">
+                    <thead>
+                        <tr>
+                            <th>Metric</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Training Rows Before Deletion</td>
+                            <td>{{ results.listwise.before_rows }}</td>
+                        </tr>
+                        <tr>
+                            <td>Training Rows After Deletion (Complete Cases)</td>
+                            <td><strong>{{ results.listwise.after_rows }}</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Percentage of Training Data Discarded</td>
+                            <td><strong style="color: #b00020;">{{ results.listwise.discarded_pct }}</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Downstream Model Accuracy (Logistic Regression)</td>
+                            <td><strong style="color: #10b981;">{{ results.listwise.accuracy }}</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 3. imputation_comparison.py Results -->
+            <div class="section-group">
+                <h3 style="color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px;">Imputation Strategy Comparison</h3>
+                <table class="data-table" style="margin-top: 16px;">
+                    <thead>
+                        <tr>
+                            <th>Missing Value Handling Strategy</th>
+                            <th>Train Rows Kept</th>
+                            <th>Test Accuracy</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in results.imputation %}
+                        <tr>
+                            <td>{{ row.strategy }}</td>
+                            <td>{{ row.rows }}</td>
+                            <td><strong {% if loop.last %}style="color: #10b981;"{% endif %}>{{ row.accuracy }}</strong></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 4. outlier_Fix.py Results -->
+            <div class="section-group">
+                <h3 style="color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px;">Outlier Capping Analysis</h3>
+                <table class="data-table" style="margin-top: 16px;">
+                    <thead>
+                        <tr>
+                            <th>Column Name</th>
+                            <th>Boundary Limits (Q1 - 1.5*IQR to Q3 + 1.5*IQR)</th>
+                            <th>Rows Capped (Clipped)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in results.outliers %}
+                        <tr>
+                            <td>{{ item.column }}</td>
+                            <td>{{ item.bounds }}</td>
+                            <td><strong style="color: #b00020;">{{ item.capped }}</strong> rows</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 5. one_hot_encoding.py & ordinal_encoding.py Results -->
+            <div class="section-group">
+                <h3 style="color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px;">Encoding Results</h3>
+                <div class="two-column-row" style="margin-top: 16px;">
+                    <div class="column-card">
+                        <h4 style="margin-bottom: 8px; color: #1f3a5f;">Nominal Encoding (One-Hot Encoder)</h4>
+                        <table class="data-table">
+                            <tbody>
+                                <tr>
+                                    <td>Original Nominal Columns</td>
+                                    <td>{{ results.encoding.nominal_count }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Generated One-Hot Columns (dummy drop)</td>
+                                    <td><strong>{{ results.encoding.ohe_count }}</strong></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <h5 style="margin-top: 12px; margin-bottom: 6px; color: #475569;">Example Features Generated:</h5>
+                        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                            {% for feat in results.encoding.ohe_features %}
+                                <span style="background-color: #f8fafc; border: 1px solid #cbd5e1; padding: 4px 8px; border-radius: 4px; font-family: monospace; font-size: 12px;">
+                                    {{ feat }}
+                                </span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="column-card">
+                        <h4 style="margin-bottom: 8px; color: #1f3a5f;">Ordinal Encoding Mappings</h4>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Ordinal Column</th>
+                                    <th>Text Category</th>
+                                    <th>Mapped Numeric Value</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td rowspan="2" style="vertical-align: middle;">Sunrise_Sunset</td>
+                                    <td>Night</td>
+                                    <td>0.0</td>
+                                </tr>
+                                <tr>
+                                    <td>Day</td>
+                                    <td>1.0</td>
+                                </tr>
+                                <tr>
+                                    <td rowspan="2" style="vertical-align: middle; border-top: 2px solid #cbd5e1;">Civil_Twilight</td>
+                                    <td style="border-top: 2px solid #cbd5e1;">Night</td>
+                                    <td style="border-top: 2px solid #cbd5e1;">0.0</td>
+                                </tr>
+                                <tr>
+                                    <td>Day</td>
+                                    <td>1.0</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. Mini_Max_Scaling.py (Normalization) -->
+            <div class="section-group">
+                <h3 style="color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px;">Min-Max Scaling (Normalization)</h3>
+                <div class="two-column-row" style="margin-top: 16px;">
+                    <div class="column-card">
+                        <h4 style="margin-bottom: 8px; color: #b00020;">Before Scaling (First 5 Rows):</h4>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    {% for col in results.minmax.columns %}
+                                        <th>{{ col }}</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in results.minmax.before %}
+                                    <tr>
+                                        {% for col in results.minmax.columns %}
+                                            <td>{{ row[col] }}</td>
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="column-card">
+                        <h4 style="margin-bottom: 8px; color: #10b981;">After Min-Max Normalization (0.0 to 1.0):</h4>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    {% for col in results.minmax.columns %}
+                                        <th>{{ col }}</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in results.minmax.after %}
+                                    <tr>
+                                        {% for col in results.minmax.columns %}
+                                            <td><strong>{{ row[col] }}</strong></td>
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 7. Standard_Scalar.py (Standardization) -->
+            <div class="section-group">
+                <h3 style="color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px;">Standard Scaling (Standardization)</h3>
+                <div class="two-column-row" style="margin-top: 16px;">
+                    <div class="column-card">
+                        <h4 style="margin-bottom: 8px; color: #b00020;">Before Standardization (First 5 Rows):</h4>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    {% for col in results.standard.columns %}
+                                        <th>{{ col }}</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in results.standard.before %}
+                                    <tr>
+                                        {% for col in results.standard.columns %}
+                                            <td>{{ row[col] }}</td>
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="column-card">
+                        <h4 style="margin-bottom: 8px; color: #10b981;">After Z-Score Standardization (Mean=0, Std=1):</h4>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    {% for col in results.standard.columns %}
+                                        <th>{{ col }}</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in results.standard.after %}
+                                    <tr>
+                                        {% for col in results.standard.columns %}
+                                            <td><strong>{{ row[col] }}</strong></td>
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </main>
+</div>
+
+</body>
+</html>
