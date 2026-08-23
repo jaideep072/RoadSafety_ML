@@ -9,7 +9,7 @@ export default function EdaDashboard() {
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    axios.get('http://127.0.0.1:5000/api/eda')
+    axios.get(`http://127.0.0.1:5000/api/eda?t=${new Date().getTime()}`)
       .then(res => {
         setData(res.data.data)
         setLoading(false)
@@ -62,7 +62,7 @@ export default function EdaDashboard() {
           <Card key={idx} title={chart.title} className="chart-card">
             <div className="chart-image-container">
               <img 
-                src={`http://127.0.0.1:5000/api/charts/${chart.filename}`} 
+                src={`http://127.0.0.1:5000/api/charts/${chart.filename}?t=${new Date().getTime()}`} 
                 alt={chart.title} 
                 className="chart-image"
                 loading="lazy"
