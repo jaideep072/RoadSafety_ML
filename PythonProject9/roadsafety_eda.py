@@ -302,6 +302,33 @@ def run_eda(force_run: bool = False) -> dict:
         _save("accident_heatmap.png")
         charts.append("accident_heatmap.png")
 
+    # 16. CORRELATION HEATMAP
+    print("\n" + "=" * 80)
+    print("14. CORRELATION HEATMAP")
+    print("=" * 80)
+    # Focus on meaningful environmental and geographical numerical columns
+    potential_cols = ['Severity', 'Start_Lat', 'Start_Lng', 'Distance(mi)', 
+                      'Temperature(F)', 'Wind_Chill(F)', 'Humidity(%)', 
+                      'Pressure(in)', 'Visibility(mi)', 'Wind_Speed(mph)', 'Precipitation(in)']
+    
+    cols_to_use = [col for col in potential_cols if col in data.columns]
+    
+    if len(cols_to_use) > 1:
+        corr_data = data[cols_to_use]
+        # Calculate correlation matrix
+        corr_matrix = corr_data.corr()
+        
+        plt.figure(figsize=(12, 10))
+        # Mask to show only bottom triangle (optional but makes it cleaner, though full matrix is fine, let's keep full for simplicity)
+        sns.heatmap(corr_matrix, annot=True, cmap="coolwarm", fmt=".2f", vmin=-1, vmax=1, 
+                    linewidths=0.5, annot_kws={"size": 10}, square=True)
+        
+        plt.xticks(rotation=45, ha='right', fontsize=11)
+        plt.yticks(rotation=0, fontsize=11)
+        plt.title("Correlation Heatmap of Numerical Features", fontsize=14, pad=20)
+        _save("correlation_heatmap.png")
+        charts.append("correlation_heatmap.png")
+
     print("\n========== EDA COMPLETED ==========")
     print("Charts generated:", len(charts))
 
@@ -318,7 +345,8 @@ def run_eda(force_run: bool = False) -> dict:
         "visibility_by_severity.png": "Impact of Visibility on Accident Severity",
         "infrastructure_impact.png": "Accidents Near Key Infrastructure Elements",
         "day_night_vs_severity.png": "Accident Severity: Day vs. Night",
-        "accident_heatmap.png": "Geographic Clustering of Accidents (Sampled)"
+        "accident_heatmap.png": "Geographic Clustering of Accidents (Sampled)",
+        "correlation_heatmap.png": "Correlation Heatmap of Numerical Features"
     }
 
     formatted_charts = []
