@@ -2,8 +2,10 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
-file_path = r"C:\Users\yeswanth sai\PycharmProjects\PythonProject9\data\US_Accidents_Sample_100k.csv"
-df = pd.read_csv(file_path)
+import os
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+file_path = os.path.join(BASE_DIR, "data", "US_Accidents_March23.csv")
+df = pd.read_csv(file_path, nrows=100000)
 
 num_cols = ["Temperature(F)", "Visibility(mi)", "Wind_Speed(mph)"]
 for col in num_cols:

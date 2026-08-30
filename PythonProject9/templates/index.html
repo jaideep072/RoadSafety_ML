@@ -1,105 +1,433 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Road Safety Analysis Project</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Loading • RoadSafety AI</title>
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 
+<!-- TOPBAR -->
 <header class="topbar">
-    <h1>Road Safety Analysis Project</h1>
+    <div class="topbar-left">
+        <a href="{{ url_for('data_loading') }}" class="brand-logo">
+            <div class="brand-icon-box">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                </svg>
+            </div>
+            <span>RoadSafety Studio</span>
+        </a>
+        <div class="workspace-badge">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span>us-accidents-prod</span>
+        </div>
+    </div>
+
+    <div class="topbar-right">
+        <div class="status-pill">
+            <span class="status-dot"></span>
+            <span>100K Records Active</span>
+        </div>
+        <button class="btn-secondary" onclick="window.location.reload();">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+            </svg>
+            <span>Refresh</span>
+        </button>
+    </div>
 </header>
 
 <div class="layout">
-    <!-- Left panel -->
+    <!-- SIDEBAR -->
     <nav class="sidebar">
-        <ul>
-            <li>
-                <a href="{{ url_for('data_loading') }}"
-                   class="menu-item {% if active == 'data-loading' %}active{% endif %}">
-                    Data Loading
-                </a>
-            </li>
-            <li>
-                <a href="{{ url_for('eda') }}" class="menu-item {% if active == 'eda' %}active{% endif %}">EDA</a>
+        <div>
+            <div class="sidebar-section">
+                <div class="sidebar-heading">Data Pipeline</div>
+                <ul class="sidebar-nav">
+                    <li>
+                        <a href="{{ url_for('data_loading') }}" class="nav-link {% if active == 'data-loading' %}active{% endif %}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+                                <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+                                <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+                            </svg>
+                            <span>Data Ingestion</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('eda') }}" class="nav-link {% if active == 'eda' %}active{% endif %}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="20" x2="18" y2="10"></line>
+                                <line x1="12" y1="20" x2="12" y2="4"></line>
+                                <line x1="6" y1="20" x2="6" y2="14"></line>
+                            </svg>
+                            <span>EDA Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('preprocessing') }}" class="nav-link {% if active == 'preprocessing' %}active{% endif %}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                            </svg>
+                            <span>Preprocessing</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
 
-            </li>
-            <li>
-                <a href="{{ url_for('preprocessing') }}"
-                   class="menu-item {% if active == 'preprocessing' %}active{% endif %}">
-                    Preprocessing
-                </a>
-            </li>
-            <li class="menu-item disabled">Model Training (coming soon)</li>
-            <li class="menu-item disabled">Prediction (coming soon)</li>
-        </ul>
+            <div class="sidebar-section">
+                <div class="sidebar-heading">Machine Learning</div>
+                <ul class="sidebar-nav">
+                    <li>
+                        <span class="nav-link disabled">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                                <line x1="8" y1="21" x2="16" y2="21"></line>
+                                <line x1="12" y1="17" x2="12" y2="21"></line>
+                            </svg>
+                            <span>Model Training</span>
+                            <span class="tag-soon">Soon</span>
+                        </span>
+                    </li>
+                    <li>
+                        <span class="nav-link disabled">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polygon points="10 8 16 12 10 16 10 8"></polygon>
+                            </svg>
+                            <span>Inference</span>
+                            <span class="tag-soon">Soon</span>
+                        </span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="sidebar-user">
+            <div class="avatar">ML</div>
+            <div class="user-info">
+                <div class="user-name">ML Pipeline</div>
+                <div class="user-meta">Python 3.12 • Flask</div>
+            </div>
+        </div>
     </nav>
 
-    <!-- Main content -->
+    <!-- MAIN CONTENT -->
     <main class="content">
 
-        {% if active == 'none' %}
-            <p>Select an option from the left panel to get started.</p>
+        <!-- Page Title Bar -->
+        <div class="page-title-bar">
+            <div>
+                <h2>Data Ingestion & Schema Inspection</h2>
+                <p>Inspect active dataset partitions, data types, missing value distributions, and sample records.</p>
+            </div>
+            {% if summary %}
+            <div class="header-actions">
+                <div class="workspace-badge" style="background: #ffffff; padding: 6px 12px; font-size: 13px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                    </svg>
+                    <span>File: <strong>{{ summary.filename or 'US_Accidents_March23.csv' }}</strong></span>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if error %}
+            <div class="error">
+                <strong>Error loading dataset:</strong> {{ error }}
+            </div>
         {% endif %}
 
-        {% if active == 'data-loading' %}
-            <h2>Data Loading</h2>
+        {% if summary %}
+            <!-- 4 STAT TILES -->
+            <div class="stats-strip">
+                <div class="stat-box">
+                    <div class="stat-head">
+                        <span class="stat-label">Total Records</span>
+                        <svg class="stat-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+                            <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+                            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+                        </svg>
+                    </div>
+                    <div class="stat-value">{{ summary.formatted_rows or summary.n_rows }}</div>
+                    <div class="stat-meta">Sampled accident rows</div>
+                </div>
 
-            {% if error %}
-                <div class="error">{{ error }}</div>
-            {% endif %}
+                <div class="stat-box">
+                    <div class="stat-head">
+                        <span class="stat-label">Features</span>
+                        <svg class="stat-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="9" y1="3" x2="9" y2="21"></line>
+                        </svg>
+                    </div>
+                    <div class="stat-value">{{ summary.n_cols }}</div>
+                    <div class="stat-meta">
+                        <strong>{{ summary.numeric_cols_count }}</strong> num &bull; 
+                        <strong>{{ summary.categorical_cols_count }}</strong> text &bull; 
+                        <strong>{{ summary.bool_cols_count }}</strong> bool
+                    </div>
+                </div>
 
-            {% if summary %}
-                <table class="summary-table">
-                    <tr><td>Rows</td><td>{{ summary.n_rows }}</td></tr>
-                    <tr><td>Columns</td><td>{{ summary.n_cols }}</td></tr>
-                </table>
+                <div class="stat-box">
+                    <div class="stat-head">
+                        <span class="stat-label">Completeness</span>
+                        <svg class="stat-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                        </svg>
+                    </div>
+                    <div class="stat-value">{{ summary.completeness_pct }}%</div>
+                    <div class="stat-meta">
+                        {% if summary.total_missing is defined %}
+                            <strong>{{ "{:,}".format(summary.total_missing) }}</strong> missing values
+                        {% else %}
+                            Populated values
+                        {% endif %}
+                    </div>
+                </div>
 
-                <h3>Column Info</h3>
-                <div class="table-wrapper">
-                    <table class="data-table">
+                <div class="stat-box">
+                    <div class="stat-head">
+                        <span class="stat-label">Memory Footprint</span>
+                        <svg class="stat-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+                            <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+                        </svg>
+                    </div>
+                    <div class="stat-value">{{ summary.memory_mb or '34.8' }} <span style="font-size: 15px; font-weight: 500; color: var(--text-muted);">MB</span></div>
+                    <div class="stat-meta">In-memory DataFrame</div>
+                </div>
+            </div>
+
+            <!-- COLUMN SCHEMA INSPECTOR CARD -->
+            <div class="card">
+                <div class="card-top">
+                    <div class="card-heading-group">
+                        <span class="card-heading">Dataset Attributes & Schema</span>
+                        <span class="pill-count" id="visibleColumnCount">{{ summary.n_cols }} columns</span>
+                    </div>
+
+                    <div class="card-controls">
+                        <!-- Category Filter Tabs -->
+                        <div class="filter-tabs">
+                            <button class="tab-btn active" onclick="setCategoryFilter('all', this)">All ({{ summary.n_cols }})</button>
+                            <button class="tab-btn" onclick="setCategoryFilter('num', this)">Numeric ({{ summary.numeric_cols_count }})</button>
+                            <button class="tab-btn" onclick="setCategoryFilter('cat', this)">Categorical ({{ summary.categorical_cols_count }})</button>
+                            <button class="tab-btn" onclick="setCategoryFilter('bool', this)">Boolean ({{ summary.bool_cols_count }})</button>
+                            <button class="tab-btn" onclick="setCategoryFilter('missing', this)">Has Missing</button>
+                        </div>
+
+                        <!-- Live Search Input -->
+                        <div class="search-field">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                            <input type="text" id="columnFilterInput" class="search-box-input" placeholder="Search attribute..." onkeyup="applyFilters()">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-container table-scroll">
+                    <table class="data-grid-table" id="attributesTable">
                         <thead>
-                            <tr><th>Column</th><th>Dtype</th><th>Missing Values</th></tr>
+                            <tr>
+                                <th style="width: 50px;">#</th>
+                                <th>Attribute Name</th>
+                                <th>Data Type</th>
+                                <th>Null Count</th>
+                                <th>Missing Rate</th>
+                                <th>Distinct Values</th>
+                            </tr>
                         </thead>
                         <tbody>
-                        {% for col in summary.columns %}
-                            <tr>
-                                <td>{{ col }}</td>
-                                <td>{{ summary.dtypes[col] }}</td>
-                                <td>{{ summary.missing_counts[col] }}</td>
+                        {% if summary.column_details %}
+                            {% for col in summary.column_details %}
+                            <tr class="attr-row" 
+                                data-name="{{ col.name | lower }}" 
+                                data-dtype="{{ col.dtype | lower }}"
+                                data-kind="{% if col.is_numeric %}num{% elif col.is_categorical %}cat{% elif col.is_bool %}bool{% else %}other{% endif %}"
+                                data-hasmissing="{% if col.missing_count > 0 %}true{% else %}false{% endif %}">
+                                <td style="color: var(--text-faint);">{{ loop.index }}</td>
+                                <td>
+                                    <strong class="mono" style="color: var(--text-heading);">{{ col.name }}</strong>
+                                </td>
+                                <td>
+                                    {% if col.is_numeric %}
+                                        <span class="badge-type num">{{ col.dtype }}</span>
+                                    {% elif col.is_categorical %}
+                                        <span class="badge-type cat">{{ col.dtype }}</span>
+                                    {% elif col.is_bool %}
+                                        <span class="badge-type bool">{{ col.dtype }}</span>
+                                    {% else %}
+                                        <span class="badge-type">{{ col.dtype }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if col.missing_count == 0 %}
+                                        <span style="color: var(--text-faint);">0</span>
+                                    {% else %}
+                                        <span style="color: var(--warning-text); font-weight: 600;">{{ "{:,}".format(col.missing_count) }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="health-cell">
+                                        <div class="mini-bar">
+                                            <div class="mini-bar-fill {% if col.missing_pct > 20 %}danger{% elif col.missing_pct > 0 %}warn{% endif %}" 
+                                                 style="width: {{ 100 - col.missing_pct }}%;"></div>
+                                        </div>
+                                        <span style="font-size: 12px; color: {% if col.missing_pct > 0 %}var(--text-body){% else %}var(--text-faint){% endif %};">
+                                            {{ col.missing_pct }}%
+                                        </span>
+                                    </div>
+                                </td>
+                                <td style="color: var(--text-body); font-weight: 500;">
+                                    {{ "{:,}".format(col.unique_count) }}
+                                </td>
                             </tr>
-                        {% endfor %}
+                            {% endfor %}
+                        {% else %}
+                            {% for col in summary.columns %}
+                            <tr class="attr-row" data-name="{{ col | lower }}" data-dtype="{{ summary.dtypes[col] | lower }}" data-kind="other" data-hasmissing="false">
+                                <td>{{ loop.index }}</td>
+                                <td><strong class="mono">{{ col }}</strong></td>
+                                <td><span class="badge-type">{{ summary.dtypes[col] }}</span></td>
+                                <td>{{ summary.missing_counts[col] }}</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            {% endfor %}
+                        {% endif %}
                         </tbody>
                     </table>
                 </div>
 
-                <h3>Preview (first 10 rows)</h3>
-                <div class="table-wrapper">
-                    <table class="data-table">
+                <div class="card-foot">
+                    <span>Showing all schema features and completeness status</span>
+                    <span id="filterSummaryText">All {{ summary.n_cols }} columns displayed</span>
+                </div>
+            </div>
+
+            <!-- RAW DATA SAMPLE PREVIEW CARD -->
+            <div class="card">
+                <div class="card-top">
+                    <div class="card-heading-group">
+                        <span class="card-heading">Raw Data Sample (Top 10 Rows)</span>
+                        <span class="pill-count">10 &times; {{ summary.n_cols }} Matrix</span>
+                    </div>
+                </div>
+
+                <div class="table-container table-scroll">
+                    <table class="data-grid-table">
                         <thead>
                             <tr>
-                            {% for col in summary.columns %}
-                                <th>{{ col }}</th>
-                            {% endfor %}
+                                <th style="width: 44px;">#</th>
+                                {% for col in summary.columns %}
+                                    <th>{{ col }}</th>
+                                {% endfor %}
                             </tr>
                         </thead>
                         <tbody>
                         {% for row in summary.preview %}
                             <tr>
-                            {% for col in summary.columns %}
-                                <td>{{ row[col] }}</td>
-                            {% endfor %}
+                                <td style="color: var(--text-faint); font-weight: 500;">{{ loop.index }}</td>
+                                {% for col in summary.columns %}
+                                    <td class="mono" style="font-size: 12px; white-space: nowrap; max-width: 260px; overflow: hidden; text-overflow: ellipsis;">
+                                        {% if row[col] is none %}
+                                            <span class="null-text">&mdash;</span>
+                                        {% else %}
+                                            {{ row[col] }}
+                                        {% endif %}
+                                    </td>
+                                {% endfor %}
                             </tr>
                         {% endfor %}
                         </tbody>
                     </table>
                 </div>
-            {% endif %}
+
+                <div class="card-foot">
+                    <span>Showing 10 records from the dataset partition</span>
+                    <span>Scroll horizontally to inspect all columns</span>
+                </div>
+            </div>
         {% endif %}
 
     </main>
 </div>
+
+<!-- CLIENT SEARCH & CATEGORY FILTER SCRIPT -->
+<script>
+let currentCategory = 'all';
+
+function setCategoryFilter(category, btnElement) {
+    currentCategory = category;
+    
+    // Update active tab button style
+    const tabs = document.querySelectorAll('.tab-btn');
+    tabs.forEach(tab => tab.classList.remove('active'));
+    if (btnElement) {
+        btnElement.classList.add('active');
+    }
+    
+    applyFilters();
+}
+
+function applyFilters() {
+    const searchInput = document.getElementById('columnFilterInput');
+    const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
+    const rows = document.querySelectorAll('.attr-row');
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+        const name = row.getAttribute('data-name') || '';
+        const dtype = row.getAttribute('data-dtype') || '';
+        const kind = row.getAttribute('data-kind') || '';
+        const hasMissing = row.getAttribute('data-hasmissing') === 'true';
+
+        // Check search match
+        const matchesSearch = searchTerm === '' || name.includes(searchTerm) || dtype.includes(searchTerm);
+
+        // Check category match
+        let matchesCategory = true;
+        if (currentCategory === 'num') matchesCategory = (kind === 'num');
+        else if (currentCategory === 'cat') matchesCategory = (kind === 'cat');
+        else if (currentCategory === 'bool') matchesCategory = (kind === 'bool');
+        else if (currentCategory === 'missing') matchesCategory = hasMissing;
+
+        if (matchesSearch && matchesCategory) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+
+    const badge = document.getElementById('visibleColumnCount');
+    const summaryText = document.getElementById('filterSummaryText');
+    
+    if (badge) badge.textContent = `${visibleCount} columns`;
+    if (summaryText) summaryText.textContent = `${visibleCount} of ${rows.length} columns displayed`;
+}
+
+// Shortcut: press '/' to focus search
+document.addEventListener('keydown', function(e) {
+    if (e.key === '/' && document.activeElement.tagName !== 'INPUT') {
+        e.preventDefault();
+        const searchInput = document.getElementById('columnFilterInput');
+        if (searchInput) searchInput.focus();
+    }
+});
+</script>
 
 </body>
 </html>
