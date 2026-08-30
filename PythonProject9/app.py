@@ -181,6 +181,30 @@ def preprocessing():
 
 
 # =========================================================
+# PREPROCESSING API
+# =========================================================
+@app.route("/api/preprocessing")
+def preprocessing_api():
+    from preprocessing_pipeline import run_preprocessing_pipeline
+    try:
+        preprocess_output = run_preprocessing_pipeline()
+        return jsonify({
+            "success": True,
+            "data": preprocess_output
+        })
+    except FileNotFoundError as e:
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 404
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": f"Unexpected error: {e}"
+        }), 500
+
+
+# =========================================================
 # RUN FLASK APPLICATION
 # =========================================================
 if __name__ == "__main__":

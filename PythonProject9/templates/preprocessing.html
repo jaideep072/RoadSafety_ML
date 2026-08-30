@@ -2,74 +2,160 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Road Safety Analysis Project - Preprocessing</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preprocessing • RoadSafety AI</title>
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 
+<!-- TOPBAR -->
 <header class="topbar">
-    <h1>Road Safety Analysis Project</h1>
+    <div class="topbar-left">
+        <a href="{{ url_for('data_loading') }}" class="brand-logo">
+            <div class="brand-icon-box">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                </svg>
+            </div>
+            <span>RoadSafety Studio</span>
+        </a>
+        <div class="workspace-badge">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span>us-accidents-prod</span>
+        </div>
+    </div>
+
+    <div class="topbar-right">
+        <div class="status-pill">
+            <span class="status-dot"></span>
+            <span>100K Records Active</span>
+        </div>
+        <button class="btn-secondary" onclick="window.location.reload();">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+            </svg>
+            <span>Refresh</span>
+        </button>
+    </div>
 </header>
 
 <div class="layout">
-    <!-- Left panel -->
+    <!-- SIDEBAR -->
     <nav class="sidebar">
-        <ul>
-            <li>
-                <a href="{{ url_for('data_loading') }}"
-                   class="menu-item {% if active == 'data-loading' %}active{% endif %}">
-                    Data Loading
-                </a>
-            </li>
-            <li>
-                <a href="{{ url_for('eda') }}"
-                   class="menu-item {% if active == 'eda' %}active{% endif %}">
-                    EDA
-                </a>
-            </li>
-            <li>
-                <a href="{{ url_for('preprocessing') }}"
-                   class="menu-item {% if active == 'preprocessing' %}active{% endif %}">
-                    Preprocessing
-                </a>
-            </li>
-            <li class="menu-item disabled">Preprocessing (coming soon)</li>
-            <li class="menu-item disabled">Model Training (coming soon)</li>
-            <li class="menu-item disabled">Prediction (coming soon)</li>
-        </ul>
+        <div>
+            <div class="sidebar-section">
+                <div class="sidebar-heading">Data Pipeline</div>
+                <ul class="sidebar-nav">
+                    <li>
+                        <a href="{{ url_for('data_loading') }}" class="nav-link {% if active == 'data-loading' %}active{% endif %}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+                                <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+                                <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+                            </svg>
+                            <span>Data Ingestion</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('eda') }}" class="nav-link {% if active == 'eda' %}active{% endif %}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="20" x2="18" y2="10"></line>
+                                <line x1="12" y1="20" x2="12" y2="4"></line>
+                                <line x1="6" y1="20" x2="6" y2="14"></line>
+                            </svg>
+                            <span>EDA Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('preprocessing') }}" class="nav-link {% if active == 'preprocessing' %}active{% endif %}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                            </svg>
+                            <span>Preprocessing</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-heading">Machine Learning</div>
+                <ul class="sidebar-nav">
+                    <li>
+                        <span class="nav-link disabled">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                                <line x1="8" y1="21" x2="16" y2="21"></line>
+                                <line x1="12" y1="17" x2="12" y2="21"></line>
+                            </svg>
+                            <span>Model Training</span>
+                            <span class="tag-soon">Soon</span>
+                        </span>
+                    </li>
+                    <li>
+                        <span class="nav-link disabled">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polygon points="10 8 16 12 10 16 10 8"></polygon>
+                            </svg>
+                            <span>Inference</span>
+                            <span class="tag-soon">Soon</span>
+                        </span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="sidebar-user">
+            <div class="avatar">ML</div>
+            <div class="user-info">
+                <div class="user-name">ML Pipeline</div>
+                <div class="user-meta">Python 3.12 • Flask</div>
+            </div>
+        </div>
     </nav>
 
-    <!-- Main content -->
+    <!-- MAIN CONTENT -->
     <main class="content">
-        <h2>Data Preprocessing Outputs</h2>
+        <div class="page-title-bar">
+            <div>
+                <h2>Data Preprocessing & Transformations</h2>
+                <p>Run end-to-end dataset cleansing pipelines. Compare downstream model performance across deletion and statistical imputation, inspect categorical translation maps, and preview standardized outputs.</p>
+            </div>
+        </div>
 
         {% if error %}
             <div class="error">{{ error }}</div>
         {% endif %}
 
         {% if results %}
-            <!-- 1. missing.py Results -->
+
+            <!-- 1. Data Quality & Missingness Profiling -->
             <div class="section-group">
-                <h3 style="color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px;">Missing Values Analysis</h3>
+                <h3 style="color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px;">Data Quality & Missingness Profiling</h3>
                 <div class="two-column-row" style="margin-top: 16px;">
                     <div class="column-card">
                         <h4 style="margin-bottom: 8px; color: #1f3a5f;">Missing Values per Column</h4>
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Column Name</th>
-                                    <th>Missing % (Training Split)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for col, pct in results.missing.per_column.items() %}
-                                <tr>
-                                    <td>{{ col }}</td>
-                                    <td><strong style="color: #b00020;">{{ pct }}</strong></td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                        <div class="table-wrapper" style="max-height: 250px;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Column Name</th>
+                                        <th>Missing % (Training Split)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for col, pct in results.missing.per_column.items() %}
+                                    <tr>
+                                        <td>{{ col }}</td>
+                                        <td><strong style="color: #b00020;">{{ pct }}</strong></td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                     <div class="column-card">
                         <h4 style="margin-bottom: 8px; color: #1f3a5f;">Temperature(F) Missingness by Sunrise_Sunset</h4>
@@ -93,9 +179,178 @@
                 </div>
             </div>
 
-            <!-- 2. listwisedeletion.py Results -->
+            <!-- 2. Outlier Capping Analysis -->
             <div class="section-group">
-                <h3 style="color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px;">Listwise Deletion Analysis</h3>
+                <h3 style="color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px;">Outlier Bounds Profiling & Capping</h3>
+                <p style="font-size: 13.5px; color: #475569; margin-bottom: 12px; line-height: 1.5;">
+                    Extreme value outlier analysis: We calculate upper and lower bounds using the standard Interquartile Range (IQR) method ($Q1 - 1.5 \times IQR$ to $Q3 + 1.5 \times IQR$). For pipeline processing, features are clipped at these thresholds to prevent convergence issues and stabilize standard scaling estimators.
+                </p>
+                <table class="data-table" style="margin-top: 16px;">
+                    <thead>
+                        <tr>
+                            <th>Column Name</th>
+                            <th>Boundary Limits</th>
+                            <th>Rows Capped (Clipped)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in results.outliers %}
+                        <tr>
+                            <td>{{ item.column }}</td>
+                            <td>{{ item.bounds }}</td>
+                            <td><strong style="color: #b00020;">{{ item.capped }}</strong> rows</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <!-- 3. Imputation Strategy Feasibility Evaluation -->
+            <div class="section-group">
+                <h3 style="color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px;">Imputation Strategy Feasibility Evaluation</h3>
+                
+                <div class="two-column-row" style="margin-top: 16px;">
+                    <!-- Row-wise Deletion -->
+                    <div class="column-card">
+                        <h4 style="margin-bottom: 8px; color: #1f3a5f;">Row-wise Deletion (Listwise)</h4>
+                        <div style="margin-bottom: 12px; font-size: 14px;">
+                            <strong>Applicable:</strong> 
+                            {% if results.missing_analysis.rowdrop.applicable %}
+                                <span style="color: #10b981; font-weight: bold;">✔ Yes</span>
+                            {% else %}
+                                <span style="color: #ef4444; font-weight: bold;">✘ No (Data Loss too high)</span>
+                            {% endif %}
+                        </div>
+                        <p style="font-size: 13.5px; color: #475569; margin-bottom: 12px; line-height: 1.5;">
+                            {{ results.missing_analysis.rowdrop.reason }}
+                        </p>
+                        <table class="data-table" style="font-size: 13px;">
+                            <tbody>
+                                <tr>
+                                    <td>Total Rows</td>
+                                    <td>{{ results.missing_analysis.rowdrop.rows_before }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Rows Dropped</td>
+                                    <td>{{ results.missing_analysis.rowdrop.rows_dropped }} ({{ results.missing_analysis.rowdrop.pct_dropped }}%)</td>
+                                </tr>
+                                <tr>
+                                    <td>Retained Rows</td>
+                                    <td><strong>{{ results.missing_analysis.rowdrop.rows_after }}</strong></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Column-wise Deletion -->
+                    <div class="column-card">
+                        <h4 style="margin-bottom: 8px; color: #1f3a5f;">Column-wise Deletion</h4>
+                        <div style="margin-bottom: 12px; font-size: 14px;">
+                            <strong>Applicable:</strong> 
+                            {% if results.missing_analysis.coldrop.applicable %}
+                                <span style="color: #10b981; font-weight: bold;">✔ Yes (Some columns dropped)</span>
+                            {% else %}
+                                <span style="color: #64748b; font-weight: bold;">ⓘ No Columns Exceed {{ results.missing_analysis.coldrop.threshold_pct }}% threshold</span>
+                            {% endif %}
+                        </div>
+                        <p style="font-size: 13.5px; color: #475569; margin-bottom: 12px; line-height: 1.5;">
+                            {{ results.missing_analysis.coldrop.reason }}
+                        </p>
+                        <h5 style="margin-bottom: 6px; font-size: 13px; color: #334155;">Pruning Diagnostics:</h5>
+                        <div class="table-wrapper" style="max-height: 200px;">
+                            <table class="data-table" style="font-size: 12px;">
+                                <thead>
+                                    <tr>
+                                        <th>Column</th>
+                                        <th>Verdict / Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for col, detail in results.missing_analysis.coldrop.per_col_reasons.items() %}
+                                    <tr>
+                                        <td>{{ col }}</td>
+                                        <td>
+                                            {% if detail.drop %}
+                                                <span style="color: #ef4444; font-weight: bold;">Dropped</span> ({{ detail.reason }})
+                                            {% else %}
+                                                <span style="color: #10b981; font-weight: bold;">Retained</span> ({{ detail.reason }})
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="two-column-row" style="margin-top: 16px;">
+                    <!-- Mean Imputation -->
+                    <div class="column-card">
+                        <h4 style="margin-bottom: 8px; color: #1f3a5f;">Mean Imputation Strategy</h4>
+                        <div class="table-wrapper" style="max-height: 200px;">
+                            <table class="data-table" style="font-size: 12.5px;">
+                                <thead>
+                                    <tr>
+                                        <th>Column</th>
+                                        <th>Fill Value</th>
+                                        <th>Note</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in results.missing_analysis.mean_imputation.results %}
+                                    <tr>
+                                        <td>{{ item.column }}</td>
+                                        <td>
+                                            {% if item.fill_value is not none %}
+                                                <strong>{{ item.fill_value }}</strong>
+                                            {% else %}
+                                                <span style="color: #94a3b8;">N/A</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ item.reason }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Median Imputation -->
+                    <div class="column-card">
+                        <h4 style="margin-bottom: 8px; color: #1f3a5f;">Median Imputation Strategy</h4>
+                        <div class="table-wrapper" style="max-height: 200px;">
+                            <table class="data-table" style="font-size: 12.5px;">
+                                <thead>
+                                    <tr>
+                                        <th>Column</th>
+                                        <th>Fill Value</th>
+                                        <th>Note</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in results.missing_analysis.median_imputation.results %}
+                                    <tr>
+                                        <td>{{ item.column }}</td>
+                                        <td>
+                                            {% if item.fill_value is not none %}
+                                                <strong>{{ item.fill_value }}</strong>
+                                            {% else %}
+                                                <span style="color: #94a3b8;">N/A</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ item.reason }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Listwise Deletion Benchmark -->
+            <div class="section-group">
+                <h3 style="color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px;">Listwise Deletion Benchmark (Logistic Regression)</h3>
                 <table class="data-table" style="margin-top: 16px;">
                     <thead>
                         <tr>
@@ -124,9 +379,9 @@
                 </table>
             </div>
 
-            <!-- 3. imputation_comparison.py Results -->
+            <!-- 5. Comparative Model Accuracy by Strategy -->
             <div class="section-group">
-                <h3 style="color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px;">Imputation Strategy Comparison</h3>
+                <h3 style="color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px;">Comparative Model Accuracy by Strategy</h3>
                 <table class="data-table" style="margin-top: 16px;">
                     <thead>
                         <tr>
@@ -146,36 +401,15 @@
                     </tbody>
                 </table>
             </div>
-
-            <!-- 4. outlier_Fix.py Results -->
+            <!-- 6. Encodings Mappings (Nominal & Ordinal) -->
             <div class="section-group">
-                <h3 style="color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px;">Outlier Capping Analysis</h3>
-                <table class="data-table" style="margin-top: 16px;">
-                    <thead>
-                        <tr>
-                            <th>Column Name</th>
-                            <th>Boundary Limits (Q1 - 1.5*IQR to Q3 + 1.5*IQR)</th>
-                            <th>Rows Capped (Clipped)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for item in results.outliers %}
-                        <tr>
-                            <td>{{ item.column }}</td>
-                            <td>{{ item.bounds }}</td>
-                            <td><strong style="color: #b00020;">{{ item.capped }}</strong> rows</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- 5. one_hot_encoding.py & ordinal_encoding.py Results -->
-            <div class="section-group">
-                <h3 style="color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px;">Encoding Results</h3>
+                <h3 style="color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px;">Categorical Translation & Encodings</h3>
                 <div class="two-column-row" style="margin-top: 16px;">
                     <div class="column-card">
                         <h4 style="margin-bottom: 8px; color: #1f3a5f;">Nominal Encoding (One-Hot Encoder)</h4>
+                        <p style="font-size: 13px; color: #475569; margin-bottom: 12px; line-height: 1.5;">
+                            Converts categorical nominal features into binary column matrices, dropping the first category to avoid multicollinearity (the dummy variable trap).
+                        </p>
                         <table class="data-table">
                             <tbody>
                                 <tr>
@@ -199,7 +433,7 @@
                     </div>
                     
                     <div class="column-card">
-                        <h4 style="margin-bottom: 8px; color: #1f3a5f;">Ordinal Encoding Mappings</h4>
+                        <h4 style="margin-bottom: 8px; color: #1f3a5f;">Ordinal Encoding Mappings (Dynamic)</h4>
                         <table class="data-table">
                             <thead>
                                 <tr>
@@ -209,33 +443,132 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td rowspan="2" style="vertical-align: middle;">Sunrise_Sunset</td>
-                                    <td>Night</td>
-                                    <td>0.0</td>
-                                </tr>
-                                <tr>
-                                    <td>Day</td>
-                                    <td>1.0</td>
-                                </tr>
-                                <tr>
-                                    <td rowspan="2" style="vertical-align: middle; border-top: 2px solid #cbd5e1;">Civil_Twilight</td>
-                                    <td style="border-top: 2px solid #cbd5e1;">Night</td>
-                                    <td style="border-top: 2px solid #cbd5e1;">0.0</td>
-                                </tr>
-                                <tr>
-                                    <td>Day</td>
-                                    <td>1.0</td>
-                                </tr>
+                                {% for col, mapping in results.ordinal.mappings.items() %}
+                                    {% set outer_loop_first = loop.first %}
+                                    {% for cat, val in mapping.items() %}
+                                    <tr>
+                                        {% if loop.first %}
+                                            <td rowspan="{{ mapping|length }}" style="vertical-align: middle; {% if not outer_loop_first %}border-top: 2px solid #cbd5e1;{% endif %}">{{ col }}</td>
+                                        {% endif %}
+                                        <td {% if loop.first and not outer_loop_first %}style="border-top: 2px solid #cbd5e1;"{% endif %}>{{ cat }}</td>
+                                        <td {% if loop.first and not outer_loop_first %}style="border-top: 2px solid #cbd5e1;"{% endif %}><strong>{{ val }}</strong></td>
+                                    </tr>
+                                    {% endfor %}
+                                {% endfor %}
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <!-- 6. Mini_Max_Scaling.py (Normalization) -->
+            <!-- 7. Advanced Categorical Encodings (Target & Embedding-Based) -->
             <div class="section-group">
-                <h3 style="color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px;">Min-Max Scaling (Normalization)</h3>
+                <h3 style="color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px;">High-Card & Vector Categorical Encodings</h3>
+                <div class="two-column-row" style="margin-top: 16px;">
+                    <!-- Target Encoding -->
+                    <div class="column-card">
+                        <h4 style="margin-bottom: 8px; color: #1f3a5f;">Target Encoding (Mean of Target "Severity")</h4>
+                        <p style="font-size: 13px; color: #475569; margin-bottom: 12px; line-height: 1.5;">
+                            Learned Category-Target Relationships: We map each wind direction category to the average severity of its corresponding accidents. This acts as a powerful numerical proxy for categorical values in linear models.
+                        </p>
+                        
+                        <div class="table-wrapper" style="max-height: 180px; margin-bottom: 12px;">
+                            <table class="data-table" style="font-size: 12px; margin-bottom: 0;">
+                                <thead style="position: sticky; top: 0; background: #fff; z-index: 10;">
+                                    <tr>
+                                        <th>Category (Wind_Direction)</th>
+                                        <th>Mapped Mean Severity</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for cat, val in results.target_encoding.Severity.Wind_Direction.mapping.items() %}
+                                    <tr>
+                                        <td><code>{{ cat }}</code></td>
+                                        <td><strong>{{ val }}</strong></td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <h5 style="margin-top: 12px; margin-bottom: 6px; color: #475569; font-size: 13px;">Target Encoded Feature (Preview):</h5>
+                        <table class="data-table" style="font-size: 12px;">
+                            <thead>
+                                <tr>
+                                    <th>Wind_Direction_target_Severity</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in results.target_encoding.Severity.Wind_Direction.train_preview %}
+                                <tr>
+                                    <td><strong>{{ row.Wind_Direction_target_Severity }}</strong></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Embedding-Based Encoding -->
+                    <div class="column-card">
+                        <h4 style="margin-bottom: 8px; color: #1f3a5f;">Embedding-Based Integer Indexing</h4>
+                        <p style="font-size: 13px; color: #475569; margin-bottom: 12px; line-height: 1.5;">
+                            Neural Network Embedding Map: Rather than generating hundreds of sparse columns, we assign a compact, zero-based integer ID to each wind direction. This mapping feeds directly into the network's Embedding layer for low-dimensional representation vector learning.
+                        </p>
+                        
+                        <div style="display: flex; gap: 16px; margin-bottom: 12px; background: #f8fafc; padding: 10px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                            <div>
+                                <span style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: bold; display: block;">Input Dimension</span>
+                                <strong style="font-size: 16px; color: #0f172a;">{{ results.embedding.Wind_Direction.embedding_input_dimension }}</strong>
+                            </div>
+                            <div>
+                                <span style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: bold; display: block;">Output Dimension</span>
+                                <strong style="font-size: 16px; color: #0f172a;">{{ results.embedding.Wind_Direction.embedding_output_dimension }} (Vectors)</strong>
+                            </div>
+                        </div>
+
+                        <div class="table-wrapper" style="max-height: 180px; margin-bottom: 12px;">
+                            <table class="data-table" style="font-size: 12px; margin-bottom: 0;">
+                                <thead style="position: sticky; top: 0; background: #fff; z-index: 10;">
+                                    <tr>
+                                        <th>Category (Wind_Direction)</th>
+                                        <th>Assigned ID</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for cat, val in results.embedding.Wind_Direction.category_to_id.items() %}
+                                    <tr>
+                                        <td><code>{{ cat }}</code></td>
+                                        <td><span class="tag" style="background-color: #f1f5f9; color: #0f172a; padding: 2px 6px; border-radius: 4px; font-family: monospace;">{{ val }}</span></td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <h5 style="margin-top: 12px; margin-bottom: 6px; color: #475569; font-size: 13px;">Encoded Embeddings Index (Preview):</h5>
+                        <table class="data-table" style="font-size: 12px;">
+                            <thead>
+                                <tr>
+                                    <th>Wind_Direction_embedding_id</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in results.embedding.Wind_Direction.train_preview %}
+                                <tr>
+                                    <td><span class="tag" style="background-color: #eff6ff; color: #2563eb; padding: 2px 6px; border-radius: 4px; font-family: monospace; font-weight: bold;">{{ row.Wind_Direction_embedding_id }}</span></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <!-- 8. Feature Scaling: Min-Max Normalization -->
+            <div class="section-group">
+                <h3 style="color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px;">Feature Scaling: Min-Max Normalization</h3>
+                <p style="font-size: 13.5px; color: #475569; margin-bottom: 12px; line-height: 1.5;">
+                    Rescales features linearly to fit within a bounded range of 0.0 to 1.0. Preserves zero values and is ideal for neural network input scaling.
+                </p>
                 <div class="two-column-row" style="margin-top: 16px;">
                     <div class="column-card">
                         <h4 style="margin-bottom: 8px; color: #b00020;">Before Scaling (First 5 Rows):</h4>
@@ -283,9 +616,12 @@
                 </div>
             </div>
 
-            <!-- 7. Standard_Scalar.py (Standardization) -->
+            <!-- 9. Feature Scaling: Z-Score Standardization -->
             <div class="section-group">
-                <h3 style="color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px;">Standard Scaling (Standardization)</h3>
+                <h3 style="color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px;">Feature Scaling: Z-Score Standardization</h3>
+                <p style="font-size: 13.5px; color: #475569; margin-bottom: 12px; line-height: 1.5;">
+                    Standardizes features by centering them to a mean of 0 and scaling them to a standard deviation of 1. Recommended for algorithms that assume normally distributed inputs.
+                </p>
                 <div class="two-column-row" style="margin-top: 16px;">
                     <div class="column-card">
                         <h4 style="margin-bottom: 8px; color: #b00020;">Before Standardization (First 5 Rows):</h4>
