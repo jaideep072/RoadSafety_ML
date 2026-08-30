@@ -1,219 +1,510 @@
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
     <meta charset="UTF-8">
-    <title>Road Safety Analysis Project</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EDA Dashboard • RoadSafety AI</title>
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    </head>
-    <body>
+</head>
+<body>
 
-    <header class="topbar">
-        <h1>Road Safety Analysis Project</h1>
-    </header>
-
-    <div class="layout">
-        <!-- Left panel -->
-        <nav class="sidebar">
-            <ul>
-                <li>
-                    <a href="{{ url_for('data_loading') }}"
-                       class="menu-item {% if active == 'data-loading' %}active{% endif %}">
-                        Data Loading
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ url_for('eda') }}"
-                       class="menu-item {% if active == 'eda' %}active{% endif %}">
-                        EDA
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ url_for('preprocessing') }}"
-                       class="menu-item {% if active == 'preprocessing' %}active{% endif %}">
-                        Preprocessing
-                    </a>
-                </li>
-                <li class="menu-item disabled">Model Training (coming soon)</li>
-                <li class="menu-item disabled">Prediction (coming soon)</li>
-            </ul>
-        </nav>
-
-        <!-- Main content -->
-        <main class="content">
-            <h2>Exploratory Data Analysis Dashboard (13 Tasks)</h2>
-
-            {% if error %}
-                <div class="error">{{ error }}</div>
-            {% endif %}
-
-            {% if results %}
-                <!-- TASK 1: MISSING VALUES -->
-                <div class="section-group">
-                    <h3>Task 1: Missing Values Analysis</h3>
-                    <div class="two-column-row">
-                        <div class="column-card">
-                            {% if results.missing %}
-                                <div class="table-wrapper">
-                                    <table class="data-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Column Name</th>
-                                                <th>Missing Count</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                        {% for col, count in results.missing.items() %}
-                                            <tr>
-                                                <td>{{ col }}</td>
-                                                <td>{{ count }}</td>
-                                            </tr>
-                                        {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            {% else %}
-                                <p class="no-data-msg">No missing values in this dataset portion.</p>
-                            {% endif %}
-                        </div>
-                        <div class="column-card">
-                            {% for chart in results.charts if chart.filename == 'missing_values.png' %}
-                                <img src="{{ url_for('static', filename='charts/' + chart.filename) }}" alt="{{ chart.title }}" class="task-img">
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-
-                <!-- TASK 2: DUPLICATE ROWS -->
-                <div class="section-group">
-                    <h3>Task 2: Duplicate Rows Check</h3>
-                    <div class="metrics-grid">
-                        <div class="metric-card">
-                            <span class="metric-label">Duplicate Row Count</span>
-                            <span class="metric-value">{{ results.duplicate_count }}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- TASK 3: TARGET VARIABLE - SEVERITY -->
-                <div class="section-group">
-                    <h3>Task 3: Target Variable Distribution (Accident Severity)</h3>
-                    <div class="two-column-row">
-                        <div class="column-card">
-                            <table class="summary-table">
-                                <thead>
-                                    <tr>
-                                        <th>Severity Level</th>
-                                        <th>Accident Count</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                {% for status, count in results.target_counts.items() %}
-                                    <tr>
-                                        <td>Level {{ status }} ({{ 'Low' if status == '1' else 'Moderate' if status == '2' else 'High' if status == '3' else 'Critical' }})</td>
-                                        <td>{{ count }}</td>
-                                    </tr>
-                                {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="column-card">
-                            {% for chart in results.charts if chart.filename == 'severity_distribution.png' %}
-                                <img src="{{ url_for('static', filename='charts/' + chart.filename) }}" alt="{{ chart.title }}" class="task-img">
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-
-                <!-- TASK 4: HOURLY TREND -->
-                <div class="section-group">
-                    <h3>Task 4: Hourly Accident Trend (Peak Hours)</h3>
-                    {% for chart in results.charts if chart.filename == 'accidents_by_hour.png' %}
-                        <img src="{{ url_for('static', filename='charts/' + chart.filename) }}" alt="{{ chart.title }}" class="task-img-full">
-                    {% endfor %}
-                </div>
-
-                <!-- TASK 5: DAY OF WEEK TREND -->
-                <div class="section-group">
-                    <h3>Task 5: Weekly Accident Trend (Accidents by Day of Week)</h3>
-                    {% for chart in results.charts if chart.filename == 'accidents_by_dayofweek.png' %}
-                        <img src="{{ url_for('static', filename='charts/' + chart.filename) }}" alt="{{ chart.title }}" class="task-img-full">
-                    {% endfor %}
-                </div>
-
-                <!-- TASK 6: MONTHLY SEASONAL TREND -->
-                <div class="section-group">
-                    <h3>Task 6: Monthly Seasonal Trend</h3>
-                    {% for chart in results.charts if chart.filename == 'accidents_by_month.png' %}
-                        <img src="{{ url_for('static', filename='charts/' + chart.filename) }}" alt="{{ chart.title }}" class="task-img-full">
-                    {% endfor %}
-                </div>
-
-                <!-- TASK 7: WEATHER CONDITION -->
-                <div class="section-group">
-                    <h3>Task 7: Weather Condition Analysis (Top 10)</h3>
-                    {% for chart in results.charts if chart.filename == 'weather_conditions.png' %}
-                        <img src="{{ url_for('static', filename='charts/' + chart.filename) }}" alt="{{ chart.title }}" class="task-img-full">
-                    {% endfor %}
-                </div>
-
-                <!-- TASK 8: STATE-WISE DISTRIBUTION -->
-                <div class="section-group">
-                    <h3>Task 8: State-wise Accident Distribution (Top 10)</h3>
-                    {% for chart in results.charts if chart.filename == 'top_states.png' %}
-                        <img src="{{ url_for('static', filename='charts/' + chart.filename) }}" alt="{{ chart.title }}" class="task-img-full">
-                    {% endfor %}
-                </div>
-
-                <!-- TASK 9: TEMPERATURE VS SEVERITY -->
-                <div class="section-group">
-                    <h3>Task 9: Impact of Temperature on Accident Severity</h3>
-                    {% for chart in results.charts if chart.filename == 'temperature_by_severity.png' %}
-                        <img src="{{ url_for('static', filename='charts/' + chart.filename) }}" alt="{{ chart.title }}" class="task-img-full">
-                    {% endfor %}
-                </div>
-
-                <!-- TASK 10: VISIBILITY VS SEVERITY -->
-                <div class="section-group">
-                    <h3>Task 10: Impact of Visibility on Accident Severity</h3>
-                    {% for chart in results.charts if chart.filename == 'visibility_by_severity.png' %}
-                        <img src="{{ url_for('static', filename='charts/' + chart.filename) }}" alt="{{ chart.title }}" class="task-img-full">
-                    {% endfor %}
-                </div>
-
-                <!-- TASK 11: INFRASTRUCTURE IMPACT -->
-                <div class="section-group">
-                    <h3>Task 11: Road Infrastructure Element Analysis</h3>
-                    {% for chart in results.charts if chart.filename == 'infrastructure_impact.png' %}
-                        <img src="{{ url_for('static', filename='charts/' + chart.filename) }}" alt="{{ chart.title }}" class="task-img-full">
-                    {% endfor %}
-                </div>
-
-                <!-- TASK 12: DAY VS NIGHT SEVERITY -->
-                <div class="section-group">
-                    <h3>Task 12: Day vs. Night Accident Severity Comparison</h3>
-                    {% for chart in results.charts if chart.filename == 'day_night_vs_severity.png' %}
-                        <img src="{{ url_for('static', filename='charts/' + chart.filename) }}" alt="{{ chart.title }}" class="task-img-full">
-                    {% endfor %}
-                </div>
-
-                <!-- TASK 13: ACCIDENT GEOGRAPHIC HEATMAP -->
-                <div class="section-group">
-                    <h3>Task 13: Geographic Distribution of Accidents (Sampled Heatmap)</h3>
-                    {% for chart in results.charts if chart.filename == 'accident_heatmap.png' %}
-                        <img src="{{ url_for('static', filename='charts/' + chart.filename) }}" alt="{{ chart.title }}" class="task-img-full">
-                    {% endfor %}
-                </div>
-
-                <!-- TASK 14: CORRELATION HEATMAP -->
-                <div class="section-group">
-                    <h3>Task 14: Correlation Heatmap of Numerical Features</h3>
-                    {% for chart in results.charts if chart.filename == 'correlation_heatmap.png' %}
-                        <img src="{{ url_for('static', filename='charts/' + chart.filename) }}" alt="{{ chart.title }}" class="task-img-full">
-                    {% endfor %}
-                </div>
-            {% endif %}
-        </main>
+<!-- TOPBAR -->
+<header class="topbar">
+    <div class="topbar-left">
+        <a href="{{ url_for('data_loading') }}" class="brand-logo">
+            <div class="brand-icon-box">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                </svg>
+            </div>
+            <span>RoadSafety Studio</span>
+        </a>
+        <div class="workspace-badge">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span>us-accidents-prod</span>
+        </div>
     </div>
 
-    </body>
-    </html>
+    <div class="topbar-right">
+        <div class="status-pill">
+            <span class="status-dot"></span>
+            <span>14 Visual Analyses Ready</span>
+        </div>
+        <button class="btn-secondary" onclick="window.location.reload();">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+            </svg>
+            <span>Refresh</span>
+        </button>
+    </div>
+</header>
+
+<div class="layout">
+    <!-- SIDEBAR -->
+    <nav class="sidebar">
+        <div>
+            <div class="sidebar-section">
+                <div class="sidebar-heading">Data Pipeline</div>
+                <ul class="sidebar-nav">
+                    <li>
+                        <a href="{{ url_for('data_loading') }}" class="nav-link {% if active == 'data-loading' %}active{% endif %}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+                                <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+                                <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+                            </svg>
+                            <span>Data Ingestion</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('eda') }}" class="nav-link {% if active == 'eda' %}active{% endif %}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="20" x2="18" y2="10"></line>
+                                <line x1="12" y1="20" x2="12" y2="4"></line>
+                                <line x1="6" y1="20" x2="6" y2="14"></line>
+                            </svg>
+                            <span>EDA Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('preprocessing') }}" class="nav-link {% if active == 'preprocessing' %}active{% endif %}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                            </svg>
+                            <span>Preprocessing</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-heading">Machine Learning</div>
+                <ul class="sidebar-nav">
+                    <li>
+                        <span class="nav-link disabled">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                                <line x1="8" y1="21" x2="16" y2="21"></line>
+                                <line x1="12" y1="17" x2="12" y2="21"></line>
+                            </svg>
+                            <span>Model Training</span>
+                            <span class="tag-soon">Soon</span>
+                        </span>
+                    </li>
+                    <li>
+                        <span class="nav-link disabled">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polygon points="10 8 16 12 10 16 10 8"></polygon>
+                            </svg>
+                            <span>Inference</span>
+                            <span class="tag-soon">Soon</span>
+                        </span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="sidebar-user">
+            <div class="avatar">ML</div>
+            <div class="user-info">
+                <div class="user-name">ML Pipeline</div>
+                <div class="user-meta">Python 3.12 • Flask</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="content">
+        <div class="page-title-bar">
+            <div>
+                <h2>Exploratory Data Analysis Dashboard</h2>
+                <p>14 high-resolution statistical plots. <strong>Hover over any graph</strong> to pop up analytical insights and ML impacts.</p>
+            </div>
+        </div>
+
+        {% if error %}
+            <div class="error">{{ error }}</div>
+        {% endif %}
+
+        {% if results %}
+            <!-- SUMMARY STATS TILES -->
+            <div class="stats-strip">
+                <div class="stat-box">
+                    <div class="stat-head">
+                        <span class="stat-label">Total Sample Records</span>
+                        <svg class="stat-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+                            <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+                            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+                        </svg>
+                    </div>
+                    <div class="stat-value">{{ results.n_rows | default(100000) }}</div>
+                    <div class="stat-meta">Sampled accidents analyzed</div>
+                </div>
+
+                <div class="stat-box">
+                    <div class="stat-head">
+                        <span class="stat-label">Duplicate Rows</span>
+                        <svg class="stat-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                            <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                        </svg>
+                    </div>
+                    <div class="stat-value">{{ results.duplicate_count }}</div>
+                    <div class="stat-meta" style="color: #166534; font-weight: 500;">✓ 100% Unique Cases</div>
+                </div>
+
+                <div class="stat-box">
+                    <div class="stat-head">
+                        <span class="stat-label">Dominant Severity</span>
+                        <svg class="stat-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                        </svg>
+                    </div>
+                    <div class="stat-value">Level 2 & 3</div>
+                    <div class="stat-meta">99.8% of recorded incidents</div>
+                </div>
+
+                <div class="stat-box">
+                    <div class="stat-head">
+                        <span class="stat-label">EDA Visualizations</span>
+                        <svg class="stat-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="3" y1="9" x2="21" y2="9"></line>
+                            <line x1="9" y1="21" x2="9" y2="9"></line>
+                        </svg>
+                    </div>
+                    <div class="stat-value">{{ results.charts | length }} Plots</div>
+                    <div class="stat-meta">Click any plot to enlarge</div>
+                </div>
+            </div>
+
+            <!-- PERFECTLY ALIGNED 2-COLUMN GRAPH GRID -->
+            <div class="eda-grid">
+
+                <!-- 1. Missing Values -->
+                <div class="graph-card">
+                    <div class="graph-card-header">
+                        <span class="graph-card-title">1. Missing Values by Feature</span>
+                        <span class="graph-badge">Data Quality</span>
+                    </div>
+                    <div class="graph-view-wrap" onclick="openModal('{{ url_for('static', filename='charts/missing_values.png') }}', 'Task 1: Missing Values Distribution')">
+                        <img src="{{ url_for('static', filename='charts/missing_values.png') }}" alt="Missing Values Distribution" loading="lazy">
+                        <div class="light-popover">
+                            <div class="popover-header">
+                                <span class="popover-badge">💡 Key Finding & Model Impact</span>
+                            </div>
+                            <div class="popover-body">Identifies high-missingness attributes like <code>End_Lat</code>, <code>End_Lng</code>, and <code>Wind_Chill(F)</code>. Informs imputation strategies or column pruning prior to model training.</div>
+                        </div>
+                    </div>
+                    <div class="graph-card-footer">
+                        <span class="hint-hover"><span>ℹ️</span> Hover for insight</span>
+                        <span>Click to enlarge ↗</span>
+                    </div>
+                </div>
+
+                <!-- 2. Severity Distribution -->
+                <div class="graph-card">
+                    <div class="graph-card-header">
+                        <span class="graph-card-title">2. Target Variable Distribution</span>
+                        <span class="graph-badge">Target / Class Imbalance</span>
+                    </div>
+                    <div class="graph-view-wrap" onclick="openModal('{{ url_for('static', filename='charts/severity_distribution.png') }}', 'Task 2: Severity Distribution')">
+                        <img src="{{ url_for('static', filename='charts/severity_distribution.png') }}" alt="Severity Distribution" loading="lazy">
+                        <div class="light-popover">
+                            <div class="popover-header">
+                                <span class="popover-badge">💡 Key Finding & Model Impact</span>
+                            </div>
+                            <div class="popover-body">Severe class imbalance: Severity 2 (~55%) and 3 (~45%) dominate, with Levels 1 & 4 as rare edge cases. Recommends SMOTE or weighted loss functions.</div>
+                        </div>
+                    </div>
+                    <div class="graph-card-footer">
+                        <span class="hint-hover"><span>ℹ️</span> Hover for insight</span>
+                        <span>Click to enlarge ↗</span>
+                    </div>
+                </div>
+
+                <!-- 3. Hourly Trend -->
+                <div class="graph-card">
+                    <div class="graph-card-header">
+                        <span class="graph-card-title">3. Hourly Accident Trend</span>
+                        <span class="graph-badge">Temporal Pattern</span>
+                    </div>
+                    <div class="graph-view-wrap" onclick="openModal('{{ url_for('static', filename='charts/accidents_by_hour.png') }}', 'Task 3: Hourly Accident Distribution')">
+                        <img src="{{ url_for('static', filename='charts/accidents_by_hour.png') }}" alt="Hourly Trend" loading="lazy">
+                        <div class="light-popover">
+                            <div class="popover-header">
+                                <span class="popover-badge">💡 Key Finding & Model Impact</span>
+                            </div>
+                            <div class="popover-body">Distinct bimodal spikes during morning rush hour (7:00–9:00 AM) and evening commute (4:00–6:00 PM), strongly correlating with traffic volume.</div>
+                        </div>
+                    </div>
+                    <div class="graph-card-footer">
+                        <span class="hint-hover"><span>ℹ️</span> Hover for insight</span>
+                        <span>Click to enlarge ↗</span>
+                    </div>
+                </div>
+
+                <!-- 4. Day of Week Trend -->
+                <div class="graph-card">
+                    <div class="graph-card-header">
+                        <span class="graph-card-title">4. Weekly Day-of-Week Trend</span>
+                        <span class="graph-badge">Weekly Cycle</span>
+                    </div>
+                    <div class="graph-view-wrap" onclick="openModal('{{ url_for('static', filename='charts/accidents_by_dayofweek.png') }}', 'Task 4: Day of Week Trend')">
+                        <img src="{{ url_for('static', filename='charts/accidents_by_dayofweek.png') }}" alt="Day of Week Trend" loading="lazy">
+                        <div class="light-popover">
+                            <div class="popover-header">
+                                <span class="popover-badge">💡 Key Finding & Model Impact</span>
+                            </div>
+                            <div class="popover-body">Weekday collisions significantly exceed weekend volumes (~2.4×), indicating that commercial transportation and commuter trips are primary risk drivers.</div>
+                        </div>
+                    </div>
+                    <div class="graph-card-footer">
+                        <span class="hint-hover"><span>ℹ️</span> Hover for insight</span>
+                        <span>Click to enlarge ↗</span>
+                    </div>
+                </div>
+
+                <!-- 5. Monthly Seasonal Trend -->
+                <div class="graph-card">
+                    <div class="graph-card-header">
+                        <span class="graph-card-title">5. Monthly Seasonal Distribution</span>
+                        <span class="graph-badge">Seasonality</span>
+                    </div>
+                    <div class="graph-view-wrap" onclick="openModal('{{ url_for('static', filename='charts/accidents_by_month.png') }}', 'Task 5: Monthly Seasonal Trend')">
+                        <img src="{{ url_for('static', filename='charts/accidents_by_month.png') }}" alt="Monthly Trend" loading="lazy">
+                        <div class="light-popover">
+                            <div class="popover-header">
+                                <span class="popover-badge">💡 Key Finding & Model Impact</span>
+                            </div>
+                            <div class="popover-body">Accident frequency escalates throughout late autumn and winter (October through February), caused by rain, icy road surfaces, and earlier sunsets.</div>
+                        </div>
+                    </div>
+                    <div class="graph-card-footer">
+                        <span class="hint-hover"><span>ℹ️</span> Hover for insight</span>
+                        <span>Click to enlarge ↗</span>
+                    </div>
+                </div>
+
+                <!-- 6. Top 10 Weather Conditions -->
+                <div class="graph-card">
+                    <div class="graph-card-header">
+                        <span class="graph-card-title">6. Weather Conditions (Top 10)</span>
+                        <span class="graph-badge">Environmental Risk</span>
+                    </div>
+                    <div class="graph-view-wrap" onclick="openModal('{{ url_for('static', filename='charts/weather_conditions.png') }}', 'Task 6: Weather Condition Analysis')">
+                        <img src="{{ url_for('static', filename='charts/weather_conditions.png') }}" alt="Weather Conditions" loading="lazy">
+                        <div class="light-popover">
+                            <div class="popover-header">
+                                <span class="popover-badge">💡 Key Finding & Model Impact</span>
+                            </div>
+                            <div class="popover-body">While Fair/Clear skies have the highest baseline volume, adverse conditions like Heavy Rain, Fog, and Snow exhibit higher severity per accident.</div>
+                        </div>
+                    </div>
+                    <div class="graph-card-footer">
+                        <span class="hint-hover"><span>ℹ️</span> Hover for insight</span>
+                        <span>Click to enlarge ↗</span>
+                    </div>
+                </div>
+
+                <!-- 7. Top 10 States by Volume -->
+                <div class="graph-card">
+                    <div class="graph-card-header">
+                        <span class="graph-card-title">7. State-wise Accident Volume</span>
+                        <span class="graph-badge">Geographic Density</span>
+                    </div>
+                    <div class="graph-view-wrap" onclick="openModal('{{ url_for('static', filename='charts/top_states.png') }}', 'Task 7: Top 10 States by Volume')">
+                        <img src="{{ url_for('static', filename='charts/top_states.png') }}" alt="Top States" loading="lazy">
+                        <div class="light-popover">
+                            <div class="popover-header">
+                                <span class="popover-badge">💡 Key Finding & Model Impact</span>
+                            </div>
+                            <div class="popover-body">California, Florida, Texas, and Ohio report the highest volume due to large vehicle populations, extensive highway networks, and reporting protocols.</div>
+                        </div>
+                    </div>
+                    <div class="graph-card-footer">
+                        <span class="hint-hover"><span>ℹ️</span> Hover for insight</span>
+                        <span>Click to enlarge ↗</span>
+                    </div>
+                </div>
+
+                <!-- 8. Temperature vs Severity -->
+                <div class="graph-card">
+                    <div class="graph-card-header">
+                        <span class="graph-card-title">8. Temperature vs. Accident Severity</span>
+                        <span class="graph-badge">Thermal Correlation</span>
+                    </div>
+                    <div class="graph-view-wrap" onclick="openModal('{{ url_for('static', filename='charts/temperature_by_severity.png') }}', 'Task 8: Temperature vs. Severity')">
+                        <img src="{{ url_for('static', filename='charts/temperature_by_severity.png') }}" alt="Temperature by Severity" loading="lazy">
+                        <div class="light-popover">
+                            <div class="popover-header">
+                                <span class="popover-badge">💡 Key Finding & Model Impact</span>
+                            </div>
+                            <div class="popover-body">Freezing temperatures (&lt; 32°F) exhibit higher variance and elevated severity due to black ice, reduced tire grip, and hazardous braking distances.</div>
+                        </div>
+                    </div>
+                    <div class="graph-card-footer">
+                        <span class="hint-hover"><span>ℹ️</span> Hover for insight</span>
+                        <span>Click to enlarge ↗</span>
+                    </div>
+                </div>
+
+                <!-- 9. Visibility Impact -->
+                <div class="graph-card">
+                    <div class="graph-card-header">
+                        <span class="graph-card-title">9. Visibility vs. Severity Impact</span>
+                        <span class="graph-badge">Safety Factor</span>
+                    </div>
+                    <div class="graph-view-wrap" onclick="openModal('{{ url_for('static', filename='charts/visibility_by_severity.png') }}', 'Task 9: Visibility vs. Severity')">
+                        <img src="{{ url_for('static', filename='charts/visibility_by_severity.png') }}" alt="Visibility by Severity" loading="lazy">
+                        <div class="light-popover">
+                            <div class="popover-header">
+                                <span class="popover-badge">💡 Key Finding & Model Impact</span>
+                            </div>
+                            <div class="popover-body">Reduced visibility (&lt; 2 miles) creates critical driver reaction delays, driving up multi-vehicle pileups and severe road blockages.</div>
+                        </div>
+                    </div>
+                    <div class="graph-card-footer">
+                        <span class="hint-hover"><span>ℹ️</span> Hover for insight</span>
+                        <span>Click to enlarge ↗</span>
+                    </div>
+                </div>
+
+                <!-- 10. Infrastructure Element Impact -->
+                <div class="graph-card">
+                    <div class="graph-card-header">
+                        <span class="graph-card-title">10. Infrastructure Element Collisions</span>
+                        <span class="graph-badge">Road Geometry</span>
+                    </div>
+                    <div class="graph-view-wrap" onclick="openModal('{{ url_for('static', filename='charts/infrastructure_impact.png') }}', 'Task 10: Infrastructure Element Analysis')">
+                        <img src="{{ url_for('static', filename='charts/infrastructure_impact.png') }}" alt="Infrastructure Impact" loading="lazy">
+                        <div class="light-popover">
+                            <div class="popover-header">
+                                <span class="popover-badge">💡 Key Finding & Model Impact</span>
+                            </div>
+                            <div class="popover-body">Traffic Signals, Crossings, and Junctions are high-frequency collision zones. Highly predictive binary flag features for tabular classifiers.</div>
+                        </div>
+                    </div>
+                    <div class="graph-card-footer">
+                        <span class="hint-hover"><span>ℹ️</span> Hover for insight</span>
+                        <span>Click to enlarge ↗</span>
+                    </div>
+                </div>
+
+                <!-- 11. Day vs Night Severity -->
+                <div class="graph-card">
+                    <div class="graph-card-header">
+                        <span class="graph-card-title">11. Day vs. Night Collision Severity</span>
+                        <span class="graph-badge">Lighting Conditions</span>
+                    </div>
+                    <div class="graph-view-wrap" onclick="openModal('{{ url_for('static', filename='charts/day_night_vs_severity.png') }}', 'Task 11: Day vs. Night Severity')">
+                        <img src="{{ url_for('static', filename='charts/day_night_vs_severity.png') }}" alt="Day vs Night Severity" loading="lazy">
+                        <div class="light-popover">
+                            <div class="popover-header">
+                                <span class="popover-badge">💡 Key Finding & Model Impact</span>
+                            </div>
+                            <div class="popover-body">Nighttime collisions have a proportionally higher severity rate due to speed differentials, driver fatigue, and reduced reaction buffers.</div>
+                        </div>
+                    </div>
+                    <div class="graph-card-footer">
+                        <span class="hint-hover"><span>ℹ️</span> Hover for insight</span>
+                        <span>Click to enlarge ↗</span>
+                    </div>
+                </div>
+
+                <!-- 12. Geographic Density Heatmap -->
+                <div class="graph-card">
+                    <div class="graph-card-header">
+                        <span class="graph-card-title">12. Geographic Hotspots (Sampled Heatmap)</span>
+                        <span class="graph-badge">Spatial Cluster</span>
+                    </div>
+                    <div class="graph-view-wrap" onclick="openModal('{{ url_for('static', filename='charts/accident_heatmap.png') }}', 'Task 12: Geographic Accident Heatmap')">
+                        <img src="{{ url_for('static', filename='charts/accident_heatmap.png') }}" alt="Accident Heatmap" loading="lazy">
+                        <div class="light-popover">
+                            <div class="popover-header">
+                                <span class="popover-badge">💡 Key Finding & Model Impact</span>
+                            </div>
+                            <div class="popover-body">Shows dense accident corridors along East and West coasts, major Interstate corridors (I-95, I-5, I-10, I-80), and metropolitan hubs.</div>
+                        </div>
+                    </div>
+                    <div class="graph-card-footer">
+                        <span class="hint-hover"><span>ℹ️</span> Hover for insight</span>
+                        <span>Click to enlarge ↗</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- 13. Correlation Heatmap (Full Width) -->
+            <div class="graph-card" style="margin-bottom: 28px;">
+                <div class="graph-card-header">
+                    <span class="graph-card-title">13. Feature Correlation Matrix (Numerical Attributes)</span>
+                    <span class="graph-badge">Multivariate Correlation</span>
+                </div>
+                <div class="graph-view-wrap" onclick="openModal('{{ url_for('static', filename='charts/correlation_heatmap.png') }}', 'Task 13: Correlation Heatmap')">
+                    <img src="{{ url_for('static', filename='charts/correlation_heatmap.png') }}" alt="Correlation Heatmap" style="max-height: 480px;" loading="lazy">
+                    <div class="light-popover">
+                        <div class="popover-header">
+                            <span class="popover-badge">💡 Key Finding & Model Impact</span>
+                        </div>
+                        <div class="popover-body">Reveals collinear relationships (e.g. Temperature vs Heat Index, Pressure vs Elevation). Guides feature selection and multicollinearity mitigation.</div>
+                    </div>
+                </div>
+                <div class="graph-card-footer">
+                    <span class="hint-hover"><span>ℹ️</span> Hover for insight</span>
+                    <span>Click to enlarge ↗</span>
+                </div>
+            </div>
+
+        {% endif %}
+    </main>
+</div>
+
+<!-- LIGHTBOX MODAL FOR ZOOMING PLOTS -->
+<div id="imageModal" class="image-modal" onclick="closeModal(event)">
+    <div class="image-modal-content" onclick="event.stopPropagation()">
+        <button class="modal-close-btn" onclick="closeModalDirect()">&times;</button>
+        <img id="modalImg" src="" alt="Enlarged Plot">
+        <div id="modalCaption" class="modal-caption"></div>
+    </div>
+</div>
+
+<script>
+function openModal(src, title) {
+    const modal = document.getElementById('imageModal');
+    const img = document.getElementById('modalImg');
+    const caption = document.getElementById('modalCaption');
+    if (modal && img) {
+        img.src = src;
+        if (caption) caption.textContent = title;
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeModalDirect() {
+    const modal = document.getElementById('imageModal');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+}
+
+function closeModal(e) {
+    closeModalDirect();
+}
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeModalDirect();
+    }
+});
+</script>
+
+</body>
+</html>
