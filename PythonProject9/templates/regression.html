@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regression • RoadSafety AI</title>
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* Modern Premium Style Overrides */
+        .info-strip {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: var(--surface);
+            border: 1px solid var(--border-color);
+            padding: 12px 20px;
+            border-radius: var(--radius-md);
+            margin-bottom: 24px;
+            font-size: 13.5px;
+            color: var(--text-secondary);
+        }
+        .info-strip-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .info-strip-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--accent-blue);
+        }
+        
+        .metrics-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        @media (max-width: 1024px) {
+            .metrics-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        .metric-card-premium {
+            background: var(--surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 18px;
+            box-shadow: var(--shadow-soft);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .metric-card-premium:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+        }
+        .metric-card-premium .label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+        .metric-card-premium .value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        .metric-card-premium .subtext {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .equation-premium {
+            background: #1e1e20;
+            color: #e4e4e7;
+            padding: 20px;
+            border-radius: var(--radius-lg);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13.5px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--accent-blue);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+            overflow-x: auto;
+        }
+        
+        /* Double-sided Coefficient Bar Graph */
+        .coef-graph-container {
+            margin-top: 16px;
+            margin-bottom: 24px;
+        }
+        .coef-row-visual {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 13px;
+        }
+        .coef-label-visual {
+            width: 140px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+        .coef-bar-axis {
+            flex-grow: 1;
+            height: 24px;
+            position: relative;
+            background: var(--surface-subtle);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-light);
+        }
+        .coef-center-line {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background: #d4d4d8;
+            z-index: 2;
+        }
+        .coef-bar-fill {
+            position: absolute;
+            top: 4px;
+            bottom: 4px;
+            border-radius: 2px;
+            z-index: 1;
+        }
+        .coef-bar-fill.positive {
+            left: 50%;
+            background: linear-gradient(90deg, #86efac, #22c55e);
+        }
+        .coef-bar-fill.negative {
+            right: 50%;
+            background: linear-gradient(270deg, #fca5a5, #ef4444);
+        }
+        .coef-val-visual {
+            width: 70px;
+            text-align: right;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            margin-left: 12px;
+        }
+
+        /* Confusion Matrix Heatmap */
+        .heatmap-grid {
+            display: grid;
+            grid-template-columns: 80px repeat(4, 1fr);
+            gap: 6px;
+            margin-top: 16px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .heatmap-header {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .heatmap-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            background: var(--surface-subtle);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 0;
+            border: 1px solid var(--border-light);
+        }
+        .heatmap-cell {
+            font-size: 13.5px;
+            font-weight: 500;
+            color: var(--text-primary);
+            border-radius: var(--radius-sm);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 0;
+            border: 1px solid var(--border-light);
+            transition: all 0.15s ease;
+        }
+        .heatmap-cell:hover {
+            transform: scale(1.05);
+            box-shadow: var(--shadow-soft);
+        }
+        .hm-diag-high { background-color: #d1fae5; color: #065f46; font-weight: 700; border-color: #a7f3d0; }
+        .hm-diag-mid { background-color: #ecfdf5; color: #047857; border-color: #d1fae5; }
+        .hm-off-zero { background-color: #fafafa; color: var(--text-faint); }
+        .hm-off-low { background-color: #fff1f2; color: #9f1239; border-color: #ffe4e6; }
+        .hm-off-high { background-color: #ffe4e6; color: #b91c1c; font-weight: 600; border-color: #fecdd3; }
+
+        .playground-container {
+            background: var(--surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 28px;
+            margin-top: 28px;
+            box-shadow: var(--shadow-soft);
+        }
+    </style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<header class="topbar">
+    <div class="topbar-left">
+        <a href="{{ url_for('data_loading') }}" class="brand-logo">
+            <div class="brand-icon-box">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                </svg>
+            </div>
+            <span>RoadSafety Studio</span>
+        </a>
+        <div class="workspace-badge">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span>us-accidents-prod</span>
+        </div>
+    </div>
+
+    <div class="topbar-right">
+        <div class="status-pill">
+            <span class="status-dot"></span>
+            <span>100K Records Active</span>
+        </div>
+        <button class="btn-secondary" onclick="window.location.reload();">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+            </svg>
+            <span>Refresh</span>
+        </button>
+    </div>
+</header>
+
+<div class="layout">
+    <!-- SIDEBAR -->
+    <nav class="sidebar">
+        <div>
+            <div class="sidebar-section">
+                <div class="sidebar-heading">Data Pipeline</div>
+                <ul class="sidebar-nav">
+                    <li>
+                        <a href="{{ url_for('data_loading') }}" class="nav-link">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+                                <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+                                <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+                            </svg>
+                            <span>Data Ingestion</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('eda') }}" class="nav-link">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="20" x2="18" y2="10"></line>
+                                <line x1="12" y1="20" x2="12" y2="4"></line>
+                                <line x1="6" y1="20" x2="6" y2="14"></line>
+                            </svg>
+                            <span>EDA Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('preprocessing') }}" class="nav-link">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                            </svg>
+                            <span>Preprocessing</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-heading">Machine Learning</div>
+                <ul class="sidebar-nav">
+                    <li>
+                        <a href="{{ url_for('regression_dashboard') }}" class="nav-link active">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                                <line x1="8" y1="21" x2="16" y2="21"></line>
+                                <line x1="12" y1="17" x2="12" y2="21"></line>
+                            </svg>
+                            <span>Regression</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('regularization_dashboard') }}" class="nav-link">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                            </svg>
+                            <span>Regularization</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('decision_tree_dashboard') }}" class="nav-link">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M18 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3zM6 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3z"></path>
+                                <line x1="6" y1="12" x2="18" y2="12"></line>
+                            </svg>
+                            <span>Decision Tree</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="sidebar-user">
+            <div class="avatar">ML</div>
+            <div class="user-info">
+                <div class="user-name">ML Pipeline</div>
+                <div class="user-meta">Python 3.12 • Flask</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="content">
+        <div class="page-title-bar">
+            <div>
+                <h2>Regression Analysis</h2>
+                <p>Fit and evaluate standard Ordinary Least Squares (OLS) Linear Regression and non-regularized Logistic Regression models. Inspect weight coefficients, validation formulas, and simulate predictions.</p>
+            </div>
+        </div>
+
+        {% if error %}
+            <div class="error">{{ error }}</div>
+        {% endif %}
+
+        {% if results %}
+            
+            <!-- Information strip -->
+            <div class="info-strip">
+                <div class="info-strip-item">
+                    <span class="info-strip-dot"></span>
+                    <span>Dataset Sample: <strong>{{ results.sample_size }} records</strong></span>
+                </div>
+                <div class="info-strip-item">
+                    <span class="info-strip-dot" style="background-color: var(--accent-sage);"></span>
+                    <span>Validation Split: <strong>20.0% Holdout</strong></span>
+                </div>
+                <div class="info-strip-item">
+                    <span class="info-strip-dot" style="background-color: var(--accent-amber);"></span>
+                    <span>Input Scale: <strong>Standardized (Z-Score)</strong></span>
+                </div>
+            </div>
+
+            <!-- MODEL EVALUATION ROW -->
+            <div class="two-column-row">
+                
+                <!-- LINEAR REGRESSION CARD -->
+                <div class="column-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px; margin-bottom: 16px;">
+                        <h3 style="color: #1e293b; margin: 0;">Linear Regression (OLS)</h3>
+                        <span class="status-pill" style="background: var(--accent-blue-bg); border-color: #bfdbfe; color: var(--accent-blue);">
+                            Target: Distance(mi)
+                        </span>
+                    </div>
+
+                    <p style="font-size: 13.5px; color: #475569; margin-bottom: 16px; line-height: 1.5;">
+                        Standard Linear Regression maps numeric features onto a continuous line. Here, we model the impact <strong>Distance(mi)</strong> of an accident using key weather factors.
+                    </p>
+
+                    <!-- Metrics Grid -->
+                    <div class="metrics-container">
+                        <div class="metric-card-premium">
+                            <div class="label">R² (Test)</div>
+                            <div class="value" style="color: #10b981;">{{ results.regression.linear.r2_test }}</div>
+                            <div class="subtext">Variance explained</div>
+                        </div>
+                        <div class="metric-card-premium">
+                            <div class="label">R² (Train)</div>
+                            <div class="value">{{ results.regression.linear.r2_train }}</div>
+                            <div class="subtext">Fit on training set</div>
+                        </div>
+                        <div class="metric-card-premium">
+                            <div class="label">MSE (Test)</div>
+                            <div class="value" style="color: var(--text-secondary);">{{ results.regression.linear.mse }}</div>
+                            <div class="subtext">Mean Squared Error</div>
+                        </div>
+                        <div class="metric-card-premium">
+                            <div class="label">RMSE (Test)</div>
+                            <div class="value" style="color: var(--text-secondary);">{{ results.regression.linear.rmse }}</div>
+                            <div class="subtext">Standard deviation of residual</div>
+                        </div>
+                    </div>
+
+                    <!-- Equation -->
+                    <h5 style="margin-bottom: 8px; color: #334155; font-size: 13px;">Fitted Regression Equation (Standardized Features):</h5>
+                    <div class="equation-premium">
+                        {{ results.regression.linear.equation }}
+                    </div>
+
+                    <!-- Coefficients visual bars -->
+                    <h5 style="margin-bottom: 12px; color: #334155; font-size: 13px;">Feature Weights (Standardized Coefficients):</h5>
+                    <div class="coef-graph-container">
+                        {% for col, coef in results.regression.linear.coefficients.items() %}
+                        <div class="coef-row-visual">
+                            <div class="coef-label-visual">{{ col }}</div>
+                            <div class="coef-bar-axis">
+                                <div class="coef-center-line"></div>
+                                {% if coef >= 0 %}
+                                    {% set percent = (coef * 100) %}
+                                    <div class="coef-bar-fill positive" style="width: {{ [percent, 50]|min }}%;"></div>
+                                {% else %}
+                                    {% set percent = (coef | abs * 100) %}
+                                    <div class="coef-bar-fill negative" style="width: {{ [percent, 50]|min }}%;"></div>
+                                {% endif %}
+                            </div>
+                            <div class="coef-val-visual {% if coef >= 0 %}positive-coef{% else %}negative-coef{% endif %}">
+                                {% if coef >= 0 %}+{% endif %}{{ coef }}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- LOGISTIC REGRESSION CARD -->
+                <div class="column-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px; margin-bottom: 16px;">
+                        <h3 style="color: #1e293b; margin: 0;">Logistic Regression</h3>
+                        <span class="status-pill" style="background: var(--accent-sage-bg); border-color: var(--accent-sage-border); color: var(--accent-sage);">
+                            Target: Severity (1-4)
+                        </span>
+                    </div>
+
+                    <p style="font-size: 13.5px; color: #475569; margin-bottom: 16px; line-height: 1.5;">
+                        Logistic Regression calculates class probabilities using the multinomial softmax function. Here, we predict the multi-class accident <strong>Severity level (1 to 4)</strong>.
+                    </p>
+
+                    <!-- Metrics Grid -->
+                    <div class="metrics-container">
+                        <div class="metric-card-premium">
+                            <div class="label">Accuracy (Test)</div>
+                            <div class="value" style="color: #10b981;">{{ (results.regression.logistic.accuracy_test * 100) | round(1) }}%</div>
+                            <div class="subtext">Correct classifications</div>
+                        </div>
+                        <div class="metric-card-premium">
+                            <div class="label">Accuracy (Train)</div>
+                            <div class="value">{{ (results.regression.logistic.accuracy_train * 100) | round(1) }}%</div>
+                            <div class="subtext">Fit on training set</div>
+                        </div>
+                        <div class="metric-card-premium">
+                            <div class="label">Weighted F1</div>
+                            <div class="value" style="color: var(--text-secondary);">{{ results.regression.logistic.f1_weighted }}</div>
+                            <div class="subtext">F-measure balance</div>
+                        </div>
+                        <div class="metric-card-premium">
+                            <div class="label">Recall (Test)</div>
+                            <div class="value" style="color: var(--text-secondary);">{{ results.regression.logistic.recall_weighted }}</div>
+                            <div class="subtext">Sensitivity coverage</div>
+                        </div>
+                    </div>
+
+                    <!-- Heatmap Confusion Matrix -->
+                    <h5 style="margin-bottom: 6px; color: #334155; font-size: 13px;">Test Set Confusion Matrix (Heatmap Grid):</h5>
+                    <div class="heatmap-container">
+                        <div class="heatmap-grid">
+                            <div class="heatmap-header">Actual \ Pred</div>
+                            {% for c in results.regression.logistic.classes %}
+                            <div class="heatmap-header">Class {{ c }}</div>
+                            {% endfor %}
+
+                            {% for actual_row in results.regression.logistic.confusion_matrix %}
+                            {% set outer_loop_index = loop.index0 %}
+                            <div class="heatmap-label">Class {{ results.regression.logistic.classes[outer_loop_index] }}</div>
+                            {% for val in actual_row %}
+                                {% set inner_loop_index = loop.index0 %}
+                                {% if outer_loop_index == inner_loop_index %}
+                                    {% if val > 1000 %}
+                                        <div class="heatmap-cell hm-diag-high">{{ val }}</div>
+                                    {% else %}
+                                        <div class="heatmap-cell hm-diag-mid">{{ val }}</div>
+                                    {% endif %}
+                                {% else %}
+                                    {% if val == 0 %}
+                                        <div class="heatmap-cell hm-off-zero">{{ val }}</div>
+                                    {% elif val > 200 %}
+                                        <div class="heatmap-cell hm-off-high">{{ val }}</div>
+                                    {% else %}
+                                        <div class="heatmap-cell hm-off-low">{{ val }}</div>
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Class Metrics Summary -->
+                    <h5 style="margin-top: 16px; margin-bottom: 8px; color: #334155; font-size: 13px;">Class-wise Performance Statistics:</h5>
+                    <table class="data-table" style="font-size: 12.5px;">
+                        <thead>
+                            <tr>
+                                <th>Severity</th>
+                                <th>Precision</th>
+                                <th>Recall</th>
+                                <th>F1-Score</th>
+                                <th>Support Cases</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for label, metrics in results.regression.logistic.class_metrics.items() %}
+                            <tr>
+                                <td><strong>Class {{ label }}</strong></td>
+                                <td>{{ (metrics.precision * 100) | round(1) }}%</td>
+                                <td>{{ (metrics.recall * 100) | round(1) }}%</td>
+                                <td>{{ metrics.f1 }}</td>
+                                <td>{{ metrics.support }} cases</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+
+            <!-- INTERACTIVE PLAYGROUND -->
+            <div class="playground-container">
+                <h3 style="color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px; margin-bottom: 20px;">
+                    Interactive Regression Playground
+                </h3>
+                <p style="font-size: 13.5px; color: #475569; margin-bottom: 20px; line-height: 1.5;">
+                    Simulate custom weather conditions and watch standard OLS regression models execute predictions live.
+                </p>
+
+                <div class="playground-grid">
+                    
+                    <!-- INPUTS SECTION -->
+                    <div style="display: flex; flex-direction: column; justify-content: space-between;">
+                        <div>
+                            <!-- Temp -->
+                            <div class="slider-group">
+                                <div class="slider-header">
+                                    <span>Temperature <span class="slider-unit">(°F)</span></span>
+                                    <span id="temp-display" class="slider-value-display">70</span>
+                                </div>
+                                <input type="range" id="temp-input" class="custom-slider" min="0" max="120" step="1" value="70">
+                            </div>
+
+                            <!-- Humidity -->
+                            <div class="slider-group">
+                                <div class="slider-header">
+                                    <span>Humidity <span class="slider-unit">(%)</span></span>
+                                    <span id="humid-display" class="slider-value-display">60</span>
+                                </div>
+                                <input type="range" id="humid-input" class="custom-slider" min="0" max="100" step="1" value="60">
+                            </div>
+
+                            <!-- Pressure -->
+                            <div class="slider-group">
+                                <div class="slider-header">
+                                    <span>Pressure <span class="slider-unit">(in Hg)</span></span>
+                                    <span id="press-display" class="slider-value-display">29.92</span>
+                                </div>
+                                <input type="range" id="press-input" class="custom-slider" min="20" max="40" step="0.05" value="29.92">
+                            </div>
+
+                            <!-- Visibility -->
+                            <div class="slider-group">
+                                <div class="slider-header">
+                                    <span>Visibility <span class="slider-unit">(mi)</span></span>
+                                    <span id="vis-display" class="slider-value-display">10.0</span>
+                                </div>
+                                <input type="range" id="vis-input" class="custom-slider" min="0" max="20" step="0.5" value="10.0">
+                            </div>
+
+                            <!-- Wind Speed -->
+                            <div class="slider-group">
+                                <div class="slider-header">
+                                    <span>Wind Speed <span class="slider-unit">(mph)</span></span>
+                                    <span id="wind-display" class="slider-value-display">8.0</span>
+                                </div>
+                                <input type="range" id="wind-input" class="custom-slider" min="0" max="50" step="0.5" value="8.0">
+                            </div>
+                        </div>
+
+                        <button id="predict-btn" class="predict-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                            </svg>
+                            <span>Run Predictions</span>
+                        </button>
+                    </div>
+
+                    <!-- OUTPUTS PANEL -->
+                    <div class="results-panel">
+                        <!-- Linear Reg Result -->
+                        <div class="result-card">
+                            <div class="result-title">Linear Regression Output (Predicted Impact Distance)</div>
+                            <div class="prediction-highlight">
+                                <span id="pred-distance">0.456</span>
+                                <span class="prediction-unit">miles</span>
+                            </div>
+                            <p style="font-size: 12px; color: var(--text-muted); margin-top: 6px;">
+                                Distance represents the longitudinal road span affected by traffic delays.
+                            </p>
+                        </div>
+
+                        <!-- Logistic Reg Result -->
+                        <div class="result-card">
+                            <div class="result-title">Logistic Regression Output (Accident Severity Classifier)</div>
+                            <div style="display: flex; align-items: center; gap: 12px; margin-top: 4px;">
+                                <div id="pred-severity-badge" class="severity-badge sev-2">2</div>
+                                <div>
+                                    <span style="font-weight: 600; font-size: 15px;" id="pred-severity-label">Level 2 (Moderate Impact)</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Class Probabilities -->
+                            <div class="probability-bar-container">
+                                <div style="font-size: 11.5px; color: var(--text-muted); font-weight: 500; margin-bottom: 8px;">
+                                    Class Probabilities (Softmax Distribution)
+                                </div>
+                                
+                                <div class="prob-row">
+                                    <div class="prob-label">Severity 1</div>
+                                    <div class="prob-bar-wrapper">
+                                        <div id="prob-bar-1" class="prob-bar" style="width: 10%;"></div>
+                                    </div>
+                                    <div class="prob-val" id="prob-val-1">10.0%</div>
+                                </div>
+                                <div class="prob-row">
+                                    <div class="prob-label">Severity 2</div>
+                                    <div class="prob-bar-wrapper">
+                                        <div id="prob-bar-2" class="prob-bar" style="width: 60%;"></div>
+                                    </div>
+                                    <div class="prob-val" id="prob-val-2">60.0%</div>
+                                </div>
+                                <div class="prob-row">
+                                    <div class="prob-label">Severity 3</div>
+                                    <div class="prob-bar-wrapper">
+                                        <div id="prob-bar-3" class="prob-bar" style="width: 20%;"></div>
+                                    </div>
+                                    <div class="prob-val" id="prob-val-3">20.0%</div>
+                                </div>
+                                <div class="prob-row">
+                                    <div class="prob-label">Severity 4</div>
+                                    <div class="prob-bar-wrapper">
+                                        <div id="prob-bar-4" class="prob-bar" style="width: 10%;"></div>
+                                    </div>
+                                    <div class="prob-val" id="prob-val-4">10.0%</div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+        {% endif %}
+    </main>
+</div>
+
+<!-- SCRIPT TO RUN THE PLAYGROUND INTERACTION -->
+<script>
+    const tempInput = document.getElementById('temp-input');
+    const tempDisplay = document.getElementById('temp-display');
+    const humidInput = document.getElementById('humid-input');
+    const humidDisplay = document.getElementById('humid-display');
+    const pressInput = document.getElementById('press-input');
+    const pressDisplay = document.getElementById('press-display');
+    const visInput = document.getElementById('vis-input');
+    const visDisplay = document.getElementById('vis-display');
+    const windInput = document.getElementById('wind-input');
+    const windDisplay = document.getElementById('wind-display');
+    const predictBtn = document.getElementById('predict-btn');
+
+    const predDistance = document.getElementById('pred-distance');
+    const predSeverityBadge = document.getElementById('pred-severity-badge');
+    const predSeverityLabel = document.getElementById('pred-severity-label');
+
+    tempInput.addEventListener('input', () => tempDisplay.textContent = tempInput.value);
+    humidInput.addEventListener('input', () => humidDisplay.textContent = humidInput.value);
+    pressInput.addEventListener('input', () => pressDisplay.textContent = pressInput.value);
+    visInput.addEventListener('input', () => visDisplay.textContent = parseFloat(visInput.value).toFixed(1));
+    windInput.addEventListener('input', () => windDisplay.textContent = parseFloat(windInput.value).toFixed(1));
+
+    const severityLabels = {
+        1: "Level 1 (Minor Impact, Short Delays)",
+        2: "Level 2 (Moderate Impact, Average Delays)",
+        3: "Level 3 (Major Impact, Long Delays)",
+        4: "Level 4 (Critical Impact, Severe Congestion)"
+    };
+
+    async function executePrediction() {
+        const originalText = predictBtn.innerHTML;
+        predictBtn.disabled = true;
+        predictBtn.innerHTML = `
+            <svg class="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation: spin 1s linear infinite;">
+                <circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle>
+                <path d="M4 12a8 8 0 0 1 8-8"></path>
+            </svg>
+            <span>Running Models...</span>
+        `;
+
+        const payload = {
+            "Temperature(F)": parseFloat(tempInput.value),
+            "Humidity(%)": parseFloat(humidInput.value),
+            "Pressure(in)": parseFloat(pressInput.value),
+            "Visibility(mi)": parseFloat(visInput.value),
+            "Wind_Speed(mph)": parseFloat(windInput.value),
+            "category": "regression",
+            "model_type": "none"
+        };
+
+        try {
+            const response = await fetch('/api/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                const distanceVal = data.prediction.linear_prediction.predicted_value;
+                predDistance.textContent = parseFloat(distanceVal).toFixed(3);
+
+                const sevClass = data.prediction.logistic_prediction.predicted_class;
+                predSeverityBadge.textContent = sevClass;
+                predSeverityBadge.className = `severity-badge sev-${sevClass}`;
+                predSeverityLabel.textContent = severityLabels[sevClass] || `Level ${sevClass}`;
+
+                const probs = data.prediction.logistic_prediction.probabilities;
+                [1, 2, 3, 4].forEach(c => {
+                    const probVal = (probs[c] !== undefined ? probs[c] : 0.0) * 100;
+                    const bar = document.getElementById(`prob-bar-${c}`);
+                    const label = document.getElementById(`prob-val-${c}`);
+                    if (bar && label) {
+                        bar.style.width = `${probVal}%`;
+                        label.textContent = `${probVal.toFixed(1)}%`;
+                    }
+                });
+            } else {
+                console.error("Prediction failed:", data.error);
+                alert("Error during model prediction: " + data.error);
+            }
+        } catch (e) {
+            console.error("Connection failed:", e);
+            alert("Network connection error running models.");
+        } finally {
+            predictBtn.disabled = false;
+            predictBtn.innerHTML = originalText;
+        }
+    }
+
+    predictBtn.addEventListener('click', executePrediction);
+
+    window.addEventListener('DOMContentLoaded', () => {
+        executePrediction();
+    });
+</script>
+
+<style>
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+</style>
+
+</body>
+</html>

@@ -84,25 +84,31 @@
                 <div class="sidebar-heading">Machine Learning</div>
                 <ul class="sidebar-nav">
                     <li>
-                        <span class="nav-link disabled">
+                        <a href="{{ url_for('regression_dashboard') }}" class="nav-link {% if active == 'regression' %}active{% endif %}">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
                                 <line x1="8" y1="21" x2="16" y2="21"></line>
                                 <line x1="12" y1="17" x2="12" y2="21"></line>
                             </svg>
-                            <span>Model Training</span>
-                            <span class="tag-soon">Soon</span>
-                        </span>
+                            <span>Regression</span>
+                        </a>
                     </li>
                     <li>
-                        <span class="nav-link disabled">
+                        <a href="{{ url_for('regularization_dashboard') }}" class="nav-link {% if active == 'regularization' %}active{% endif %}">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <polygon points="10 8 16 12 10 16 10 8"></polygon>
+                                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
                             </svg>
-                            <span>Inference</span>
-                            <span class="tag-soon">Soon</span>
-                        </span>
+                            <span>Regularization</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('decision_tree_dashboard') }}" class="nav-link {% if active == 'decision_tree' %}active{% endif %}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M18 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3zM6 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3z"></path>
+                                <line x1="6" y1="12" x2="18" y2="12"></line>
+                            </svg>
+                            <span>Decision Tree</span>
+                        </a>
                     </li>
                 </ul>
             </div>
