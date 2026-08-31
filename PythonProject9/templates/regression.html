@@ -206,6 +206,60 @@
             margin-top: 28px;
             box-shadow: var(--shadow-soft);
         }
+        
+        /* Tabs Styling */
+        .tabs-container {
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .tabs-header {
+            display: flex;
+            gap: 4px;
+        }
+        .tab-button {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: none;
+            border: none;
+            padding: 12px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.15s ease;
+            border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+        }
+        .tab-button:hover {
+            color: var(--text-primary);
+            background: var(--surface-subtle);
+        }
+        .tab-button.active {
+            color: var(--accent-primary);
+            border-bottom-color: var(--accent-primary);
+            background: var(--surface-subtle);
+        }
+        .tab-content-panel {
+            display: none;
+        }
+        .tab-content-panel.active {
+            display: block;
+            animation: tabFadeIn 0.3s ease;
+        }
+        @keyframes tabFadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .full-width-card {
+            background: var(--surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 28px;
+            margin-bottom: 28px;
+            box-shadow: var(--shadow-soft);
+        }
     </style>
 </head>
 <body>
@@ -355,11 +409,30 @@
                 </div>
             </div>
 
-            <!-- MODEL EVALUATION ROW -->
-            <div class="two-column-row">
-                
-                <!-- LINEAR REGRESSION CARD -->
-                <div class="column-card">
+            <!-- TABS CONTAINER -->
+            <div class="tabs-container">
+                <div class="tabs-header">
+                    <button id="tab-btn-linear" class="tab-button active" onclick="switchTab('linear')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="20" x2="18" y2="10"></line>
+                            <line x1="12" y1="20" x2="12" y2="4"></line>
+                            <line x1="6" y1="20" x2="6" y2="14"></line>
+                        </svg>
+                        <span>Continuous Regression (Predict Distance)</span>
+                    </button>
+                    <button id="tab-btn-logistic" class="tab-button" onclick="switchTab('logistic')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="9" y1="3" x2="9" y2="21"></line>
+                        </svg>
+                        <span>Discrete Classification (Predict Severity)</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- TAB 1: LINEAR REGRESSION -->
+            <div id="tab-content-linear" class="tab-content-panel active">
+                <div class="full-width-card">
                     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px; margin-bottom: 16px;">
                         <h3 style="color: #1e293b; margin: 0;">Linear Regression (OLS)</h3>
                         <span class="status-pill" style="background: var(--accent-blue-bg); border-color: #bfdbfe; color: var(--accent-blue);">
@@ -368,11 +441,11 @@
                     </div>
 
                     <p style="font-size: 13.5px; color: #475569; margin-bottom: 16px; line-height: 1.5;">
-                        Standard Linear Regression maps numeric features onto a continuous line. Here, we model the impact <strong>Distance(mi)</strong> of an accident using key weather factors.
+                        Standard Linear Regression maps numeric features onto a continuous line. Here, we model the accident impact <strong>Distance(mi)</strong> using key weather factors.
                     </p>
 
                     <!-- Metrics Grid -->
-                    <div class="metrics-container">
+                    <div class="metrics-container" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 24px;">
                         <div class="metric-card-premium">
                             <div class="label">R² (Test)</div>
                             <div class="value" style="color: #10b981;">{{ results.regression.linear.r2_test }}</div>
@@ -423,12 +496,115 @@
                         </div>
                         {% endfor %}
                     </div>
+                    
+                    <!-- Prediction Preview Table -->
+                    {% if results.regression.linear.preview %}
+                    <h5 style="margin-top: 24px; margin-bottom: 12px; color: #334155; font-size: 13px;">Test Set Prediction Previews:</h5>
+                    <table class="data-table" style="font-size: 12.5px;">
+                        <thead>
+                            <tr>
+                                <th># Sample</th>
+                                <th>Actual Distance (mi)</th>
+                                <th>Predicted Distance (mi)</th>
+                                <th>Residual Difference</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for sample in results.regression.linear.preview %}
+                            <tr>
+                                <td>Sample {{ loop.index }}</td>
+                                <td>{{ sample.actual }} mi</td>
+                                <td>{{ sample.predicted }} mi</td>
+                                <td>
+                                    {% set diff = (sample.actual - sample.predicted) | abs %}
+                                    <span style="color: {% if diff < 0.15 %}#10b981{% else %}#ef4444{% endif %}; font-weight: 500;">
+                                        {{ diff | round(3) }} mi
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% endif %}
                 </div>
 
-                <!-- LOGISTIC REGRESSION CARD -->
-                <div class="column-card">
+                <!-- Linear Regression Playground -->
+                <div class="playground-container">
+                    <h3 style="color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px; margin-bottom: 20px;">
+                        Linear Regression Playground
+                    </h3>
+                    <p style="font-size: 13.5px; color: #475569; margin-bottom: 20px; line-height: 1.5;">
+                        Simulate custom weather conditions and watch the Ordinary Least Squares (OLS) linear model calculate distance predictions live.
+                    </p>
+
+                    <div class="playground-grid">
+                        <div style="display: flex; flex-direction: column; justify-content: space-between;">
+                            <div>
+                                <div class="slider-group">
+                                    <div class="slider-header">
+                                        <span>Temperature <span class="slider-unit">(°F)</span></span>
+                                        <span id="temp-display-lin" class="slider-value-display">70</span>
+                                    </div>
+                                    <input type="range" id="temp-input-lin" class="custom-slider" min="0" max="120" step="1" value="70">
+                                </div>
+                                <div class="slider-group">
+                                    <div class="slider-header">
+                                        <span>Humidity <span class="slider-unit">(%)</span></span>
+                                        <span id="humid-display-lin" class="slider-value-display">60</span>
+                                    </div>
+                                    <input type="range" id="humid-input-lin" class="custom-slider" min="0" max="100" step="1" value="60">
+                                </div>
+                                <div class="slider-group">
+                                    <div class="slider-header">
+                                        <span>Pressure <span class="slider-unit">(in Hg)</span></span>
+                                        <span id="press-display-lin" class="slider-value-display">29.92</span>
+                                    </div>
+                                    <input type="range" id="press-input-lin" class="custom-slider" min="20" max="40" step="0.05" value="29.92">
+                                </div>
+                                <div class="slider-group">
+                                    <div class="slider-header">
+                                        <span>Visibility <span class="slider-unit">(mi)</span></span>
+                                        <span id="vis-display-lin" class="slider-value-display">10.0</span>
+                                    </div>
+                                    <input type="range" id="vis-input-lin" class="custom-slider" min="0" max="20" step="0.5" value="10.0">
+                                </div>
+                                <div class="slider-group">
+                                    <div class="slider-header">
+                                        <span>Wind Speed <span class="slider-unit">(mph)</span></span>
+                                        <span id="wind-display-lin" class="slider-value-display">8.0</span>
+                                    </div>
+                                    <input type="range" id="wind-input-lin" class="custom-slider" min="0" max="50" step="0.5" value="8.0">
+                                </div>
+                            </div>
+                            <button id="predict-btn-lin" class="predict-btn" onclick="executePrediction('regression', 'linear')">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                </svg>
+                                <span>Run Regression Prediction</span>
+                            </button>
+                        </div>
+
+                        <div class="results-panel">
+                            <div class="result-card" style="height: 100%; display: flex; flex-direction: column; justify-content: center; min-height: 200px;">
+                                <div class="result-title">Predicted Impact Distance</div>
+                                <div class="prediction-highlight" style="font-size: 36px; margin: 16px 0;">
+                                    <span id="pred-distance">0.456</span>
+                                    <span class="prediction-unit" style="font-size: 18px;">miles</span>
+                                </div>
+                                <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin: 0;">
+                                    Calculated live by applying model weights and scaling factors to your inputs.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: LOGISTIC REGRESSION -->
+            <div id="tab-content-logistic" class="tab-content-panel">
+                <div class="full-width-card">
                     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px; margin-bottom: 16px;">
-                        <h3 style="color: #1e293b; margin: 0;">Logistic Regression</h3>
+                        <h3 style="color: #1e293b; margin: 0;">Logistic Regression Classifier</h3>
                         <span class="status-pill" style="background: var(--accent-sage-bg); border-color: var(--accent-sage-border); color: var(--accent-sage);">
                             Target: Severity (1-4)
                         </span>
@@ -439,7 +615,7 @@
                     </p>
 
                     <!-- Metrics Grid -->
-                    <div class="metrics-container">
+                    <div class="metrics-container" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 24px;">
                         <div class="metric-card-premium">
                             <div class="label">Accuracy (Test)</div>
                             <div class="value" style="color: #10b981;">{{ (results.regression.logistic.accuracy_test * 100) | round(1) }}%</div>
@@ -464,7 +640,7 @@
 
                     <!-- Heatmap Confusion Matrix -->
                     <h5 style="margin-bottom: 6px; color: #334155; font-size: 13px;">Test Set Confusion Matrix (Heatmap Grid):</h5>
-                    <div class="heatmap-container">
+                    <div class="heatmap-container" style="max-width: 500px; margin-bottom: 24px;">
                         <div class="heatmap-grid">
                             <div class="heatmap-header">Actual \ Pred</div>
                             {% for c in results.regression.logistic.classes %}
@@ -522,139 +698,110 @@
                     </table>
                 </div>
 
-            </div>
+                <!-- Logistic Regression Playground -->
+                <div class="playground-container">
+                    <h3 style="color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px; margin-bottom: 20px;">
+                        Logistic Regression Playground
+                    </h3>
+                    <p style="font-size: 13.5px; color: #475569; margin-bottom: 20px; line-height: 1.5;">
+                        Simulate custom weather conditions and watch the softmax classifier calculate accident severity probabilities live.
+                    </p>
 
-            <!-- INTERACTIVE PLAYGROUND -->
-            <div class="playground-container">
-                <h3 style="color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px; margin-bottom: 20px;">
-                    Interactive Regression Playground
-                </h3>
-                <p style="font-size: 13.5px; color: #475569; margin-bottom: 20px; line-height: 1.5;">
-                    Simulate custom weather conditions and watch standard OLS regression models execute predictions live.
-                </p>
-
-                <div class="playground-grid">
-                    
-                    <!-- INPUTS SECTION -->
-                    <div style="display: flex; flex-direction: column; justify-content: space-between;">
-                        <div>
-                            <!-- Temp -->
-                            <div class="slider-group">
-                                <div class="slider-header">
-                                    <span>Temperature <span class="slider-unit">(°F)</span></span>
-                                    <span id="temp-display" class="slider-value-display">70</span>
+                    <div class="playground-grid">
+                        <div style="display: flex; flex-direction: column; justify-content: space-between;">
+                            <div>
+                                <div class="slider-group">
+                                    <div class="slider-header">
+                                        <span>Temperature <span class="slider-unit">(°F)</span></span>
+                                        <span id="temp-display-log" class="slider-value-display">70</span>
+                                    </div>
+                                    <input type="range" id="temp-input-log" class="custom-slider" min="0" max="120" step="1" value="70">
                                 </div>
-                                <input type="range" id="temp-input" class="custom-slider" min="0" max="120" step="1" value="70">
-                            </div>
-
-                            <!-- Humidity -->
-                            <div class="slider-group">
-                                <div class="slider-header">
-                                    <span>Humidity <span class="slider-unit">(%)</span></span>
-                                    <span id="humid-display" class="slider-value-display">60</span>
+                                <div class="slider-group">
+                                    <div class="slider-header">
+                                        <span>Humidity <span class="slider-unit">(%)</span></span>
+                                        <span id="humid-display-log" class="slider-value-display">60</span>
+                                    </div>
+                                    <input type="range" id="humid-input-log" class="custom-slider" min="0" max="100" step="1" value="60">
                                 </div>
-                                <input type="range" id="humid-input" class="custom-slider" min="0" max="100" step="1" value="60">
-                            </div>
-
-                            <!-- Pressure -->
-                            <div class="slider-group">
-                                <div class="slider-header">
-                                    <span>Pressure <span class="slider-unit">(in Hg)</span></span>
-                                    <span id="press-display" class="slider-value-display">29.92</span>
+                                <div class="slider-group">
+                                    <div class="slider-header">
+                                        <span>Pressure <span class="slider-unit">(in Hg)</span></span>
+                                        <span id="press-display-log" class="slider-value-display">29.92</span>
+                                    </div>
+                                    <input type="range" id="press-input-log" class="custom-slider" min="20" max="40" step="0.05" value="29.92">
                                 </div>
-                                <input type="range" id="press-input" class="custom-slider" min="20" max="40" step="0.05" value="29.92">
-                            </div>
-
-                            <!-- Visibility -->
-                            <div class="slider-group">
-                                <div class="slider-header">
-                                    <span>Visibility <span class="slider-unit">(mi)</span></span>
-                                    <span id="vis-display" class="slider-value-display">10.0</span>
+                                <div class="slider-group">
+                                    <div class="slider-header">
+                                        <span>Visibility <span class="slider-unit">(mi)</span></span>
+                                        <span id="vis-display-log" class="slider-value-display">10.0</span>
+                                    </div>
+                                    <input type="range" id="vis-input-log" class="custom-slider" min="0" max="20" step="0.5" value="10.0">
                                 </div>
-                                <input type="range" id="vis-input" class="custom-slider" min="0" max="20" step="0.5" value="10.0">
-                            </div>
-
-                            <!-- Wind Speed -->
-                            <div class="slider-group">
-                                <div class="slider-header">
-                                    <span>Wind Speed <span class="slider-unit">(mph)</span></span>
-                                    <span id="wind-display" class="slider-value-display">8.0</span>
+                                <div class="slider-group">
+                                    <div class="slider-header">
+                                        <span>Wind Speed <span class="slider-unit">(mph)</span></span>
+                                        <span id="wind-display-log" class="slider-value-display">8.0</span>
+                                    </div>
+                                    <input type="range" id="wind-input-log" class="custom-slider" min="0" max="50" step="0.5" value="8.0">
                                 </div>
-                                <input type="range" id="wind-input" class="custom-slider" min="0" max="50" step="0.5" value="8.0">
                             </div>
+                            <button id="predict-btn-log" class="predict-btn" onclick="executePrediction('regression', 'logistic')">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                </svg>
+                                <span>Run Classifier Prediction</span>
+                            </button>
                         </div>
 
-                        <button id="predict-btn" class="predict-btn">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                            </svg>
-                            <span>Run Predictions</span>
-                        </button>
-                    </div>
-
-                    <!-- OUTPUTS PANEL -->
-                    <div class="results-panel">
-                        <!-- Linear Reg Result -->
-                        <div class="result-card">
-                            <div class="result-title">Linear Regression Output (Predicted Impact Distance)</div>
-                            <div class="prediction-highlight">
-                                <span id="pred-distance">0.456</span>
-                                <span class="prediction-unit">miles</span>
-                            </div>
-                            <p style="font-size: 12px; color: var(--text-muted); margin-top: 6px;">
-                                Distance represents the longitudinal road span affected by traffic delays.
-                            </p>
-                        </div>
-
-                        <!-- Logistic Reg Result -->
-                        <div class="result-card">
-                            <div class="result-title">Logistic Regression Output (Accident Severity Classifier)</div>
-                            <div style="display: flex; align-items: center; gap: 12px; margin-top: 4px;">
-                                <div id="pred-severity-badge" class="severity-badge sev-2">2</div>
-                                <div>
-                                    <span style="font-weight: 600; font-size: 15px;" id="pred-severity-label">Level 2 (Moderate Impact)</span>
-                                </div>
-                            </div>
-                            
-                            <!-- Class Probabilities -->
-                            <div class="probability-bar-container">
-                                <div style="font-size: 11.5px; color: var(--text-muted); font-weight: 500; margin-bottom: 8px;">
-                                    Class Probabilities (Softmax Distribution)
+                        <div class="results-panel">
+                            <div class="result-card">
+                                <div class="result-title">Accident Severity Prediction</div>
+                                <div style="display: flex; align-items: center; gap: 12px; margin-top: 12px; margin-bottom: 16px;">
+                                    <div id="pred-severity-badge" class="severity-badge sev-2">2</div>
+                                    <div>
+                                        <span style="font-weight: 600; font-size: 16px;" id="pred-severity-label">Level 2 (Moderate Impact)</span>
+                                    </div>
                                 </div>
                                 
-                                <div class="prob-row">
-                                    <div class="prob-label">Severity 1</div>
-                                    <div class="prob-bar-wrapper">
-                                        <div id="prob-bar-1" class="prob-bar" style="width: 10%;"></div>
+                                <!-- Class Probabilities -->
+                                <div class="probability-bar-container">
+                                    <div style="font-size: 12px; color: var(--text-muted); font-weight: 500; margin-bottom: 12px;">
+                                        Class Probabilities (Softmax Distribution)
                                     </div>
-                                    <div class="prob-val" id="prob-val-1">10.0%</div>
-                                </div>
-                                <div class="prob-row">
-                                    <div class="prob-label">Severity 2</div>
-                                    <div class="prob-bar-wrapper">
-                                        <div id="prob-bar-2" class="prob-bar" style="width: 60%;"></div>
+                                    
+                                    <div class="prob-row">
+                                        <div class="prob-label">Severity 1</div>
+                                        <div class="prob-bar-wrapper">
+                                            <div id="prob-bar-1" class="prob-bar" style="width: 10%;"></div>
+                                        </div>
+                                        <div class="prob-val" id="prob-val-1">10.0%</div>
                                     </div>
-                                    <div class="prob-val" id="prob-val-2">60.0%</div>
-                                </div>
-                                <div class="prob-row">
-                                    <div class="prob-label">Severity 3</div>
-                                    <div class="prob-bar-wrapper">
-                                        <div id="prob-bar-3" class="prob-bar" style="width: 20%;"></div>
+                                    <div class="prob-row">
+                                        <div class="prob-label">Severity 2</div>
+                                        <div class="prob-bar-wrapper">
+                                            <div id="prob-bar-2" class="prob-bar" style="width: 60%;"></div>
+                                        </div>
+                                        <div class="prob-val" id="prob-val-2">60.0%</div>
                                     </div>
-                                    <div class="prob-val" id="prob-val-3">20.0%</div>
-                                </div>
-                                <div class="prob-row">
-                                    <div class="prob-label">Severity 4</div>
-                                    <div class="prob-bar-wrapper">
-                                        <div id="prob-bar-4" class="prob-bar" style="width: 10%;"></div>
+                                    <div class="prob-row">
+                                        <div class="prob-label">Severity 3</div>
+                                        <div class="prob-bar-wrapper">
+                                            <div id="prob-bar-3" class="prob-bar" style="width: 20%;"></div>
+                                        </div>
+                                        <div class="prob-val" id="prob-val-3">20.0%</div>
                                     </div>
-                                    <div class="prob-val" id="prob-val-4">10.0%</div>
+                                    <div class="prob-row">
+                                        <div class="prob-label">Severity 4</div>
+                                        <div class="prob-bar-wrapper">
+                                            <div id="prob-bar-4" class="prob-bar" style="width: 10%;"></div>
+                                        </div>
+                                        <div class="prob-val" id="prob-val-4">10.0%</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-
                     </div>
-
                 </div>
             </div>
 
@@ -664,27 +811,44 @@
 
 <!-- SCRIPT TO RUN THE PLAYGROUND INTERACTION -->
 <script>
-    const tempInput = document.getElementById('temp-input');
-    const tempDisplay = document.getElementById('temp-display');
-    const humidInput = document.getElementById('humid-input');
-    const humidDisplay = document.getElementById('humid-display');
-    const pressInput = document.getElementById('press-input');
-    const pressDisplay = document.getElementById('press-display');
-    const visInput = document.getElementById('vis-input');
-    const visDisplay = document.getElementById('vis-display');
-    const windInput = document.getElementById('wind-input');
-    const windDisplay = document.getElementById('wind-display');
-    const predictBtn = document.getElementById('predict-btn');
+    // Tab switching logic
+    function switchTab(type) {
+        document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content-panel').forEach(panel => panel.classList.remove('active'));
+        
+        if (type === 'linear') {
+            document.getElementById('tab-btn-linear').classList.add('active');
+            document.getElementById('tab-content-linear').classList.add('active');
+        } else {
+            document.getElementById('tab-btn-logistic').classList.add('active');
+            document.getElementById('tab-content-logistic').classList.add('active');
+        }
+    }
 
-    const predDistance = document.getElementById('pred-distance');
-    const predSeverityBadge = document.getElementById('pred-severity-badge');
-    const predSeverityLabel = document.getElementById('pred-severity-label');
+    // Input elements and displays binding helper
+    function setupSliders(suffix) {
+        const tempInput = document.getElementById(`temp-input-${suffix}`);
+        const tempDisplay = document.getElementById(`temp-display-${suffix}`);
+        const humidInput = document.getElementById(`humid-input-${suffix}`);
+        const humidDisplay = document.getElementById(`humid-display-${suffix}`);
+        const pressInput = document.getElementById(`press-input-${suffix}`);
+        const pressDisplay = document.getElementById(`press-display-${suffix}`);
+        const visInput = document.getElementById(`vis-input-${suffix}`);
+        const visDisplay = document.getElementById(`vis-display-${suffix}`);
+        const windInput = document.getElementById(`wind-input-${suffix}`);
+        const windDisplay = document.getElementById(`wind-display-${suffix}`);
 
-    tempInput.addEventListener('input', () => tempDisplay.textContent = tempInput.value);
-    humidInput.addEventListener('input', () => humidDisplay.textContent = humidInput.value);
-    pressInput.addEventListener('input', () => pressDisplay.textContent = pressInput.value);
-    visInput.addEventListener('input', () => visDisplay.textContent = parseFloat(visInput.value).toFixed(1));
-    windInput.addEventListener('input', () => windDisplay.textContent = parseFloat(windInput.value).toFixed(1));
+        if (tempInput && tempDisplay) {
+            tempInput.addEventListener('input', () => tempDisplay.textContent = tempInput.value);
+            humidInput.addEventListener('input', () => humidDisplay.textContent = humidInput.value);
+            pressInput.addEventListener('input', () => pressDisplay.textContent = pressInput.value);
+            visInput.addEventListener('input', () => visDisplay.textContent = parseFloat(visInput.value).toFixed(1));
+            windInput.addEventListener('input', () => windDisplay.textContent = parseFloat(windInput.value).toFixed(1));
+        }
+    }
+
+    setupSliders('lin');
+    setupSliders('log');
 
     const severityLabels = {
         1: "Level 1 (Minor Impact, Short Delays)",
@@ -693,7 +857,9 @@
         4: "Level 4 (Critical Impact, Severe Congestion)"
     };
 
-    async function executePrediction() {
+    async function executePrediction(category, type) {
+        const suffix = type === 'linear' ? 'lin' : 'log';
+        const predictBtn = document.getElementById(`predict-btn-${suffix}`);
         const originalText = predictBtn.innerHTML;
         predictBtn.disabled = true;
         predictBtn.innerHTML = `
@@ -705,12 +871,12 @@
         `;
 
         const payload = {
-            "Temperature(F)": parseFloat(tempInput.value),
-            "Humidity(%)": parseFloat(humidInput.value),
-            "Pressure(in)": parseFloat(pressInput.value),
-            "Visibility(mi)": parseFloat(visInput.value),
-            "Wind_Speed(mph)": parseFloat(windInput.value),
-            "category": "regression",
+            "Temperature(F)": parseFloat(document.getElementById(`temp-input-${suffix}`).value),
+            "Humidity(%)": parseFloat(document.getElementById(`humid-input-${suffix}`).value),
+            "Pressure(in)": parseFloat(document.getElementById(`press-input-${suffix}`).value),
+            "Visibility(mi)": parseFloat(document.getElementById(`vis-input-${suffix}`).value),
+            "Wind_Speed(mph)": parseFloat(document.getElementById(`wind-input-${suffix}`).value),
+            "category": category,
             "model_type": "none"
         };
 
@@ -725,24 +891,27 @@
             const data = await response.json();
             
             if (data.success) {
-                const distanceVal = data.prediction.linear_prediction.predicted_value;
-                predDistance.textContent = parseFloat(distanceVal).toFixed(3);
+                if (type === 'linear') {
+                    const distanceVal = data.prediction.linear_prediction.predicted_value;
+                    document.getElementById('pred-distance').textContent = parseFloat(distanceVal).toFixed(3);
+                } else {
+                    const sevClass = data.prediction.logistic_prediction.predicted_class;
+                    const badge = document.getElementById('pred-severity-badge');
+                    badge.textContent = sevClass;
+                    badge.className = `severity-badge sev-${sevClass}`;
+                    document.getElementById('pred-severity-label').textContent = severityLabels[sevClass] || `Level ${sevClass}`;
 
-                const sevClass = data.prediction.logistic_prediction.predicted_class;
-                predSeverityBadge.textContent = sevClass;
-                predSeverityBadge.className = `severity-badge sev-${sevClass}`;
-                predSeverityLabel.textContent = severityLabels[sevClass] || `Level ${sevClass}`;
-
-                const probs = data.prediction.logistic_prediction.probabilities;
-                [1, 2, 3, 4].forEach(c => {
-                    const probVal = (probs[c] !== undefined ? probs[c] : 0.0) * 100;
-                    const bar = document.getElementById(`prob-bar-${c}`);
-                    const label = document.getElementById(`prob-val-${c}`);
-                    if (bar && label) {
-                        bar.style.width = `${probVal}%`;
-                        label.textContent = `${probVal.toFixed(1)}%`;
-                    }
-                });
+                    const probs = data.prediction.logistic_prediction.probabilities;
+                    [1, 2, 3, 4].forEach(c => {
+                        const probVal = (probs[c] !== undefined ? probs[c] : 0.0) * 100;
+                        const bar = document.getElementById(`prob-bar-${c}`);
+                        const label = document.getElementById(`prob-val-${c}`);
+                        if (bar && label) {
+                            bar.style.width = `${probVal}%`;
+                            label.textContent = `${probVal.toFixed(1)}%`;
+                        }
+                    });
+                }
             } else {
                 console.error("Prediction failed:", data.error);
                 alert("Error during model prediction: " + data.error);
@@ -756,10 +925,9 @@
         }
     }
 
-    predictBtn.addEventListener('click', executePrediction);
-
     window.addEventListener('DOMContentLoaded', () => {
-        executePrediction();
+        executePrediction('regression', 'linear');
+        executePrediction('regression', 'logistic');
     });
 </script>
 

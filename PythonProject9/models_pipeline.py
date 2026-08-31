@@ -42,6 +42,49 @@ FEATURE_COLS = ["Temperature(F)", "Humidity(%)", "Pressure(in)", "Visibility(mi)
 LINEAR_TARGET = "Distance(mi)"
 LOGISTIC_TARGET = "Severity"
 
+def serialize_tree(estimator, feature_names):
+    """
+    Serializes a scikit-learn DecisionTree into a nested dictionary representation.
+    """
+    tree_ = estimator.tree_
+    def recurse(node_id):
+        left_child = tree_.children_left[node_id]
+        right_child = tree_.children_right[node_id]
+        
+        # Check if leaf node
+        if left_child == right_child:
+            val = tree_.value[node_id]
+            if len(val.shape) == 3:  # Classifier
+                class_counts = val[0][0].tolist()
+                pred_class = int(np.argmax(class_counts))
+                pred_val = pred_class
+            else:
+                class_counts = None
+                pred_val = float(val[0][0])
+            return {
+                "type": "leaf",
+                "id": int(node_id),
+                "prediction": pred_val,
+                "class_counts": class_counts,
+                "impurity": round(float(tree_.impurity[node_id]), 4),
+                "samples": int(tree_.n_node_samples[node_id])
+            }
+        else:
+            feat_idx = tree_.feature[node_id]
+            feat_name = feature_names[feat_idx]
+            threshold = round(float(tree_.threshold[node_id]), 4)
+            return {
+                "type": "split",
+                "id": int(node_id),
+                "feature": feat_name,
+                "threshold": threshold,
+                "impurity": round(float(tree_.impurity[node_id]), 4),
+                "samples": int(tree_.n_node_samples[node_id]),
+                "left": recurse(left_child),
+                "right": recurse(right_child)
+            }
+    return recurse(0)
+
 def train_models(force_run=False):
     """
     Trains all 10 models (OLS, Ridge, Lasso, Elastic Net, Decision Trees).
@@ -62,7 +105,9 @@ def train_models(force_run=False):
     if not force_run and all_exist:
         try:
             with open(CACHE_PATH, "r", encoding="utf-8") as f:
-                return json.load(f)
+                cache_data = json.load(f)
+                if "decision_tree" in cache_data and "tree_structure" in cache_data["decision_tree"]["linear"]:
+                    return cache_data
         except Exception as e:
             print("Failed to read models cache, retraining:", e)
 
@@ -363,7 +408,8 @@ def train_models(force_run=False):
                 "mse": round(dt_reg_mse, 4),
                 "rmse": round(dt_reg_rmse, 4),
                 "feature_importances": dt_reg_importances,
-                "max_depth": 5
+                "max_depth": 5,
+                "tree_structure": serialize_tree(dt_reg, FEATURE_COLS)
             },
             "logistic": {
                 "target": LOGISTIC_TARGET,
@@ -376,7 +422,8 @@ def train_models(force_run=False):
                 "class_metrics": dt_clf_class_metrics,
                 "feature_importances": dt_clf_importances,
                 "confusion_matrix": conf_mat_dt.tolist(),
-                "max_depth": 5
+                "max_depth": 5,
+                "tree_structure": serialize_tree(dt_clf, FEATURE_COLS)
             }
         }
     }
