@@ -1,0 +1,1314 @@
+{
+    "success": true,
+    "sample_size": 20000,
+    "features": [
+        "Temperature(F)",
+        "Humidity(%)",
+        "Pressure(in)",
+        "Visibility(mi)",
+        "Wind_Speed(mph)"
+    ],
+    "regression": {
+        "linear": {
+            "target": "Distance(mi)",
+            "r2_train": 0.0018,
+            "r2_test": 0.0009,
+            "mse": 0.0391,
+            "rmse": 0.1978,
+            "coefficients": {
+                "Temperature(F)": -0.0083,
+                "Humidity(%)": -0.0027,
+                "Pressure(in)": -0.0001,
+                "Visibility(mi)": 0.0002,
+                "Wind_Speed(mph)": 0.0014
+            },
+            "intercept": 0.0106,
+            "equation": "Distance = 0.0106 - 0.0083*[Temperature(F)_scaled] - 0.0027*[Humidity(%)_scaled] - 0.0001*[Pressure(in)_scaled] + 0.0002*[Visibility(mi)_scaled] + 0.0014*[Wind_Speed(mph)_scaled]",
+            "preview": [
+                {
+                    "actual": 0.0,
+                    "predicted": 0.008
+                },
+                {
+                    "actual": 0.01,
+                    "predicted": 0.007
+                },
+                {
+                    "actual": 0.0,
+                    "predicted": 0.001
+                },
+                {
+                    "actual": 0.0,
+                    "predicted": 0.013
+                },
+                {
+                    "actual": 0.01,
+                    "predicted": 0.012
+                },
+                {
+                    "actual": 0.01,
+                    "predicted": 0.014
+                },
+                {
+                    "actual": 0.0,
+                    "predicted": 0.014
+                },
+                {
+                    "actual": 0.01,
+                    "predicted": 0.019
+                },
+                {
+                    "actual": 0.0,
+                    "predicted": 0.006
+                },
+                {
+                    "actual": 0.0,
+                    "predicted": 0.006
+                }
+            ]
+        },
+        "logistic": {
+            "target": "Severity",
+            "classes": [
+                1,
+                2,
+                3,
+                4
+            ],
+            "accuracy_train": 0.5484,
+            "accuracy_test": 0.5475,
+            "precision_weighted": 0.5008,
+            "recall_weighted": 0.5475,
+            "f1_weighted": 0.3951,
+            "class_metrics": {
+                "1": {
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "f1": 0.0,
+                    "support": 4
+                },
+                "2": {
+                    "precision": 0.5484,
+                    "recall": 0.9909,
+                    "f1": 0.7061,
+                    "support": 2194
+                },
+                "3": {
+                    "precision": 0.4444,
+                    "recall": 0.0089,
+                    "f1": 0.0174,
+                    "support": 1800
+                },
+                "4": {
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "f1": 0.0,
+                    "support": 2
+                }
+            },
+            "coefficients": {
+                "1": {
+                    "Temperature(F)": -0.0877,
+                    "Humidity(%)": -0.0926,
+                    "Pressure(in)": 0.0941,
+                    "Visibility(mi)": 0.1476,
+                    "Wind_Speed(mph)": 0.0387
+                },
+                "2": {
+                    "Temperature(F)": 0.0496,
+                    "Humidity(%)": -0.174,
+                    "Pressure(in)": -0.0481,
+                    "Visibility(mi)": -0.0813,
+                    "Wind_Speed(mph)": -0.0187
+                },
+                "3": {
+                    "Temperature(F)": 0.2018,
+                    "Humidity(%)": -0.0292,
+                    "Pressure(in)": -0.0054,
+                    "Visibility(mi)": -0.0463,
+                    "Wind_Speed(mph)": 0.0079
+                },
+                "4": {
+                    "Temperature(F)": -0.1637,
+                    "Humidity(%)": 0.2959,
+                    "Pressure(in)": -0.0406,
+                    "Visibility(mi)": -0.0201,
+                    "Wind_Speed(mph)": -0.0279
+                }
+            },
+            "intercepts": {
+                "1": -2.7549,
+                "2": 3.4826,
+                "3": 3.2835,
+                "4": -4.0112
+            },
+            "confusion_matrix": [
+                [
+                    0,
+                    4,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    2174,
+                    20,
+                    0
+                ],
+                [
+                    0,
+                    1784,
+                    16,
+                    0
+                ],
+                [
+                    0,
+                    2,
+                    0,
+                    0
+                ]
+            ]
+        }
+    },
+    "regularization": {
+        "linear_metrics": {
+            "ols": {
+                "r2_test": 0.0009,
+                "mse": 0.0391,
+                "rmse": 0.1978
+            },
+            "ridge": {
+                "r2_test": 0.0009,
+                "mse": 0.0391,
+                "rmse": 0.1978
+            },
+            "lasso": {
+                "r2_test": -0.0,
+                "mse": 0.0392,
+                "rmse": 0.1979
+            },
+            "elasticnet": {
+                "r2_test": -0.0,
+                "mse": 0.0392,
+                "rmse": 0.1979
+            }
+        },
+        "logistic_metrics": {
+            "ols": {
+                "accuracy": 0.5475,
+                "precision_weighted": 0.5008,
+                "recall_weighted": 0.5475,
+                "f1_weighted": 0.3951
+            },
+            "ridge": {
+                "accuracy": 0.5483,
+                "precision_weighted": 0.5196,
+                "recall_weighted": 0.5483,
+                "f1_weighted": 0.3959
+            },
+            "lasso": {
+                "accuracy": 0.548,
+                "precision_weighted": 0.5127,
+                "recall_weighted": 0.548,
+                "f1_weighted": 0.3954
+            },
+            "elasticnet": {
+                "accuracy": 0.548,
+                "precision_weighted": 0.5127,
+                "recall_weighted": 0.548,
+                "f1_weighted": 0.3954
+            }
+        },
+        "linear_coefs": {
+            "ols": {
+                "Temperature(F)": -0.0083,
+                "Humidity(%)": -0.0027,
+                "Pressure(in)": -0.0001,
+                "Visibility(mi)": 0.0002,
+                "Wind_Speed(mph)": 0.0014
+            },
+            "ridge": {
+                "Temperature(F)": -0.0083,
+                "Humidity(%)": -0.0027,
+                "Pressure(in)": -0.0001,
+                "Visibility(mi)": 0.0002,
+                "Wind_Speed(mph)": 0.0014
+            },
+            "lasso": {
+                "Temperature(F)": 0.0,
+                "Humidity(%)": 0.0,
+                "Pressure(in)": 0.0,
+                "Visibility(mi)": 0.0,
+                "Wind_Speed(mph)": 0.0
+            },
+            "elasticnet": {
+                "Temperature(F)": 0.0,
+                "Humidity(%)": 0.0,
+                "Pressure(in)": 0.0,
+                "Visibility(mi)": 0.0,
+                "Wind_Speed(mph)": 0.0
+            }
+        },
+        "logistic_coefs": {
+            "ols": {
+                "1": {
+                    "Temperature(F)": -0.0877,
+                    "Humidity(%)": -0.0926,
+                    "Pressure(in)": 0.0941,
+                    "Visibility(mi)": 0.1476,
+                    "Wind_Speed(mph)": 0.0387
+                },
+                "2": {
+                    "Temperature(F)": 0.0496,
+                    "Humidity(%)": -0.174,
+                    "Pressure(in)": -0.0481,
+                    "Visibility(mi)": -0.0813,
+                    "Wind_Speed(mph)": -0.0187
+                },
+                "3": {
+                    "Temperature(F)": 0.2018,
+                    "Humidity(%)": -0.0292,
+                    "Pressure(in)": -0.0054,
+                    "Visibility(mi)": -0.0463,
+                    "Wind_Speed(mph)": 0.0079
+                },
+                "4": {
+                    "Temperature(F)": -0.1637,
+                    "Humidity(%)": 0.2959,
+                    "Pressure(in)": -0.0406,
+                    "Visibility(mi)": -0.0201,
+                    "Wind_Speed(mph)": -0.0279
+                }
+            },
+            "ridge": {
+                "1": {
+                    "Temperature(F)": -0.0883,
+                    "Humidity(%)": -0.0802,
+                    "Pressure(in)": 0.09,
+                    "Visibility(mi)": 0.1508,
+                    "Wind_Speed(mph)": 0.0331
+                },
+                "2": {
+                    "Temperature(F)": 0.0462,
+                    "Humidity(%)": -0.1722,
+                    "Pressure(in)": -0.0474,
+                    "Visibility(mi)": -0.0836,
+                    "Wind_Speed(mph)": -0.0167
+                },
+                "3": {
+                    "Temperature(F)": 0.1973,
+                    "Humidity(%)": -0.0283,
+                    "Pressure(in)": -0.0054,
+                    "Visibility(mi)": -0.0489,
+                    "Wind_Speed(mph)": 0.0104
+                },
+                "4": {
+                    "Temperature(F)": -0.1552,
+                    "Humidity(%)": 0.2807,
+                    "Pressure(in)": -0.0373,
+                    "Visibility(mi)": -0.0184,
+                    "Wind_Speed(mph)": -0.0267
+                }
+            },
+            "lasso": {
+                "1": {
+                    "Temperature(F)": -0.0351,
+                    "Humidity(%)": 0.0,
+                    "Pressure(in)": 0.0,
+                    "Visibility(mi)": 0.1733,
+                    "Wind_Speed(mph)": 0.0
+                },
+                "2": {
+                    "Temperature(F)": 0.0149,
+                    "Humidity(%)": -0.1437,
+                    "Pressure(in)": -0.0417,
+                    "Visibility(mi)": -0.0345,
+                    "Wind_Speed(mph)": -0.0113
+                },
+                "3": {
+                    "Temperature(F)": 0.166,
+                    "Humidity(%)": 0.0,
+                    "Pressure(in)": 0.0,
+                    "Visibility(mi)": 0.0,
+                    "Wind_Speed(mph)": 0.0153
+                },
+                "4": {
+                    "Temperature(F)": -0.0391,
+                    "Humidity(%)": 0.2667,
+                    "Pressure(in)": 0.0,
+                    "Visibility(mi)": 0.0,
+                    "Wind_Speed(mph)": 0.0
+                }
+            },
+            "elasticnet": {
+                "1": {
+                    "Temperature(F)": -0.0545,
+                    "Humidity(%)": 0.0,
+                    "Pressure(in)": 0.0357,
+                    "Visibility(mi)": 0.187,
+                    "Wind_Speed(mph)": 0.0
+                },
+                "2": {
+                    "Temperature(F)": 0.0205,
+                    "Humidity(%)": -0.1438,
+                    "Pressure(in)": -0.0419,
+                    "Visibility(mi)": -0.0401,
+                    "Wind_Speed(mph)": -0.0161
+                },
+                "3": {
+                    "Temperature(F)": 0.1717,
+                    "Humidity(%)": 0.0,
+                    "Pressure(in)": 0.0,
+                    "Visibility(mi)": -0.0054,
+                    "Wind_Speed(mph)": 0.0107
+                },
+                "4": {
+                    "Temperature(F)": -0.0861,
+                    "Humidity(%)": 0.3033,
+                    "Pressure(in)": 0.0,
+                    "Visibility(mi)": 0.0,
+                    "Wind_Speed(mph)": 0.0
+                }
+            }
+        }
+    },
+    "decision_tree": {
+        "linear": {
+            "target": "Distance(mi)",
+            "r2_train": 0.0581,
+            "r2_test": -0.0249,
+            "mse": 0.0401,
+            "rmse": 0.2004,
+            "feature_importances": {
+                "Temperature(F)": 0.1506,
+                "Humidity(%)": 0.011,
+                "Pressure(in)": 0.4749,
+                "Visibility(mi)": 0.0,
+                "Wind_Speed(mph)": 0.3635
+            },
+            "max_depth": 5,
+            "tree_structure": {
+                "type": "split",
+                "id": 0,
+                "feature": "Temperature(F)",
+                "threshold": 23.55,
+                "impurity": 0.0254,
+                "samples": 16000,
+                "left": {
+                    "type": "split",
+                    "id": 1,
+                    "feature": "Wind_Speed(mph)",
+                    "threshold": 19.55,
+                    "impurity": 0.5494,
+                    "samples": 17,
+                    "left": {
+                        "type": "split",
+                        "id": 2,
+                        "feature": "Temperature(F)",
+                        "threshold": 22.3,
+                        "impurity": 0.1719,
+                        "samples": 15,
+                        "left": {
+                            "type": "split",
+                            "id": 3,
+                            "feature": "Pressure(in)",
+                            "threshold": 30.255,
+                            "impurity": 0.0,
+                            "samples": 13,
+                            "left": {
+                                "type": "leaf",
+                                "id": 4,
+                                "prediction": 0.01,
+                                "class_counts": null,
+                                "impurity": 0.0,
+                                "samples": 7
+                            },
+                            "right": {
+                                "type": "split",
+                                "id": 5,
+                                "feature": "Pressure(in)",
+                                "threshold": 30.29,
+                                "impurity": 0.0,
+                                "samples": 6,
+                                "left": {
+                                    "type": "leaf",
+                                    "id": 6,
+                                    "prediction": 0.0,
+                                    "class_counts": null,
+                                    "impurity": 0.0,
+                                    "samples": 2
+                                },
+                                "right": {
+                                    "type": "leaf",
+                                    "id": 7,
+                                    "prediction": 0.0075,
+                                    "class_counts": null,
+                                    "impurity": 0.0,
+                                    "samples": 4
+                                }
+                            }
+                        },
+                        "right": {
+                            "type": "split",
+                            "id": 8,
+                            "feature": "Pressure(in)",
+                            "threshold": 29.875,
+                            "impurity": 0.6889,
+                            "samples": 2,
+                            "left": {
+                                "type": "leaf",
+                                "id": 9,
+                                "prediction": 0.01,
+                                "class_counts": null,
+                                "impurity": 0.0,
+                                "samples": 1
+                            },
+                            "right": {
+                                "type": "leaf",
+                                "id": 10,
+                                "prediction": 1.67,
+                                "class_counts": null,
+                                "impurity": 0.0,
+                                "samples": 1
+                            }
+                        }
+                    },
+                    "right": {
+                        "type": "split",
+                        "id": 11,
+                        "feature": "Pressure(in)",
+                        "threshold": 30.145,
+                        "impurity": 1.9321,
+                        "samples": 2,
+                        "left": {
+                            "type": "leaf",
+                            "id": 12,
+                            "prediction": 2.79,
+                            "class_counts": null,
+                            "impurity": 0.0,
+                            "samples": 1
+                        },
+                        "right": {
+                            "type": "leaf",
+                            "id": 13,
+                            "prediction": 0.01,
+                            "class_counts": null,
+                            "impurity": -0.0,
+                            "samples": 1
+                        }
+                    }
+                },
+                "right": {
+                    "type": "split",
+                    "id": 14,
+                    "feature": "Temperature(F)",
+                    "threshold": 64.5,
+                    "impurity": 0.0248,
+                    "samples": 15983,
+                    "left": {
+                        "type": "split",
+                        "id": 15,
+                        "feature": "Temperature(F)",
+                        "threshold": 64.3,
+                        "impurity": 0.0477,
+                        "samples": 7208,
+                        "left": {
+                            "type": "split",
+                            "id": 16,
+                            "feature": "Wind_Speed(mph)",
+                            "threshold": 17.65,
+                            "impurity": 0.0349,
+                            "samples": 7018,
+                            "left": {
+                                "type": "split",
+                                "id": 17,
+                                "feature": "Pressure(in)",
+                                "threshold": 30.455,
+                                "impurity": 0.0258,
+                                "samples": 6797,
+                                "left": {
+                                    "type": "leaf",
+                                    "id": 18,
+                                    "prediction": 0.014697729283398265,
+                                    "class_counts": null,
+                                    "impurity": 0.0258,
+                                    "samples": 6782
+                                },
+                                "right": {
+                                    "type": "leaf",
+                                    "id": 19,
+                                    "prediction": 0.09800000000000002,
+                                    "class_counts": null,
+                                    "impurity": 0.0537,
+                                    "samples": 15
+                                }
+                            },
+                            "right": {
+                                "type": "split",
+                                "id": 20,
+                                "feature": "Wind_Speed(mph)",
+                                "threshold": 19.0,
+                                "impurity": 0.3124,
+                                "samples": 221,
+                                "left": {
+                                    "type": "leaf",
+                                    "id": 21,
+                                    "prediction": 0.1949999999999999,
+                                    "class_counts": null,
+                                    "impurity": 1.3479,
+                                    "samples": 50
+                                },
+                                "right": {
+                                    "type": "leaf",
+                                    "id": 22,
+                                    "prediction": 0.011286549707602345,
+                                    "class_counts": null,
+                                    "impurity": 0.002,
+                                    "samples": 171
+                                }
+                            }
+                        },
+                        "right": {
+                            "type": "split",
+                            "id": 23,
+                            "feature": "Wind_Speed(mph)",
+                            "threshold": 7.5,
+                            "impurity": 0.5165,
+                            "samples": 190,
+                            "left": {
+                                "type": "split",
+                                "id": 24,
+                                "feature": "Pressure(in)",
+                                "threshold": 30.115,
+                                "impurity": 0.0307,
+                                "samples": 126,
+                                "left": {
+                                    "type": "leaf",
+                                    "id": 25,
+                                    "prediction": 0.00429824561403509,
+                                    "class_counts": null,
+                                    "impurity": 0.0,
+                                    "samples": 114
+                                },
+                                "right": {
+                                    "type": "leaf",
+                                    "id": 26,
+                                    "prediction": 0.17249999999999988,
+                                    "class_counts": null,
+                                    "impurity": 0.297,
+                                    "samples": 12
+                                }
+                            },
+                            "right": {
+                                "type": "split",
+                                "id": 27,
+                                "feature": "Wind_Speed(mph)",
+                                "threshold": 8.65,
+                                "impurity": 1.4603,
+                                "samples": 64,
+                                "left": {
+                                    "type": "leaf",
+                                    "id": 28,
+                                    "prediction": 0.49349999999999994,
+                                    "class_counts": null,
+                                    "impurity": 4.5096,
+                                    "samples": 20
+                                },
+                                "right": {
+                                    "type": "leaf",
+                                    "id": 29,
+                                    "prediction": 0.006363636363636366,
+                                    "class_counts": null,
+                                    "impurity": 0.0,
+                                    "samples": 44
+                                }
+                            }
+                        }
+                    },
+                    "right": {
+                        "type": "split",
+                        "id": 30,
+                        "feature": "Humidity(%)",
+                        "threshold": 15.5,
+                        "impurity": 0.0059,
+                        "samples": 8775,
+                        "left": {
+                            "type": "split",
+                            "id": 31,
+                            "feature": "Pressure(in)",
+                            "threshold": 30.035,
+                            "impurity": 0.087,
+                            "samples": 474,
+                            "left": {
+                                "type": "split",
+                                "id": 32,
+                                "feature": "Temperature(F)",
+                                "threshold": 82.2,
+                                "impurity": 0.0046,
+                                "samples": 387,
+                                "left": {
+                                    "type": "leaf",
+                                    "id": 33,
+                                    "prediction": 0.03235294117647059,
+                                    "class_counts": null,
+                                    "impurity": 0.0337,
+                                    "samples": 51
+                                },
+                                "right": {
+                                    "type": "leaf",
+                                    "id": 34,
+                                    "prediction": 0.0035119047619047643,
+                                    "class_counts": null,
+                                    "impurity": 0.0,
+                                    "samples": 336
+                                }
+                            },
+                            "right": {
+                                "type": "split",
+                                "id": 35,
+                                "feature": "Pressure(in)",
+                                "threshold": 30.045,
+                                "impurity": 0.4441,
+                                "samples": 87,
+                                "left": {
+                                    "type": "leaf",
+                                    "id": 36,
+                                    "prediction": 0.9683333333333332,
+                                    "class_counts": null,
+                                    "impurity": 4.6112,
+                                    "samples": 6
+                                },
+                                "right": {
+                                    "type": "leaf",
+                                    "id": 37,
+                                    "prediction": 0.05271604938271602,
+                                    "class_counts": null,
+                                    "impurity": 0.0777,
+                                    "samples": 81
+                                }
+                            }
+                        },
+                        "right": {
+                            "type": "split",
+                            "id": 38,
+                            "feature": "Temperature(F)",
+                            "threshold": 66.1,
+                            "impurity": 0.0012,
+                            "samples": 8301,
+                            "left": {
+                                "type": "split",
+                                "id": 39,
+                                "feature": "Pressure(in)",
+                                "threshold": 30.125,
+                                "impurity": 0.009,
+                                "samples": 1020,
+                                "left": {
+                                    "type": "leaf",
+                                    "id": 40,
+                                    "prediction": 0.007196652719665223,
+                                    "class_counts": null,
+                                    "impurity": 0.0072,
+                                    "samples": 956
+                                },
+                                "right": {
+                                    "type": "leaf",
+                                    "id": 41,
+                                    "prediction": 0.030468750000000003,
+                                    "class_counts": null,
+                                    "impurity": 0.0348,
+                                    "samples": 64
+                                }
+                            },
+                            "right": {
+                                "type": "split",
+                                "id": 42,
+                                "feature": "Pressure(in)",
+                                "threshold": 29.955,
+                                "impurity": 0.0002,
+                                "samples": 7281,
+                                "left": {
+                                    "type": "leaf",
+                                    "id": 43,
+                                    "prediction": 0.001332395026976291,
+                                    "class_counts": null,
+                                    "impurity": 0.0001,
+                                    "samples": 4263
+                                },
+                                "right": {
+                                    "type": "leaf",
+                                    "id": 44,
+                                    "prediction": 0.0038038436050363816,
+                                    "class_counts": null,
+                                    "impurity": 0.0002,
+                                    "samples": 3018
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "logistic": {
+            "target": "Severity",
+            "classes": [
+                1,
+                2,
+                3,
+                4
+            ],
+            "accuracy_train": 0.5643,
+            "accuracy_test": 0.5543,
+            "precision_weighted": 0.5444,
+            "recall_weighted": 0.5543,
+            "f1_weighted": 0.5389,
+            "class_metrics": {
+                "1": {
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "f1": 0.0,
+                    "support": 4
+                },
+                "2": {
+                    "precision": 0.5752,
+                    "recall": 0.7183,
+                    "f1": 0.6388,
+                    "support": 2194
+                },
+                "3": {
+                    "precision": 0.5087,
+                    "recall": 0.3561,
+                    "f1": 0.419,
+                    "support": 1800
+                },
+                "4": {
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "f1": 0.0,
+                    "support": 2
+                }
+            },
+            "feature_importances": {
+                "Temperature(F)": 0.3467,
+                "Humidity(%)": 0.2874,
+                "Pressure(in)": 0.202,
+                "Visibility(mi)": 0.0592,
+                "Wind_Speed(mph)": 0.1048
+            },
+            "confusion_matrix": [
+                [
+                    0,
+                    4,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    1576,
+                    618,
+                    0
+                ],
+                [
+                    0,
+                    1159,
+                    641,
+                    0
+                ],
+                [
+                    0,
+                    1,
+                    1,
+                    0
+                ]
+            ],
+            "max_depth": 5,
+            "tree_structure": {
+                "type": "split",
+                "id": 0,
+                "feature": "Temperature(F)",
+                "threshold": 57.8,
+                "impurity": 0.4966,
+                "samples": 16000,
+                "left": {
+                    "type": "split",
+                    "id": 1,
+                    "feature": "Visibility(mi)",
+                    "threshold": 0.65,
+                    "impurity": 0.4821,
+                    "samples": 3887,
+                    "left": {
+                        "type": "split",
+                        "id": 2,
+                        "feature": "Humidity(%)",
+                        "threshold": 92.5,
+                        "impurity": 0.2285,
+                        "samples": 38,
+                        "left": {
+                            "type": "split",
+                            "id": 3,
+                            "feature": "Pressure(in)",
+                            "threshold": 30.135,
+                            "impurity": 0.375,
+                            "samples": 4,
+                            "left": {
+                                "type": "split",
+                                "id": 4,
+                                "feature": "Wind_Speed(mph)",
+                                "threshold": 10.35,
+                                "impurity": 0.5,
+                                "samples": 2,
+                                "left": {
+                                    "type": "leaf",
+                                    "id": 5,
+                                    "prediction": 0.0,
+                                    "class_counts": null,
+                                    "impurity": 0.0,
+                                    "samples": 1
+                                },
+                                "right": {
+                                    "type": "leaf",
+                                    "id": 6,
+                                    "prediction": 0.0,
+                                    "class_counts": null,
+                                    "impurity": 0.0,
+                                    "samples": 1
+                                }
+                            },
+                            "right": {
+                                "type": "leaf",
+                                "id": 7,
+                                "prediction": 0.0,
+                                "class_counts": null,
+                                "impurity": 0.0,
+                                "samples": 2
+                            }
+                        },
+                        "right": {
+                            "type": "split",
+                            "id": 8,
+                            "feature": "Visibility(mi)",
+                            "threshold": 0.15,
+                            "impurity": 0.1107,
+                            "samples": 34,
+                            "left": {
+                                "type": "split",
+                                "id": 9,
+                                "feature": "Pressure(in)",
+                                "threshold": 30.195,
+                                "impurity": 0.5,
+                                "samples": 2,
+                                "left": {
+                                    "type": "leaf",
+                                    "id": 10,
+                                    "prediction": 0.0,
+                                    "class_counts": null,
+                                    "impurity": 0.0,
+                                    "samples": 1
+                                },
+                                "right": {
+                                    "type": "leaf",
+                                    "id": 11,
+                                    "prediction": 0.0,
+                                    "class_counts": null,
+                                    "impurity": 0.0,
+                                    "samples": 1
+                                }
+                            },
+                            "right": {
+                                "type": "split",
+                                "id": 12,
+                                "feature": "Wind_Speed(mph)",
+                                "threshold": 10.35,
+                                "impurity": 0.0605,
+                                "samples": 32,
+                                "left": {
+                                    "type": "leaf",
+                                    "id": 13,
+                                    "prediction": 0.0,
+                                    "class_counts": null,
+                                    "impurity": 0.0,
+                                    "samples": 26
+                                },
+                                "right": {
+                                    "type": "leaf",
+                                    "id": 14,
+                                    "prediction": 0.0,
+                                    "class_counts": null,
+                                    "impurity": 0.2778,
+                                    "samples": 6
+                                }
+                            }
+                        }
+                    },
+                    "right": {
+                        "type": "split",
+                        "id": 15,
+                        "feature": "Temperature(F)",
+                        "threshold": 48.4,
+                        "impurity": 0.4831,
+                        "samples": 3849,
+                        "left": {
+                            "type": "split",
+                            "id": 16,
+                            "feature": "Humidity(%)",
+                            "threshold": 91.0,
+                            "impurity": 0.4644,
+                            "samples": 1011,
+                            "left": {
+                                "type": "split",
+                                "id": 17,
+                                "feature": "Temperature(F)",
+                                "threshold": 35.15,
+                                "impurity": 0.4826,
+                                "samples": 711,
+                                "left": {
+                                    "type": "leaf",
+                                    "id": 18,
+                                    "prediction": 0.0,
+                                    "class_counts": null,
+                                    "impurity": 0.4608,
+                                    "samples": 50
+                                },
+                                "right": {
+                                    "type": "leaf",
+                                    "id": 19,
+                                    "prediction": 0.0015128593040847202,
+                                    "class_counts": null,
+                                    "impurity": 0.4751,
+                                    "samples": 661
+                                }
+                            },
+                            "right": {
+                                "type": "split",
+                                "id": 20,
+                                "feature": "Pressure(in)",
+                                "threshold": 28.935,
+                                "impurity": 0.396,
+                                "samples": 300,
+                                "left": {
+                                    "type": "leaf",
+                                    "id": 21,
+                                    "prediction": 0.0,
+                                    "class_counts": null,
+                                    "impurity": 0.0,
+                                    "samples": 3
+                                },
+                                "right": {
+                                    "type": "leaf",
+                                    "id": 22,
+                                    "prediction": 0.003367003367003367,
+                                    "class_counts": null,
+                                    "impurity": 0.3891,
+                                    "samples": 297
+                                }
+                            }
+                        },
+                        "right": {
+                            "type": "split",
+                            "id": 23,
+                            "feature": "Wind_Speed(mph)",
+                            "threshold": 15.5,
+                            "impurity": 0.4883,
+                            "samples": 2838,
+                            "left": {
+                                "type": "split",
+                                "id": 24,
+                                "feature": "Humidity(%)",
+                                "threshold": 72.5,
+                                "impurity": 0.4864,
+                                "samples": 2674,
+                                "left": {
+                                    "type": "leaf",
+                                    "id": 25,
+                                    "prediction": 0.0021253985122210413,
+                                    "class_counts": null,
+                                    "impurity": 0.475,
+                                    "samples": 941
+                                },
+                                "right": {
+                                    "type": "leaf",
+                                    "id": 26,
+                                    "prediction": 0.0005770340450086555,
+                                    "class_counts": null,
+                                    "impurity": 0.4913,
+                                    "samples": 1733
+                                }
+                            },
+                            "right": {
+                                "type": "split",
+                                "id": 27,
+                                "feature": "Pressure(in)",
+                                "threshold": 29.975,
+                                "impurity": 0.4997,
+                                "samples": 164,
+                                "left": {
+                                    "type": "leaf",
+                                    "id": 28,
+                                    "prediction": 0.0,
+                                    "class_counts": null,
+                                    "impurity": 0.4688,
+                                    "samples": 112
+                                },
+                                "right": {
+                                    "type": "leaf",
+                                    "id": 29,
+                                    "prediction": 0.0,
+                                    "class_counts": null,
+                                    "impurity": 0.3935,
+                                    "samples": 52
+                                }
+                            }
+                        }
+                    }
+                },
+                "right": {
+                    "type": "split",
+                    "id": 30,
+                    "feature": "Humidity(%)",
+                    "threshold": 49.5,
+                    "impurity": 0.4991,
+                    "samples": 12113,
+                    "left": {
+                        "type": "split",
+                        "id": 31,
+                        "feature": "Pressure(in)",
+                        "threshold": 29.685,
+                        "impurity": 0.4897,
+                        "samples": 4720,
+                        "left": {
+                            "type": "split",
+                            "id": 32,
+                            "feature": "Temperature(F)",
+                            "threshold": 85.5,
+                            "impurity": 0.4145,
+                            "samples": 133,
+                            "left": {
+                                "type": "split",
+                                "id": 33,
+                                "feature": "Temperature(F)",
+                                "threshold": 73.5,
+                                "impurity": 0.331,
+                                "samples": 86,
+                                "left": {
+                                    "type": "leaf",
+                                    "id": 34,
+                                    "prediction": 0.0,
+                                    "class_counts": null,
+                                    "impurity": 0.4709,
+                                    "samples": 29
+                                },
+                                "right": {
+                                    "type": "leaf",
+                                    "id": 35,
+                                    "prediction": 0.0,
+                                    "class_counts": null,
+                                    "impurity": 0.2155,
+                                    "samples": 57
+                                }
+                            },
+                            "right": {
+                                "type": "split",
+                                "id": 36,
+                                "feature": "Wind_Speed(mph)",
+                                "threshold": 6.45,
+                                "impurity": 0.4943,
+                                "samples": 47,
+                                "left": {
+                                    "type": "leaf",
+                                    "id": 37,
+                                    "prediction": 0.0,
+                                    "class_counts": null,
+                                    "impurity": 0.2778,
+                                    "samples": 12
+                                },
+                                "right": {
+                                    "type": "leaf",
+                                    "id": 38,
+                                    "prediction": 0.0,
+                                    "class_counts": null,
+                                    "impurity": 0.4963,
+                                    "samples": 35
+                                }
+                            }
+                        },
+                        "right": {
+                            "type": "split",
+                            "id": 39,
+                            "feature": "Temperature(F)",
+                            "threshold": 96.9,
+                            "impurity": 0.4908,
+                            "samples": 4587,
+                            "left": {
+                                "type": "split",
+                                "id": 40,
+                                "feature": "Pressure(in)",
+                                "threshold": 30.025,
+                                "impurity": 0.4895,
+                                "samples": 4455,
+                                "left": {
+                                    "type": "leaf",
+                                    "id": 41,
+                                    "prediction": 0.0006077180188392585,
+                                    "class_counts": null,
+                                    "impurity": 0.486,
+                                    "samples": 3291
+                                },
+                                "right": {
+                                    "type": "leaf",
+                                    "id": 42,
+                                    "prediction": 0.0,
+                                    "class_counts": null,
+                                    "impurity": 0.4966,
+                                    "samples": 1164
+                                }
+                            },
+                            "right": {
+                                "type": "split",
+                                "id": 43,
+                                "feature": "Pressure(in)",
+                                "threshold": 29.835,
+                                "impurity": 0.501,
+                                "samples": 132,
+                                "left": {
+                                    "type": "leaf",
+                                    "id": 44,
+                                    "prediction": 0.0,
+                                    "class_counts": null,
+                                    "impurity": 0.4781,
+                                    "samples": 43
+                                },
+                                "right": {
+                                    "type": "leaf",
+                                    "id": 45,
+                                    "prediction": 0.011235955056179775,
+                                    "class_counts": null,
+                                    "impurity": 0.4747,
+                                    "samples": 89
+                                }
+                            }
+                        }
+                    },
+                    "right": {
+                        "type": "split",
+                        "id": 46,
+                        "feature": "Temperature(F)",
+                        "threshold": 62.8,
+                        "impurity": 0.5017,
+                        "samples": 7393,
+                        "left": {
+                            "type": "split",
+                            "id": 47,
+                            "feature": "Visibility(mi)",
+                            "threshold": 3.5,
+                            "impurity": 0.499,
+                            "samples": 2062,
+                            "left": {
+                                "type": "split",
+                                "id": 48,
+                                "feature": "Wind_Speed(mph)",
+                                "threshold": 16.7,
+                                "impurity": 0.4867,
+                                "samples": 86,
+                                "left": {
+                                    "type": "leaf",
+                                    "id": 49,
+                                    "prediction": 0.0,
+                                    "class_counts": null,
+                                    "impurity": 0.4759,
+                                    "samples": 82
+                                },
+                                "right": {
+                                    "type": "leaf",
+                                    "id": 50,
+                                    "prediction": 0.0,
+                                    "class_counts": null,
+                                    "impurity": 0.0,
+                                    "samples": 4
+                                }
+                            },
+                            "right": {
+                                "type": "split",
+                                "id": 51,
+                                "feature": "Wind_Speed(mph)",
+                                "threshold": 19.0,
+                                "impurity": 0.4983,
+                                "samples": 1976,
+                                "left": {
+                                    "type": "leaf",
+                                    "id": 52,
+                                    "prediction": 0.0010346611484738748,
+                                    "class_counts": null,
+                                    "impurity": 0.4976,
+                                    "samples": 1933
+                                },
+                                "right": {
+                                    "type": "leaf",
+                                    "id": 53,
+                                    "prediction": 0.0,
+                                    "class_counts": null,
+                                    "impurity": 0.4543,
+                                    "samples": 43
+                                }
+                            }
+                        },
+                        "right": {
+                            "type": "split",
+                            "id": 54,
+                            "feature": "Humidity(%)",
+                            "threshold": 69.5,
+                            "impurity": 0.5018,
+                            "samples": 5331,
+                            "left": {
+                                "type": "split",
+                                "id": 55,
+                                "feature": "Pressure(in)",
+                                "threshold": 30.015,
+                                "impurity": 0.5015,
+                                "samples": 3539,
+                                "left": {
+                                    "type": "leaf",
+                                    "id": 56,
+                                    "prediction": 0.001142857142857143,
+                                    "class_counts": null,
+                                    "impurity": 0.5011,
+                                    "samples": 2625
+                                },
+                                "right": {
+                                    "type": "leaf",
+                                    "id": 57,
+                                    "prediction": 0.0010940919037199124,
+                                    "class_counts": null,
+                                    "impurity": 0.4976,
+                                    "samples": 914
+                                }
+                            },
+                            "right": {
+                                "type": "split",
+                                "id": 58,
+                                "feature": "Wind_Speed(mph)",
+                                "threshold": 17.85,
+                                "impurity": 0.5005,
+                                "samples": 1792,
+                                "left": {
+                                    "type": "leaf",
+                                    "id": 59,
+                                    "prediction": 0.0016825574873808188,
+                                    "class_counts": null,
+                                    "impurity": 0.4997,
+                                    "samples": 1783
+                                },
+                                "right": {
+                                    "type": "leaf",
+                                    "id": 60,
+                                    "prediction": 0.1111111111111111,
+                                    "class_counts": null,
+                                    "impurity": 0.3704,
+                                    "samples": 9
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -181,6 +181,129 @@ def preprocessing():
 
 
 # =========================================================
+# PREPROCESSING API
+# =========================================================
+@app.route("/api/preprocessing")
+def preprocessing_api():
+    from preprocessing_pipeline import run_preprocessing_pipeline
+    try:
+        preprocess_output = run_preprocessing_pipeline()
+        return jsonify({
+            "success": True,
+            "data": preprocess_output
+        })
+    except FileNotFoundError as e:
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 404
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": f"Unexpected error: {e}"
+        }), 500
+
+
+# =========================================================
+# REGRESSION PAGE
+# =========================================================
+@app.route("/regression")
+def regression_dashboard():
+    from models_pipeline import train_models
+    error = None
+    models_output = None
+    try:
+        models_output = train_models()
+    except FileNotFoundError as e:
+        error = str(e)
+    except Exception as e:
+        error = f"Unexpected error: {e}"
+
+    return render_template(
+        "regression.html",
+        active="regression",
+        results=models_output,
+        error=error,
+    )
+
+
+# =========================================================
+# REGULARIZATION PAGE
+# =========================================================
+@app.route("/regularization")
+def regularization_dashboard():
+    from models_pipeline import train_models
+    error = None
+    models_output = None
+    try:
+        models_output = train_models()
+    except FileNotFoundError as e:
+        error = str(e)
+    except Exception as e:
+        error = f"Unexpected error: {e}"
+
+    return render_template(
+        "regularization.html",
+        active="regularization",
+        results=models_output,
+        error=error,
+    )
+
+
+# =========================================================
+# DECISION TREE PAGE
+# =========================================================
+@app.route("/decision-tree")
+def decision_tree_dashboard():
+    from models_pipeline import train_models
+    error = None
+    models_output = None
+    try:
+        models_output = train_models()
+    except FileNotFoundError as e:
+        error = str(e)
+    except Exception as e:
+        error = f"Unexpected error: {e}"
+
+    return render_template(
+        "decision_tree.html",
+        active="decision_tree",
+        results=models_output,
+        error=error,
+    )
+
+
+# =========================================================
+# MODEL PREDICTION API
+# =========================================================
+@app.route("/api/predict", methods=["POST"])
+def predict_api():
+    from flask import request
+    from models_pipeline import predict_sample
+    try:
+        payload = request.get_json()
+        features_dict = {
+            "Temperature(F)": float(payload["Temperature(F)"]),
+            "Humidity(%)": float(payload["Humidity(%)"]),
+            "Pressure(in)": float(payload["Pressure(in)"]),
+            "Visibility(mi)": float(payload["Visibility(mi)"]),
+            "Wind_Speed(mph)": float(payload["Wind_Speed(mph)"])
+        }
+        category = payload.get("category", "regression")
+        model_type = payload.get("model_type", "none")
+        prediction = predict_sample(features_dict, category=category, model_type=model_type)
+        return jsonify({
+            "success": True,
+            "prediction": prediction
+        })
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
+
+
+# =========================================================
 # RUN FLASK APPLICATION
 # =========================================================
 if __name__ == "__main__":
