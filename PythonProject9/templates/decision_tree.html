@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Decision Tree • RoadSafety AI</title>
+    <title>Tree Algorithms (7 Models) • RoadSafety AI</title>
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <style>
-        /* Modern Premium Style Overrides */
         .info-strip {
             display: flex;
             align-items: center;
@@ -19,6 +18,7 @@
             margin-bottom: 24px;
             font-size: 13.5px;
             color: var(--text-secondary);
+            flex-wrap: wrap;
         }
         .info-strip-item {
             display: flex;
@@ -32,6 +32,41 @@
             background-color: var(--accent-blue);
         }
         
+        .algo-selector-banner {
+            background: var(--surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            box-shadow: var(--shadow-soft);
+        }
+        @media (max-width: 768px) {
+            .algo-selector-banner {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+        .algo-dropdown-select {
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: var(--radius-md);
+            border: 1.5px solid var(--border-color);
+            background: white;
+            color: var(--text-primary);
+            outline: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .algo-dropdown-select:hover, .algo-dropdown-select:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+        }
+
         .metrics-container {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -74,59 +109,47 @@
             margin-top: 4px;
         }
 
-        /* Confusion Matrix Heatmap */
-        .heatmap-grid {
-            display: grid;
-            grid-template-columns: 80px repeat(4, 1fr);
-            gap: 6px;
-            margin-top: 16px;
-            margin-bottom: 20px;
-            text-align: center;
+        /* Leaderboard styling */
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            margin-top: 12px;
+            margin-bottom: 24px;
         }
-        .heatmap-header {
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            color: var(--text-muted);
-            padding: 8px 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .heatmap-label {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-secondary);
+        .leaderboard-table th {
             background: var(--surface-subtle);
-            border-radius: var(--radius-sm);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 10px 0;
-            border: 1px solid var(--border-light);
+            padding: 10px 14px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border-color);
+            font-size: 11.5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-        .heatmap-cell {
-            font-size: 13.5px;
-            font-weight: 500;
+        .leaderboard-table td {
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border-light);
             color: var(--text-primary);
-            border-radius: var(--radius-sm);
-            display: flex;
-            flex-direction: column;
+        }
+        .leaderboard-table tr:hover td {
+            background: #f8fafc;
+        }
+        .rank-badge {
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            padding: 12px 0;
-            border: 1px solid var(--border-light);
-            transition: all 0.15s ease;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            font-weight: 700;
+            font-size: 12px;
         }
-        .heatmap-cell:hover {
-            transform: scale(1.05);
-            box-shadow: var(--shadow-soft);
-        }
-        .hm-diag-high { background-color: #d1fae5; color: #065f46; font-weight: 700; border-color: #a7f3d0; }
-        .hm-diag-mid { background-color: #ecfdf5; color: #047857; border-color: #d1fae5; }
-        .hm-off-zero { background-color: #fafafa; color: var(--text-faint); }
-        .hm-off-low { background-color: #fff1f2; color: #9f1239; border-color: #ffe4e6; }
-        .hm-off-high { background-color: #ffe4e6; color: #b91c1c; font-weight: 600; border-color: #fecdd3; }
+        .rank-1 { background: #fef08a; color: #854d0e; }
+        .rank-2 { background: #e2e8f0; color: #475569; }
+        .rank-3 { background: #ffedd5; color: #9a3412; }
+        .rank-other { background: var(--surface-subtle); color: var(--text-muted); }
 
         /* Feature Importance visual bars */
         .importance-list {
@@ -135,7 +158,7 @@
             margin-bottom: 24px;
         }
         .importance-item {
-            margin-bottom: 16px;
+            margin-bottom: 14px;
         }
         .importance-label-row {
             display: flex;
@@ -158,6 +181,130 @@
             transition: width 0.4s ease;
         }
 
+        .ensemble-arch-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: var(--radius-md);
+            padding: 18px;
+            margin-top: 16px;
+            margin-bottom: 20px;
+        }
+        .ensemble-arch-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 12px;
+        }
+        @media (max-width: 640px) {
+            .ensemble-arch-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .ensemble-stat-item {
+            background: white;
+            border: 1px solid #cbd5e1;
+            padding: 10px 14px;
+            border-radius: 6px;
+        }
+        .ensemble-stat-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #64748b;
+            font-weight: 600;
+        }
+        .ensemble-stat-val {
+            font-size: 14px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-top: 2px;
+        }
+
+        /* Virtual Tree Visualizer CSS */
+        .tree-viewport-container {
+            position: relative;
+            margin-top: 16px;
+            margin-bottom: 24px;
+        }
+        .tree-viewport {
+            overflow-x: auto;
+            overflow-y: auto;
+            white-space: nowrap;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            background: #f8fafc;
+            padding: 24px;
+            min-height: 380px;
+            cursor: grab;
+        }
+        .tree-viewport.grabbing {
+            cursor: grabbing;
+        }
+        .tree-zoom-controls {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--border-color);
+            padding: 4px 8px;
+            border-radius: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            z-index: 50;
+        }
+        .tree-zoom-btn {
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            transition: all 0.15s ease;
+        }
+        .tree-zoom-btn:hover {
+            background: var(--surface-subtle);
+            color: var(--text-primary);
+        }
+        .tree-zoom-display {
+            font-size: 11px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            min-width: 36px;
+            text-align: center;
+            color: var(--text-primary);
+        }
+        .tree-node-card {
+            width: 140px;
+            height: 70px;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 8px;
+            box-shadow: var(--shadow-soft);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            font-size: 11px;
+            border-top: 4px solid var(--border-color);
+            box-sizing: border-box;
+        }
+        .tree-node-card.active-lin {
+            border-top-color: var(--accent-blue);
+            border-color: #93c5fd;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+        }
+        .tree-node-card.active-log {
+            border-top-color: var(--accent-sage);
+            border-color: var(--accent-sage-border);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+        }
+
         .playground-container {
             background: var(--surface);
             border: 1px solid var(--border-color);
@@ -166,169 +313,6 @@
             margin-top: 28px;
             box-shadow: var(--shadow-soft);
         }
-        .playground-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 32px;
-        }
-        @media (max-width: 768px) {
-            .playground-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-        .slider-group {
-            margin-bottom: 18px;
-        }
-        .slider-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 6px;
-            font-weight: 500;
-            color: var(--text-primary);
-        }
-        .slider-unit {
-            font-size: 12px;
-            color: var(--text-muted);
-        }
-        .slider-value-display {
-            font-weight: 600;
-            color: var(--accent-blue);
-            background: var(--accent-blue-bg);
-            padding: 2px 8px;
-            border-radius: var(--radius-sm);
-            font-size: 13px;
-        }
-        .custom-slider {
-            width: 100%;
-            height: 6px;
-            background: var(--border-color);
-            border-radius: 3px;
-            outline: none;
-            -webkit-appearance: none;
-        }
-        .custom-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: var(--accent-primary);
-            cursor: pointer;
-            transition: transform 0.1s ease;
-        }
-        .custom-slider::-webkit-slider-thumb:hover {
-            transform: scale(1.2);
-        }
-        .predict-btn {
-            background: var(--accent-primary);
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: var(--radius-md);
-            font-weight: 600;
-            cursor: pointer;
-            width: 100%;
-            font-size: 14px;
-            transition: background 0.15s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        .predict-btn:hover {
-            background: #18181b;
-        }
-        .results-panel {
-            background: var(--canvas);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-        .result-card {
-            background: white;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            padding: 16px;
-            margin-bottom: 12px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
-        }
-        .result-card:last-child {
-            margin-bottom: 0;
-        }
-        .result-title {
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: var(--text-muted);
-            margin-bottom: 8px;
-        }
-        .prediction-highlight {
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--text-primary);
-            display: flex;
-            align-items: baseline;
-            gap: 6px;
-        }
-        .prediction-unit {
-            font-size: 14px;
-            font-weight: 500;
-            color: var(--text-secondary);
-        }
-        .severity-badge {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            color: white;
-            font-weight: 700;
-            font-size: 18px;
-        }
-        .sev-1 { background-color: #10b981; }
-        .sev-2 { background-color: #f59e0b; }
-        .sev-3 { background-color: #ef4444; }
-        .sev-4 { background-color: #b91c1c; }
-
-        .probability-bar-container {
-            margin-top: 12px;
-        }
-        .prob-row {
-            display: flex;
-            align-items: center;
-            margin-bottom: 6px;
-            font-size: 12.5px;
-        }
-        .prob-label {
-            width: 80px;
-            color: var(--text-secondary);
-        }
-        .prob-bar-wrapper {
-            flex-grow: 1;
-            height: 8px;
-            background: var(--border-color);
-            border-radius: 4px;
-            overflow: hidden;
-            margin-right: 12px;
-        }
-        .prob-bar {
-            height: 100%;
-            background: var(--accent-blue);
-            border-radius: 4px;
-            transition: width 0.3s ease;
-        }
-        .prob-val {
-            width: 45px;
-            text-align: right;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-        
-        /* Tabs Styling */
         .tabs-container {
             margin-bottom: 24px;
             border-bottom: 1px solid var(--border-color);
@@ -372,7 +356,6 @@
             from { opacity: 0; transform: translateY(4px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        
         .full-width-card {
             background: var(--surface);
             border: 1px solid var(--border-color);
@@ -380,130 +363,6 @@
             padding: 28px;
             margin-bottom: 28px;
             box-shadow: var(--shadow-soft);
-        }
-
-        /* Virtual Tree Visualizer CSS */
-        .tree-viewport-container {
-            position: relative;
-            margin-top: 16px;
-            margin-bottom: 24px;
-        }
-        
-        .tree-viewport {
-            overflow-x: auto;
-            overflow-y: auto;
-            white-space: nowrap;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-lg);
-            background: #f8fafc;
-            padding: 24px;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
-            min-height: 450px;
-            cursor: grab;
-        }
-        
-        .tree-viewport.grabbing {
-            cursor: grabbing;
-        }
-        
-        .tree-zoom-controls {
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border: 1px solid var(--border-color);
-            padding: 4px 8px;
-            border-radius: 20px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            z-index: 50;
-        }
-        
-        .tree-zoom-btn {
-            border: none;
-            background: transparent;
-            cursor: pointer;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-secondary);
-            transition: all 0.15s ease;
-        }
-        
-        .tree-zoom-btn:hover {
-            background: var(--surface-subtle);
-            color: var(--text-primary);
-        }
-        
-        .tree-zoom-btn:active {
-            transform: scale(0.9);
-        }
-        
-        .tree-zoom-display {
-            font-size: 11px;
-            font-weight: 700;
-            font-family: 'JetBrains Mono', monospace;
-            min-width: 36px;
-            text-align: center;
-            color: var(--text-primary);
-            user-select: none;
-        }
-        
-        .tree-node-card {
-            width: 140px;
-            height: 70px;
-            background: white;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            padding: 8px;
-            box-shadow: var(--shadow-soft);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            font-size: 11px;
-            transition: all 0.25s ease;
-            border-top: 4px solid var(--border-color);
-            box-sizing: border-box;
-        }
-        .tree-node-card.active-lin {
-            border-top-color: var(--accent-blue);
-            border-color: #93c5fd;
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
-        }
-        .tree-node-card.active-log {
-            border-top-color: var(--accent-sage);
-            border-color: var(--accent-sage-border);
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
-        }
-        .tree-node-card .node-title {
-            font-weight: 700;
-            color: var(--text-primary);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .tree-node-card .node-details {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 9.5px;
-            color: var(--text-secondary);
-            font-weight: 600;
-        }
-        
-        .active-link {
-            stroke-dasharray: 8;
-            animation: dash 15s linear infinite;
-        }
-        @keyframes dash {
-            to {
-                stroke-dashoffset: -1000;
-            }
         }
     </style>
 </head>
@@ -531,7 +390,7 @@
     <div class="topbar-right">
         <div class="status-pill">
             <span class="status-dot"></span>
-            <span>100K Records Active</span>
+            <span>7 Tree Algorithms Trained</span>
         </div>
         <button class="btn-secondary" onclick="window.location.reload();">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -566,7 +425,7 @@
                                 <line x1="12" y1="20" x2="12" y2="4"></line>
                                 <line x1="6" y1="20" x2="6" y2="14"></line>
                             </svg>
-                            <span>EDA Dashboard</span>
+                            <span>EDA Dashboard (5 Tasks)</span>
                         </a>
                     </li>
                     <li>
@@ -590,7 +449,7 @@
                                 <line x1="8" y1="21" x2="16" y2="21"></line>
                                 <line x1="12" y1="17" x2="12" y2="21"></line>
                             </svg>
-                            <span>Regression</span>
+                            <span>Regression (Linear & Logistic)</span>
                         </a>
                     </li>
                     <li>
@@ -598,7 +457,7 @@
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
                             </svg>
-                            <span>Regularization</span>
+                            <span>Regularization (L1, L2, ElasticNet)</span>
                         </a>
                     </li>
                     <li>
@@ -607,7 +466,7 @@
                                 <path d="M18 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3zM6 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3z"></path>
                                 <line x1="6" y1="12" x2="18" y2="12"></line>
                             </svg>
-                            <span>Decision Tree</span>
+                            <span>Tree Algorithms (7 Models)</span>
                         </a>
                     </li>
                 </ul>
@@ -618,7 +477,7 @@
             <div class="avatar">ML</div>
             <div class="user-info">
                 <div class="user-name">ML Pipeline</div>
-                <div class="user-meta">Python 3.12 • Flask</div>
+                <div class="user-meta">Python 3.13 • Flask</div>
             </div>
         </div>
     </nav>
@@ -627,8 +486,8 @@
     <main class="content">
         <div class="page-title-bar">
             <div>
-                <h2>Decision Tree Modeling</h2>
-                <p>Evaluate non-linear tree partition estimators. View metrics for the **Decision Tree Regressor** and **Decision Tree Classifier**, inspect feature importances, and interact with the tree playground.</p>
+                <h2>Tree-Based Algorithms (7 Models Suite)</h2>
+                <p>Comprehensive benchmarking and interactive simulation for all 7 tree-based algorithms: <strong>Decision Tree, Random Forest, AdaBoost, Gradient Boosting, XGBoost, LightGBM (Light Boost), and CatBoost</strong>.</p>
             </div>
         </div>
 
@@ -636,21 +495,21 @@
             <div class="error">{{ error }}</div>
         {% endif %}
 
-        {% if results %}
+        {% if results and results.tree_models %}
             
             <!-- Information strip -->
             <div class="info-strip">
                 <div class="info-strip-item">
                     <span class="info-strip-dot"></span>
-                    <span>Max Tree Depth: <strong>{{ results.decision_tree.linear.max_depth }} levels</strong></span>
+                    <span>Algorithms Active: <strong>7 Tree Ensembles</strong></span>
                 </div>
                 <div class="info-strip-item">
                     <span class="info-strip-dot" style="background-color: var(--accent-sage);"></span>
-                    <span>Splitting Criterion: <strong>Gini Impurity (Classifier)</strong></span>
+                    <span>Top Classifier: <strong>{{ results.tree_models.leaderboard_classification[0].name }} ({{ (results.tree_models.leaderboard_classification[0].accuracy_test * 100) | round(1) }}%)</strong></span>
                 </div>
                 <div class="info-strip-item">
-                    <span class="info-strip-dot" style="background-color: var(--accent-blue);"></span>
-                    <span>Regression Criterion: <strong>Squared Error (Regressor)</strong></span>
+                    <span class="info-strip-dot" style="background-color: var(--accent-amber);"></span>
+                    <span>Top Regressor: <strong>{{ results.tree_models.leaderboard_regression[0].name }}</strong></span>
                 </div>
             </div>
 
@@ -663,101 +522,159 @@
                             <line x1="12" y1="20" x2="12" y2="4"></line>
                             <line x1="6" y1="20" x2="6" y2="14"></line>
                         </svg>
-                        <span>Decision Tree Regressor (Predict Distance)</span>
+                        <span>Tree Regressors (Predict Distance)</span>
                     </button>
                     <button id="tab-btn-logistic" class="tab-button" onclick="switchTab('logistic')">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                             <line x1="9" y1="3" x2="9" y2="21"></line>
                         </svg>
-                        <span>Decision Tree Classifier (Predict Severity)</span>
+                        <span>Tree Classifiers (Predict Severity)</span>
                     </button>
                 </div>
             </div>
 
-            <!-- TAB 1: DECISION TREE REGRESSOR -->
+            <!-- TAB 1: REGRESSION (7 TREE ALGORITHMS) -->
             <div id="tab-content-linear" class="tab-content-panel active">
+                
+                <!-- Algorithm Selector Banner -->
+                <div class="algo-selector-banner">
+                    <div>
+                        <span style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: var(--accent-blue); letter-spacing: 0.5px;">Active Regressor Model</span>
+                        <h3 id="current-reg-algo-title" style="margin: 4px 0; color: var(--text-primary);">Decision Tree (CART)</h3>
+                        <p id="current-reg-algo-desc" style="font-size: 13px; color: var(--text-secondary); margin: 0;">Single partitioning tree that recursively splits weather features.</p>
+                    </div>
+                    <div>
+                        <label for="tree-algo-select-reg" style="display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">Switch Tree Algorithm:</label>
+                        <select id="tree-algo-select-reg" class="algo-dropdown-select" onchange="onAlgoChange('reg', this.value)">
+                            {% for algo in results.tree_models.algo_list %}
+                            <option value="{{ algo.key }}">{{ loop.index }}. {{ algo.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Dynamic Metrics Grid -->
+                <div class="metrics-container">
+                    <div class="metric-card-premium">
+                        <div class="label">R² Score (Test)</div>
+                        <div class="value" id="reg-metric-r2-test" style="color: #10b981;">{{ results.tree_models.algorithms.decision_tree.linear.r2_test }}</div>
+                        <div class="subtext">Variance explained</div>
+                    </div>
+                    <div class="metric-card-premium">
+                        <div class="label">R² Score (Train)</div>
+                        <div class="value" id="reg-metric-r2-train">{{ results.tree_models.algorithms.decision_tree.linear.r2_train }}</div>
+                        <div class="subtext">Fit on training set</div>
+                    </div>
+                    <div class="metric-card-premium">
+                        <div class="label">MSE (Test)</div>
+                        <div class="value" id="reg-metric-mse" style="color: var(--text-secondary);">{{ results.tree_models.algorithms.decision_tree.linear.mse }}</div>
+                        <div class="subtext">Mean Squared Error</div>
+                    </div>
+                    <div class="metric-card-premium">
+                        <div class="label">RMSE (Test)</div>
+                        <div class="value" id="reg-metric-rmse" style="color: var(--text-secondary);">{{ results.tree_models.algorithms.decision_tree.linear.rmse }}</div>
+                        <div class="subtext">Standard deviation</div>
+                    </div>
+                </div>
+
+                <!-- Leaderboard Table -->
                 <div class="full-width-card">
-                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px; margin-bottom: 16px;">
-                        <h3 style="color: #1e293b; margin: 0;">Decision Tree Regressor</h3>
-                        <span class="status-pill" style="background: var(--accent-blue-bg); border-color: #bfdbfe; color: var(--accent-blue);">
-                            Target: Distance(mi)
-                        </span>
-                    </div>
+                    <h3 style="color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px; margin-bottom: 12px;">
+                        7 Tree Regressors Comparative Leaderboard
+                    </h3>
+                    <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">Side-by-side benchmark evaluation across all 7 tree regression architectures on unseen test data.</p>
+                    
+                    <table class="leaderboard-table">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Algorithm</th>
+                                <th>R² Score (Test)</th>
+                                <th>MSE</th>
+                                <th>RMSE</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in results.tree_models.leaderboard_regression %}
+                            <tr>
+                                <td>
+                                    <span class="rank-badge {% if loop.index == 1 %}rank-1{% elif loop.index == 2 %}rank-2{% elif loop.index == 3 %}rank-3{% else %}rank-other{% endif %}">
+                                        {{ loop.index }}
+                                    </span>
+                                </td>
+                                <td><strong>{{ item.name }}</strong></td>
+                                <td><strong style="color: #10b981;">{{ item.r2_test }}</strong></td>
+                                <td>{{ item.mse }}</td>
+                                <td>{{ item.rmse }}</td>
+                                <td>
+                                    <button class="btn-secondary" style="padding: 4px 10px; font-size: 12px;" onclick="selectAlgoDirect('reg', '{{ item.key }}')">Inspect Model</button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
 
-                    <p style="font-size: 13.5px; color: #475569; margin-bottom: 16px; line-height: 1.5;">
-                        The Regressor recursively partitions the weather space to predict continuous <strong>Distance(mi)</strong>. Unlike linear models, it detects non-linear decision splits.
-                    </p>
-
-                    <!-- Metrics Grid -->
-                    <div class="metrics-container" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 24px;">
-                        <div class="metric-card-premium">
-                            <div class="label">R² (Test Set)</div>
-                            <div class="value" style="color: #10b981;">{{ results.decision_tree.linear.r2_test }}</div>
-                            <div class="subtext">Variance explained</div>
-                        </div>
-                        <div class="metric-card-premium">
-                            <div class="label">R² (Train Set)</div>
-                            <div class="value">{{ results.decision_tree.linear.r2_train }}</div>
-                            <div class="subtext">Fit on training set</div>
-                        </div>
-                        <div class="metric-card-premium">
-                            <div class="label">MSE (Test)</div>
-                            <div class="value" style="color: var(--text-secondary);">{{ results.decision_tree.linear.mse }}</div>
-                            <div class="subtext">Mean Squared Error</div>
-                        </div>
-                        <div class="metric-card-premium">
-                            <div class="label">RMSE (Test)</div>
-                            <div class="value" style="color: var(--text-secondary);">{{ results.decision_tree.linear.rmse }}</div>
-                            <div class="subtext">Standard deviation</div>
-                        </div>
-                    </div>
-
-                    <!-- Virtual Tree Visualizer -->
-                    <h5 style="margin-top: 24px; margin-bottom: 4px; color: #334155; font-size: 13px;">Virtual Decision Tree Path Trace (Regressor):</h5>
-                    <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 12px;">Scroll horizontally to explore the full tree splits. Move the sliders in the playground below to trace splits and highlighted active paths in real-time.</p>
-                    <div class="tree-viewport-container">
-                        <div class="tree-zoom-controls">
-                            <button class="tree-zoom-btn" onclick="zoomTree('linear', -0.1)" title="Zoom Out (Ctrl + Scroll Down)">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                            </button>
-                            <span class="tree-zoom-display" id="zoom-display-lin">100%</span>
-                            <button class="tree-zoom-btn" onclick="zoomTree('linear', 0.1)" title="Zoom In (Ctrl + Scroll Up)">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                            </button>
-                            <button class="tree-zoom-btn" onclick="zoomTree('linear', 'reset')" title="Reset Zoom" style="margin-left: 4px;">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg>
-                            </button>
-                        </div>
-                        <div class="tree-viewport" id="tree-viewport-lin">
-                            <div id="tree-container-lin"></div>
-                        </div>
-                    </div>
-
-                    <!-- Feature Importance -->
-                    <h5 style="margin-top: 16px; margin-bottom: 12px; color: #334155; font-size: 13px;">Regression Feature Importances (Gini/MSE Reduction):</h5>
-                    <ul class="importance-list">
-                        {% for col, imp in results.decision_tree.linear.feature_importances.items() %}
+                    <!-- Dynamic Feature Importances -->
+                    <h4 style="margin-top: 24px; margin-bottom: 8px; color: #1f3a5f; font-size: 14px;">Feature Importances (<span id="reg-importance-algo-name">Decision Tree (CART)</span>):</h4>
+                    <ul class="importance-list" id="reg-importance-list">
+                        {% for col, imp in results.tree_models.algorithms.decision_tree.linear.feature_importances.items() %}
                         <li class="importance-item">
                             <div class="importance-label-row">
                                 <span>{{ col }}</span>
-                                <strong>{{ (imp * 100) | round(1) }}%</strong>
+                                <strong id="reg-imp-val-{{ loop.index0 }}">{{ (imp * 100) | round(1) }}%</strong>
                             </div>
                             <div class="importance-bar-wrapper">
-                                <div class="importance-bar" style="width: {{ imp * 100 }}%; background-color: var(--accent-blue);"></div>
+                                <div class="importance-bar" id="reg-imp-bar-{{ loop.index0 }}" style="width: {{ imp * 100 }}%; background-color: var(--accent-blue);"></div>
                             </div>
                         </li>
                         {% endfor %}
                     </ul>
+
+                    <!-- Decision Tree / Ensemble Visualizer -->
+                    <div id="reg-tree-visualizer-section">
+                        <h4 style="margin-top: 24px; margin-bottom: 4px; color: #1f3a5f; font-size: 14px;">Virtual Decision Tree Path Trace:</h4>
+                        <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 12px;">Move the sliders in the playground below to trace splits and active branch paths.</p>
+                        <div class="tree-viewport-container">
+                            <div class="tree-zoom-controls">
+                                <button class="tree-zoom-btn" onclick="zoomTree('linear', -0.1)" title="Zoom Out"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
+                                <span class="tree-zoom-display" id="zoom-display-lin">100%</span>
+                                <button class="tree-zoom-btn" onclick="zoomTree('linear', 0.1)" title="Zoom In"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
+                                <button class="tree-zoom-btn" onclick="zoomTree('linear', 'reset')" title="Reset Zoom" style="margin-left: 4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg></button>
+                            </div>
+                            <div class="tree-viewport" id="tree-viewport-lin">
+                                <div id="tree-container-lin"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="reg-ensemble-info-section" class="ensemble-arch-card" style="display: none;">
+                        <h4 style="margin: 0; color: #0f172a; font-size: 14px;" id="reg-ensemble-arch-title">Ensemble Architecture</h4>
+                        <div class="ensemble-arch-grid">
+                            <div class="ensemble-stat-item">
+                                <div class="ensemble-stat-label">Estimators</div>
+                                <div class="ensemble-stat-val">50 Decision Trees</div>
+                            </div>
+                            <div class="ensemble-stat-item">
+                                <div class="ensemble-stat-label">Max Tree Depth</div>
+                                <div class="ensemble-stat-val">4 - 6 Levels</div>
+                            </div>
+                            <div class="ensemble-stat-item">
+                                <div class="ensemble-stat-label">Aggregation Mode</div>
+                                <div class="ensemble-stat-val" id="reg-ensemble-agg-mode">Averaging / Boosted Residuals</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Decision Tree Regressor Playground -->
+                <!-- Tree Regressor Playground -->
                 <div class="playground-container">
                     <h3 style="color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px; margin-bottom: 20px;">
-                        Regressor Tree Playground
+                        Tree Regressor Simulator Playground
                     </h3>
                     <p style="font-size: 13.5px; color: #475569; margin-bottom: 20px; line-height: 1.5;">
-                        Simulate custom weather conditions and watch regressor splits execute predictions live while tracing split paths.
+                        Simulate custom weather conditions with your chosen tree algorithm and watch the continuous distance impact calculate live.
                     </p>
 
                     <div class="playground-grid">
@@ -799,11 +716,11 @@
                                     <input type="range" id="wind-input-lin" class="custom-slider" min="0" max="50" step="0.5" value="8.0">
                                 </div>
                             </div>
-                            <button id="predict-btn-lin" class="predict-btn" onclick="executePrediction('decision_tree', 'linear')">
+                            <button id="predict-btn-lin" class="predict-btn" onclick="executePrediction('tree', 'linear')">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                     <polygon points="5 3 19 12 5 21 5 3"></polygon>
                                 </svg>
-                                <span>Run Regressor Prediction</span>
+                                <span>Run Tree Regressor Prediction</span>
                             </button>
                         </div>
 
@@ -811,11 +728,11 @@
                             <div class="result-card" style="height: 100%; display: flex; flex-direction: column; justify-content: center; min-height: 200px;">
                                 <div class="result-title">Predicted Impact Distance</div>
                                 <div class="prediction-highlight" style="font-size: 36px; margin: 16px 0;">
-                                    <span id="pred-distance">0.456</span>
+                                    <span id="pred-distance">0.000</span>
                                     <span class="prediction-unit" style="font-size: 18px;">miles</span>
                                 </div>
-                                <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin: 0;">
-                                    Calculated live using continuous hierarchical node logic.
+                                <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin: 0;" id="pred-algo-note-lin">
+                                    Predicted using Decision Tree (CART).
                                 </p>
                             </div>
                         </div>
@@ -823,123 +740,149 @@
                 </div>
             </div>
 
-            <!-- TAB 2: DECISION TREE CLASSIFIER -->
+            <!-- TAB 2: CLASSIFICATION (7 TREE ALGORITHMS) -->
             <div id="tab-content-logistic" class="tab-content-panel">
+                
+                <!-- Algorithm Selector Banner -->
+                <div class="algo-selector-banner">
+                    <div>
+                        <span style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: var(--accent-sage); letter-spacing: 0.5px;">Active Classifier Model</span>
+                        <h3 id="current-clf-algo-title" style="margin: 4px 0; color: var(--text-primary);">Decision Tree (CART)</h3>
+                        <p id="current-clf-algo-desc" style="font-size: 13px; color: var(--text-secondary); margin: 0;">Single partitioning tree that recursively splits weather features.</p>
+                    </div>
+                    <div>
+                        <label for="tree-algo-select-clf" style="display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">Switch Tree Algorithm:</label>
+                        <select id="tree-algo-select-clf" class="algo-dropdown-select" onchange="onAlgoChange('clf', this.value)">
+                            {% for algo in results.tree_models.algo_list %}
+                            <option value="{{ algo.key }}">{{ loop.index }}. {{ algo.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Dynamic Metrics Grid -->
+                <div class="metrics-container">
+                    <div class="metric-card-premium">
+                        <div class="label">Accuracy (Test Set)</div>
+                        <div class="value" id="clf-metric-acc-test" style="color: #10b981;">{{ (results.tree_models.algorithms.decision_tree.logistic.accuracy_test * 100) | round(1) }}%</div>
+                        <div class="subtext">Correct classifications</div>
+                    </div>
+                    <div class="metric-card-premium">
+                        <div class="label">Accuracy (Train Set)</div>
+                        <div class="value" id="clf-metric-acc-train">{{ (results.tree_models.algorithms.decision_tree.logistic.accuracy_train * 100) | round(1) }}%</div>
+                        <div class="subtext">Fit on training split</div>
+                    </div>
+                    <div class="metric-card-premium">
+                        <div class="label">Weighted F1</div>
+                        <div class="value" id="clf-metric-f1" style="color: var(--text-secondary);">{{ results.tree_models.algorithms.decision_tree.logistic.f1_weighted }}</div>
+                        <div class="subtext">F-measure harmonic balance</div>
+                    </div>
+                    <div class="metric-card-premium">
+                        <div class="label">Weighted Precision</div>
+                        <div class="value" id="clf-metric-prec" style="color: var(--text-secondary);">{{ results.tree_models.algorithms.decision_tree.logistic.precision_weighted }}</div>
+                        <div class="subtext">Precision accuracy</div>
+                    </div>
+                </div>
+
+                <!-- Leaderboard Table -->
                 <div class="full-width-card">
-                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px; margin-bottom: 16px;">
-                        <h3 style="color: #1e293b; margin: 0;">Decision Tree Classifier</h3>
-                        <span class="status-pill" style="background: var(--accent-sage-bg); border-color: var(--accent-sage-border); color: var(--accent-sage);">
-                            Target: Severity (1-4)
-                        </span>
-                    </div>
-
-                    <p style="font-size: 13.5px; color: #475569; margin-bottom: 16px; line-height: 1.5;">
-                        The Classifier partitions weather nodes based on entropy/gini impurity splits to classify accident <strong>Severity level (1 to 4)</strong>.
-                    </p>
-
-                    <!-- Metrics Grid -->
-                    <div class="metrics-container" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 24px;">
-                        <div class="metric-card-premium">
-                            <div class="label">Accuracy (Test)</div>
-                            <div class="value" style="color: #10b981;">{{ (results.decision_tree.logistic.accuracy_test * 100) | round(1) }}%</div>
-                            <div class="subtext">Correct classifications</div>
-                        </div>
-                        <div class="metric-card-premium">
-                            <div class="label">Accuracy (Train)</div>
-                            <div class="value">{{ (results.decision_tree.logistic.accuracy_train * 100) | round(1) }}%</div>
-                            <div class="subtext">Fit on training set</div>
-                        </div>
-                        <div class="metric-card-premium">
-                            <div class="label">F1-Score</div>
-                            <div class="value" style="color: var(--text-secondary);">{{ results.decision_tree.logistic.f1_weighted }}</div>
-                            <div class="subtext">Weighted F-measure</div>
-                        </div>
-                        <div class="metric-card-premium">
-                            <div class="label">Recall</div>
-                            <div class="value" style="color: var(--text-secondary);">{{ results.decision_tree.logistic.recall_weighted }}</div>
-                            <div class="subtext">Sensitivity coverage</div>
-                        </div>
-                    </div>
-
-                    <!-- Virtual Tree Visualizer -->
-                    <h5 style="margin-top: 24px; margin-bottom: 4px; color: #334155; font-size: 13px;">Virtual Decision Tree Path Trace (Classifier):</h5>
-                    <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 12px;">Scroll horizontally to explore the full tree splits. Move the sliders in the playground below to trace splits and highlighted active paths in real-time.</p>
-                    <div class="tree-viewport-container">
-                        <div class="tree-zoom-controls">
-                            <button class="tree-zoom-btn" onclick="zoomTree('logistic', -0.1)" title="Zoom Out (Ctrl + Scroll Down)">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                            </button>
-                            <span class="tree-zoom-display" id="zoom-display-log">100%</span>
-                            <button class="tree-zoom-btn" onclick="zoomTree('logistic', 0.1)" title="Zoom In (Ctrl + Scroll Up)">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                            </button>
-                            <button class="tree-zoom-btn" onclick="zoomTree('logistic', 'reset')" title="Reset Zoom" style="margin-left: 4px;">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg>
-                            </button>
-                        </div>
-                        <div class="tree-viewport" id="tree-viewport-log">
-                            <div id="tree-container-log"></div>
-                        </div>
-                    </div>
-
-                    <!-- Heatmap Confusion Matrix -->
-                    <h5 style="margin-bottom: 6px; color: #334155; font-size: 13px;">Test Set Confusion Matrix (Heatmap Grid):</h5>
-                    <div class="heatmap-container" style="max-width: 500px; margin-bottom: 24px;">
-                        <div class="heatmap-grid">
-                            <div class="heatmap-header">Actual \ Pred</div>
-                            {% for c in results.decision_tree.logistic.classes %}
-                            <div class="heatmap-header">Class {{ c }}</div>
+                    <h3 style="color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px; margin-bottom: 12px;">
+                        7 Tree Classifiers Comparative Leaderboard
+                    </h3>
+                    <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">Side-by-side benchmark evaluation across all 7 tree classifier architectures for predicting accident severity (1 to 4).</p>
+                    
+                    <table class="leaderboard-table">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Algorithm</th>
+                                <th>Accuracy (Test)</th>
+                                <th>Precision (W)</th>
+                                <th>Recall (W)</th>
+                                <th>F1-Score (W)</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in results.tree_models.leaderboard_classification %}
+                            <tr>
+                                <td>
+                                    <span class="rank-badge {% if loop.index == 1 %}rank-1{% elif loop.index == 2 %}rank-2{% elif loop.index == 3 %}rank-3{% else %}rank-other{% endif %}">
+                                        {{ loop.index }}
+                                    </span>
+                                </td>
+                                <td><strong>{{ item.name }}</strong></td>
+                                <td><strong style="color: #10b981;">{{ (item.accuracy_test * 100) | round(1) }}%</strong></td>
+                                <td>{{ item.precision_weighted }}</td>
+                                <td>{{ item.recall_weighted }}</td>
+                                <td><strong>{{ item.f1_weighted }}</strong></td>
+                                <td>
+                                    <button class="btn-secondary" style="padding: 4px 10px; font-size: 12px;" onclick="selectAlgoDirect('clf', '{{ item.key }}')">Inspect Model</button>
+                                </td>
+                            </tr>
                             {% endfor %}
+                        </tbody>
+                    </table>
 
-                            {% for actual_row in results.decision_tree.logistic.confusion_matrix %}
-                            {% set outer_loop_index = loop.index0 %}
-                            <div class="heatmap-label">Class {{ results.decision_tree.logistic.classes[outer_loop_index] }}</div>
-                            {% for val in actual_row %}
-                                {% set inner_loop_index = loop.index0 %}
-                                {% if outer_loop_index == inner_loop_index %}
-                                    {% if val > 1000 %}
-                                        <div class="heatmap-cell hm-diag-high">{{ val }}</div>
-                                    {% else %}
-                                        <div class="heatmap-cell hm-diag-mid">{{ val }}</div>
-                                    {% endif %}
-                                {% else %}
-                                    {% if val == 0 %}
-                                        <div class="heatmap-cell hm-off-zero">{{ val }}</div>
-                                    {% elif val > 200 %}
-                                        <div class="heatmap-cell hm-off-high">{{ val }}</div>
-                                    {% else %}
-                                        <div class="heatmap-cell hm-off-low">{{ val }}</div>
-                                    {% endif %}
-                                {% endif %}
-                            {% endfor %}
-                            {% endfor %}
-                        </div>
-                    </div>
-
-                    <!-- Feature Importance -->
-                    <h5 style="margin-top: 16px; margin-bottom: 12px; color: #334155; font-size: 13px;">Classification Feature Importances:</h5>
-                    <ul class="importance-list">
-                        {% for col, imp in results.decision_tree.logistic.feature_importances.items() %}
+                    <!-- Dynamic Feature Importances -->
+                    <h4 style="margin-top: 24px; margin-bottom: 8px; color: #1f3a5f; font-size: 14px;">Feature Importances (<span id="clf-importance-algo-name">Decision Tree (CART)</span>):</h4>
+                    <ul class="importance-list" id="clf-importance-list">
+                        {% for col, imp in results.tree_models.algorithms.decision_tree.logistic.feature_importances.items() %}
                         <li class="importance-item">
                             <div class="importance-label-row">
                                 <span>{{ col }}</span>
-                                <strong>{{ (imp * 100) | round(1) }}%</strong>
+                                <strong id="clf-imp-val-{{ loop.index0 }}">{{ (imp * 100) | round(1) }}%</strong>
                             </div>
                             <div class="importance-bar-wrapper">
-                                <div class="importance-bar" style="width: {{ imp * 100 }}%; background-color: var(--accent-sage);"></div>
+                                <div class="importance-bar" id="clf-imp-bar-{{ loop.index0 }}" style="width: {{ imp * 100 }}%; background-color: var(--accent-sage);"></div>
                             </div>
                         </li>
                         {% endfor %}
                     </ul>
+
+                    <!-- Decision Tree Visualizer / Ensemble info -->
+                    <div id="clf-tree-visualizer-section">
+                        <h4 style="margin-top: 24px; margin-bottom: 4px; color: #1f3a5f; font-size: 14px;">Virtual Decision Tree Path Trace (Classifier):</h4>
+                        <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 12px;">Move the sliders in the playground below to trace splits and active branch paths.</p>
+                        <div class="tree-viewport-container">
+                            <div class="tree-zoom-controls">
+                                <button class="tree-zoom-btn" onclick="zoomTree('logistic', -0.1)" title="Zoom Out"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
+                                <span class="tree-zoom-display" id="zoom-display-log">100%</span>
+                                <button class="tree-zoom-btn" onclick="zoomTree('logistic', 0.1)" title="Zoom In"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
+                                <button class="tree-zoom-btn" onclick="zoomTree('logistic', 'reset')" title="Reset Zoom" style="margin-left: 4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg></button>
+                            </div>
+                            <div class="tree-viewport" id="tree-viewport-log">
+                                <div id="tree-container-log"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="clf-ensemble-info-section" class="ensemble-arch-card" style="display: none;">
+                        <h4 style="margin: 0; color: #0f172a; font-size: 14px;" id="clf-ensemble-arch-title">Ensemble Architecture</h4>
+                        <div class="ensemble-arch-grid">
+                            <div class="ensemble-stat-item">
+                                <div class="ensemble-stat-label">Estimators</div>
+                                <div class="ensemble-stat-val">50 Decision Trees</div>
+                            </div>
+                            <div class="ensemble-stat-item">
+                                <div class="ensemble-stat-label">Splitting Metric</div>
+                                <div class="ensemble-stat-val">Gini / Log-Loss Gradient</div>
+                            </div>
+                            <div class="ensemble-stat-item">
+                                <div class="ensemble-stat-label">Class Voting</div>
+                                <div class="ensemble-stat-val" id="clf-ensemble-agg-mode">Soft Probability Averaging</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Decision Tree Classifier Playground -->
+                <!-- Tree Classifier Playground -->
                 <div class="playground-container">
                     <h3 style="color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px; margin-bottom: 20px;">
-                        Classifier Tree Playground
+                        Tree Classifier Simulator Playground
                     </h3>
                     <p style="font-size: 13.5px; color: #475569; margin-bottom: 20px; line-height: 1.5;">
-                        Simulate custom weather conditions and watch classifier splits execute predictions live while tracing split paths.
+                        Simulate custom weather conditions with your chosen tree algorithm and watch the severity classification probabilities calculate live.
                     </p>
 
                     <div class="playground-grid">
@@ -981,11 +924,11 @@
                                     <input type="range" id="wind-input-log" class="custom-slider" min="0" max="50" step="0.5" value="8.0">
                                 </div>
                             </div>
-                            <button id="predict-btn-log" class="predict-btn" onclick="executePrediction('decision_tree', 'logistic')">
+                            <button id="predict-btn-log" class="predict-btn" onclick="executePrediction('tree', 'logistic')">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                     <polygon points="5 3 19 12 5 21 5 3"></polygon>
                                 </svg>
-                                <span>Run Classifier Prediction</span>
+                                <span>Run Tree Classifier Prediction</span>
                             </button>
                         </div>
 
@@ -1002,7 +945,7 @@
                                 <!-- Class Probabilities -->
                                 <div class="probability-bar-container">
                                     <div style="font-size: 12px; color: var(--text-muted); font-weight: 500; margin-bottom: 12px;">
-                                        Class Probabilities (Gini Distribution)
+                                        Class Probabilities (<span id="pred-algo-name-clf">Decision Tree</span>)
                                     </div>
                                     
                                     <div class="prob-row">
@@ -1044,17 +987,11 @@
     </main>
 </div>
 
-<!-- SCRIPT TO RUN THE PLAYGROUND INTERACTION & TREE VISUALIZATION -->
+<!-- SCRIPT TO RUN INTERACTION AND VISUALIZATION -->
 <script>
-    // Load tree structure from jinja context
-    const linearTreeData = {{ results.decision_tree.linear.tree_structure | tojson }};
-    const logisticTreeData = {{ results.decision_tree.logistic.tree_structure | tojson }};
+    const TREE_DATA = {{ results.tree_models | tojson | safe if results and results.tree_models else '{}' }};
+    const FEATURES = {{ results.features | tojson | safe if results and results.features else '[]' }};
 
-    // Zoom level states
-    let zoomScaleLin = 1.0;
-    let zoomScaleLog = 1.0;
-
-    // Tab switching logic
     function switchTab(type) {
         document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
         document.querySelectorAll('.tab-content-panel').forEach(panel => panel.classList.remove('active'));
@@ -1068,8 +1005,92 @@
         }
     }
 
-    // Input elements and displays binding helper
-    function setupSliders(suffix, type) {
+    function selectAlgoDirect(mode, algoKey) {
+        const selectElem = document.getElementById(`tree-algo-select-${mode}`);
+        if (selectElem) {
+            selectElem.value = algoKey;
+            onAlgoChange(mode, algoKey);
+            selectElem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
+
+    function onAlgoChange(mode, algoKey) {
+        if (!TREE_DATA.algorithms || !TREE_DATA.algorithms[algoKey]) return;
+        const algoObj = TREE_DATA.algorithms[algoKey];
+        
+        if (mode === 'reg') {
+            document.getElementById('current-reg-algo-title').textContent = algoObj.name;
+            document.getElementById('current-reg-algo-desc').textContent = algoObj.description;
+            document.getElementById('reg-metric-r2-test').textContent = algoObj.linear.r2_test;
+            document.getElementById('reg-metric-r2-train').textContent = algoObj.linear.r2_train;
+            document.getElementById('reg-metric-mse').textContent = algoObj.linear.mse;
+            document.getElementById('reg-metric-rmse').textContent = algoObj.linear.rmse;
+            document.getElementById('reg-importance-algo-name').textContent = algoObj.name;
+            document.getElementById('pred-algo-note-lin').textContent = `Predicted live using ${algoObj.name}.`;
+
+            // Update feature importances
+            FEATURES.forEach((feat, idx) => {
+                const imp = algoObj.linear.feature_importances[feat] || 0.2;
+                const impPct = (imp * 100).toFixed(1);
+                const valElem = document.getElementById(`reg-imp-val-${idx}`);
+                const barElem = document.getElementById(`reg-imp-bar-${idx}`);
+                if (valElem) valElem.textContent = `${impPct}%`;
+                if (barElem) barElem.style.width = `${impPct}%`;
+            });
+
+            // Toggle visualizer vs ensemble card
+            const treeVis = document.getElementById('reg-tree-visualizer-section');
+            const ensCard = document.getElementById('reg-ensemble-info-section');
+            if (algoKey === 'decision_tree') {
+                if (treeVis) treeVis.style.display = 'block';
+                if (ensCard) ensCard.style.display = 'none';
+            } else {
+                if (treeVis) treeVis.style.display = 'none';
+                if (ensCard) {
+                    ensCard.style.display = 'block';
+                    document.getElementById('reg-ensemble-arch-title').textContent = `${algoObj.name} Architecture`;
+                    document.getElementById('reg-ensemble-agg-mode').textContent = algoKey.includes('boost') ? 'Iterative Gradient Boosting Residuals' : 'Parallel Bagging Tree Averaging';
+                }
+            }
+        } else {
+            document.getElementById('current-clf-algo-title').textContent = algoObj.name;
+            document.getElementById('current-clf-algo-desc').textContent = algoObj.description;
+            document.getElementById('clf-metric-acc-test').textContent = `${(algoObj.logistic.accuracy_test * 100).toFixed(1)}%`;
+            document.getElementById('clf-metric-acc-train').textContent = `${(algoObj.logistic.accuracy_train * 100).toFixed(1)}%`;
+            document.getElementById('clf-metric-f1').textContent = algoObj.logistic.f1_weighted;
+            document.getElementById('clf-metric-prec').textContent = algoObj.logistic.precision_weighted;
+            document.getElementById('clf-importance-algo-name').textContent = algoObj.name;
+            document.getElementById('pred-algo-name-clf').textContent = algoObj.name;
+
+            // Update feature importances
+            FEATURES.forEach((feat, idx) => {
+                const imp = algoObj.logistic.feature_importances[feat] || 0.2;
+                const impPct = (imp * 100).toFixed(1);
+                const valElem = document.getElementById(`clf-imp-val-${idx}`);
+                const barElem = document.getElementById(`clf-imp-bar-${idx}`);
+                if (valElem) valElem.textContent = `${impPct}%`;
+                if (barElem) barElem.style.width = `${impPct}%`;
+            });
+
+            // Toggle visualizer vs ensemble card
+            const treeVis = document.getElementById('clf-tree-visualizer-section');
+            const ensCard = document.getElementById('clf-ensemble-info-section');
+            if (algoKey === 'decision_tree') {
+                if (treeVis) treeVis.style.display = 'block';
+                if (ensCard) ensCard.style.display = 'none';
+            } else {
+                if (treeVis) treeVis.style.display = 'none';
+                if (ensCard) {
+                    ensCard.style.display = 'block';
+                    document.getElementById('clf-ensemble-arch-title').textContent = `${algoObj.name} Architecture`;
+                    document.getElementById('clf-ensemble-agg-mode').textContent = algoKey.includes('boost') ? 'Log-Loss Stage-wise Optimization' : 'Majority Soft Voting';
+                }
+            }
+        }
+    }
+
+    // Sliders setup
+    function setupSliders(suffix) {
         const tempInput = document.getElementById(`temp-input-${suffix}`);
         const tempDisplay = document.getElementById(`temp-display-${suffix}`);
         const humidInput = document.getElementById(`humid-input-${suffix}`);
@@ -1081,28 +1102,30 @@
         const windInput = document.getElementById(`wind-input-${suffix}`);
         const windDisplay = document.getElementById(`wind-display-${suffix}`);
 
-        if (tempInput && tempDisplay) {
-            const updateAndVisualize = () => {
-                tempDisplay.textContent = tempInput.value;
-                humidDisplay.textContent = humidInput.value;
-                pressDisplay.textContent = pressInput.value;
-                visDisplay.textContent = parseFloat(visInput.value).toFixed(1);
-                windDisplay.textContent = parseFloat(windInput.value).toFixed(1);
-                
-                // Re-render tree visualization on input changes to highlight paths!
-                drawTreeVisualization(type);
-            };
+        const updateHandler = () => {
+            if (tempDisplay) tempDisplay.textContent = tempInput.value;
+            if (humidDisplay) humidDisplay.textContent = humidInput.value;
+            if (pressDisplay) pressDisplay.textContent = pressInput.value;
+            if (visDisplay) visDisplay.textContent = parseFloat(visInput.value).toFixed(1);
+            if (windDisplay) windDisplay.textContent = parseFloat(windInput.value).toFixed(1);
 
-            tempInput.addEventListener('input', updateAndVisualize);
-            humidInput.addEventListener('input', updateAndVisualize);
-            pressInput.addEventListener('input', updateAndVisualize);
-            visInput.addEventListener('input', updateAndVisualize);
-            windInput.addEventListener('input', updateAndVisualize);
+            const activeAlgo = document.getElementById(`tree-algo-select-${suffix === 'lin' ? 'reg' : 'clf'}`).value;
+            if (activeAlgo === 'decision_tree') {
+                updateTreeTrace(suffix === 'lin' ? 'linear' : 'logistic');
+            }
+        };
+
+        if (tempInput) {
+            tempInput.addEventListener('input', updateHandler);
+            humidInput.addEventListener('input', updateHandler);
+            pressInput.addEventListener('input', updateHandler);
+            visInput.addEventListener('input', updateHandler);
+            windInput.addEventListener('input', updateHandler);
         }
     }
 
-    setupSliders('lin', 'linear');
-    setupSliders('log', 'logistic');
+    setupSliders('lin');
+    setupSliders('log');
 
     const severityLabels = {
         1: "Level 1 (Minor Impact, Short Delays)",
@@ -1111,220 +1134,12 @@
         4: "Level 4 (Critical Impact, Severe Congestion)"
     };
 
-    // Virtual Tree Visualization Rendering Algorithm
-    function drawTreeVisualization(type) {
-        const treeData = type === 'linear' ? linearTreeData : logisticTreeData;
-        const containerId = type === 'linear' ? 'tree-container-lin' : 'tree-container-log';
-        const suffix = type === 'linear' ? 'lin' : 'log';
-        
-        const activeValues = {
-            "Temperature(F)": parseFloat(document.getElementById(`temp-input-${suffix}`).value),
-            "Humidity(%)": parseFloat(document.getElementById(`humid-input-${suffix}`).value),
-            "Pressure(in)": parseFloat(document.getElementById(`press-input-${suffix}`).value),
-            "Visibility(mi)": parseFloat(document.getElementById(`vis-input-${suffix}`).value),
-            "Wind_Speed(mph)": parseFloat(document.getElementById(`wind-input-${suffix}`).value)
-        };
-        
-        const container = document.getElementById(containerId);
-        if (!container) return;
-        container.innerHTML = "";
-
-        // Helper to count leaves
-        function getLeavesCount(node) {
-            if (!node) return 0;
-            if (!node.left && !node.right) return 1;
-            return getLeavesCount(node.left) + getLeavesCount(node.right);
-        }
-
-        // Helper to get max depth
-        function getMaxDepth(node) {
-            if (!node) return 0;
-            if (!node.left && !node.right) return 1;
-            return 1 + Math.max(getMaxDepth(node.left), getMaxDepth(node.right));
-        }
-
-        const nodeWidth = 140;
-        const nodeHeight = 70;
-        
-        const leafCount = getLeavesCount(treeData);
-        const depth = getMaxDepth(treeData);
-        const maxLevel = depth - 1;
-
-        const horizontalSpacing = 160; // 140px node width + 20px gap
-        const levelHeight = 105; // increased vertical space for better readability
-        const paddingX = 40;
-        const paddingY = 30;
-
-        // Calculate dynamic dimensions
-        const totalTreeWidth = (leafCount - 1) * horizontalSpacing + nodeWidth;
-        const svgWidth = Math.max(1400, totalTreeWidth + paddingX * 2);
-        const svgHeight = Math.max(480, paddingY * 2 + maxLevel * levelHeight + nodeHeight);
-
-        // Create SVG element
-        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-        svg.setAttribute("viewBox", `0 0 ${svgWidth} ${svgHeight}`);
-        const scale = type === 'linear' ? zoomScaleLin : zoomScaleLog;
-        svg.setAttribute("width", svgWidth * scale);
-        svg.setAttribute("height", svgHeight * scale);
-        svg.style.overflow = "visible";
-        container.appendChild(svg);
-
-        const nodes = [];
-        const links = [];
-        const coords = {};
-        let leafIndex = 0;
-        const xOffset = (svgWidth - totalTreeWidth) / 2;
-
-        // Pass 1: compute coordinates (bottom-up algorithm to center parents and separate leaves)
-        function assignCoords(node, level) {
-            if (!node) return null;
-            const y = paddingY + level * levelHeight;
-            let x;
-            if (!node.left && !node.right) {
-                // Leaf node
-                x = xOffset + leafIndex * horizontalSpacing;
-                leafIndex++;
-            } else {
-                // Split node - calculate position from children
-                const leftX = assignCoords(node.left, level + 1);
-                const rightX = assignCoords(node.right, level + 1);
-                if (leftX !== null && rightX !== null) {
-                    x = (leftX + rightX) / 2;
-                } else if (leftX !== null) {
-                    x = leftX;
-                } else if (rightX !== null) {
-                    x = rightX;
-                } else {
-                    x = xOffset;
-                }
-            }
-            coords[node.id] = { x, y };
-            return x;
-        }
-
-        assignCoords(treeData, 0);
-
-        // Pass 2: collect node and link data using computed coordinates
-        function collectNodesAndLinks(node, parentId) {
-            if (!node) return;
-            const pos = coords[node.id];
-            
-            nodes.push({
-                id: node.id,
-                parentId: parentId,
-                type: node.type,
-                feature: node.feature,
-                threshold: node.threshold,
-                prediction: node.prediction,
-                impurity: node.impurity,
-                samples: node.samples,
-                x: pos.x,
-                y: pos.y,
-                left: node.left,
-                right: node.right
-            });
-
-            if (parentId !== null) {
-                const parentPos = coords[parentId];
-                links.push({
-                    parentX: parentPos.x,
-                    parentY: parentPos.y,
-                    childX: pos.x,
-                    childY: pos.y,
-                    parentId: parentId,
-                    childId: node.id
-                });
-            }
-
-            collectNodesAndLinks(node.left, node.id);
-            collectNodesAndLinks(node.right, node.id);
-        }
-
-        collectNodesAndLinks(treeData, null);
-
-        // Traverse active paths recursively from root
-        const activeNodeIds = new Set();
-        const activeLinkKeys = new Set();
-
-        function computeActivePaths(nodeId) {
-            activeNodeIds.add(nodeId);
-            const node = nodes.find(n => n.id === nodeId);
-            if (!node || node.type === 'leaf') return;
-
-            const val = activeValues[node.feature];
-            const isLeft = val <= node.threshold;
-
-            if (isLeft && node.left) {
-                activeLinkKeys.add(`${nodeId}->${node.left.id}`);
-                computeActivePaths(node.left.id);
-            } else if (!isLeft && node.right) {
-                activeLinkKeys.add(`${nodeId}->${node.right.id}`);
-                computeActivePaths(node.right.id);
-            }
-        }
-
-        if (nodes.length > 0) {
-            computeActivePaths(nodes[0].id);
-        }
-
-        // Draw connections
-        links.forEach(l => {
-            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-            const x1 = l.parentX + nodeWidth / 2;
-            const y1 = l.parentY + nodeHeight;
-            const x2 = l.childX + nodeWidth / 2;
-            const y2 = l.childY;
-            
-            // Curved connection line
-            const d = `M ${x1} ${y1} C ${x1} ${(y1 + y2) / 2}, ${x2} ${(y1 + y2) / 2}, ${x2} ${y2}`;
-            path.setAttribute("d", d);
-            path.setAttribute("fill", "none");
-            
-            const isLinkActive = activeLinkKeys.has(`${l.parentId}->${l.childId}`);
-            if (isLinkActive) {
-                path.setAttribute("stroke", type === 'linear' ? "#3b82f6" : "#10b981");
-                path.setAttribute("stroke-width", "3");
-                path.setAttribute("class", "active-link");
-            } else {
-                path.setAttribute("stroke", "#cbd5e1");
-                path.setAttribute("stroke-width", "1.5");
-            }
-            svg.appendChild(path);
-        });
-
-        // Draw node cards using foreignObject
-        nodes.forEach(n => {
-            const fo = document.createElementNS("http://www.w3.org/2000/svg", "foreignObject");
-            fo.setAttribute("x", n.x);
-            fo.setAttribute("y", n.y);
-            fo.setAttribute("width", nodeWidth);
-            fo.setAttribute("height", nodeHeight);
-
-            const isActive = activeNodeIds.has(n.id);
-            const cardClass = isActive ? `tree-node-card active-${suffix}` : 'tree-node-card';
-            
-            const featureLabel = n.feature ? n.feature.replace(/\(.*\)/, '') : '';
-            
-            const content = `
-                <div class="${cardClass}" xmlns="http://www.w3.org/1999/xhtml">
-                    <div class="node-title">${n.type === 'split' ? featureLabel : 'Leaf Prediction'}</div>
-                    <div class="node-details">
-                        ${n.type === 'split' ? `&le; ${n.threshold}` : (type === 'linear' ? `${n.prediction.toFixed(2)} mi` : `Class ${n.prediction}`)}
-                    </div>
-                    <div style="display:flex; justify-content:space-between; align-items:center; font-size:8px; color:var(--text-muted); margin-top:2px;">
-                        <span>Imp: ${n.impurity.toFixed(2)}</span>
-                        <span>N: ${n.samples}</span>
-                    </div>
-                </div>
-            `;
-            fo.innerHTML = content;
-            svg.appendChild(fo);
-        });
-    }
-
     async function executePrediction(category, type) {
         const suffix = type === 'linear' ? 'lin' : 'log';
+        const mode = type === 'linear' ? 'reg' : 'clf';
         const predictBtn = document.getElementById(`predict-btn-${suffix}`);
+        const selectedAlgo = document.getElementById(`tree-algo-select-${mode}`).value;
+
         const originalText = predictBtn.innerHTML;
         predictBtn.disabled = true;
         predictBtn.innerHTML = `
@@ -1332,7 +1147,7 @@
                 <circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle>
                 <path d="M4 12a8 8 0 0 1 8-8"></path>
             </svg>
-            <span>Running Models...</span>
+            <span>Running ${selectedAlgo}...</span>
         `;
 
         const payload = {
@@ -1341,158 +1156,184 @@
             "Pressure(in)": parseFloat(document.getElementById(`press-input-${suffix}`).value),
             "Visibility(mi)": parseFloat(document.getElementById(`vis-input-${suffix}`).value),
             "Wind_Speed(mph)": parseFloat(document.getElementById(`wind-input-${suffix}`).value),
-            "category": category,
-            "model_type": "none"
+            "category": "tree",
+            "model_type": selectedAlgo
         };
 
         try {
             const response = await fetch('/api/predict', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
+
             const data = await response.json();
-            
+
             if (data.success) {
                 if (type === 'linear') {
-                    const distanceVal = data.prediction.linear_prediction.predicted_value;
-                    document.getElementById('pred-distance').textContent = parseFloat(distanceVal).toFixed(3);
+                    const distVal = data.prediction.linear_prediction.predicted_value;
+                    document.getElementById('pred-distance').textContent = distVal.toFixed(4);
                 } else {
-                    const sevClass = data.prediction.logistic_prediction.predicted_class;
+                    const sevVal = data.prediction.logistic_prediction.predicted_class;
                     const badge = document.getElementById('pred-severity-badge');
-                    badge.textContent = sevClass;
-                    badge.className = `severity-badge sev-${sevClass}`;
-                    document.getElementById('pred-severity-label').textContent = severityLabels[sevClass] || `Level ${sevClass}`;
+                    badge.textContent = sevVal;
+                    badge.className = `severity-badge sev-${sevVal}`;
+                    document.getElementById('pred-severity-label').textContent = severityLabels[sevVal] || `Severity Level ${sevVal}`;
 
                     const probs = data.prediction.logistic_prediction.probabilities;
-                    [1, 2, 3, 4].forEach(c => {
-                        const probVal = (probs[c] !== undefined ? probs[c] : 0.0) * 100;
-                        const bar = document.getElementById(`prob-bar-${c}`);
-                        const label = document.getElementById(`prob-val-${c}`);
-                        if (bar && label) {
-                            bar.style.width = `${probVal}%`;
-                            label.textContent = `${probVal.toFixed(1)}%`;
-                        }
-                    });
+                    for (let i = 1; i <= 4; i++) {
+                        const prob = probs[String(i)] !== undefined ? probs[String(i)] : 0.0;
+                        const pctStr = (prob * 100).toFixed(1) + '%';
+                        const bar = document.getElementById(`prob-bar-${i}`);
+                        const val = document.getElementById(`prob-val-${i}`);
+                        if (bar) bar.style.width = pctStr;
+                        if (val) val.textContent = pctStr;
+                    }
                 }
             } else {
-                console.error("Prediction failed:", data.error);
-                alert("Error during model prediction: " + data.error);
+                alert('Prediction error: ' + (data.error || 'Server error'));
             }
-        } catch (e) {
-            console.error("Connection failed:", e);
-            alert("Network connection error running models.");
+        } catch (err) {
+            console.error(err);
+            alert('Failed to connect to prediction API');
         } finally {
             predictBtn.disabled = false;
             predictBtn.innerHTML = originalText;
         }
     }
 
-    // Zoom handler
-    function zoomTree(type, factor) {
-        if (factor === 'reset') {
-            if (type === 'linear') zoomScaleLin = 1.0;
-            else zoomScaleLog = 1.0;
+    // Zoom and pan state
+    const zoomState = { linear: 1.0, logistic: 1.0 };
+    function zoomTree(type, delta) {
+        if (delta === 'reset') {
+            zoomState[type] = 1.0;
         } else {
-            if (type === 'linear') {
-                zoomScaleLin = Math.min(Math.max(zoomScaleLin + factor, 0.5), 3.0);
+            zoomState[type] = Math.min(Math.max(0.4, zoomState[type] + delta), 2.0);
+        }
+        const suffix = type === 'linear' ? 'lin' : 'log';
+        document.getElementById(`zoom-display-${suffix}`).textContent = Math.round(zoomState[type] * 100) + '%';
+        const container = document.getElementById(`tree-container-${suffix}`);
+        if (container) {
+            container.style.transform = `scale(${zoomState[type]})`;
+            container.style.transformOrigin = 'top left';
+        }
+    }
+
+    // Recursive tree path trace
+    function updateTreeTrace(type) {
+        if (!TREE_DATA.algorithms || !TREE_DATA.algorithms.decision_tree) return;
+        const treeRoot = type === 'linear' ? TREE_DATA.algorithms.decision_tree.linear.tree_structure : TREE_DATA.algorithms.decision_tree.logistic.tree_structure;
+        if (!treeRoot) return;
+
+        const suffix = type === 'linear' ? 'lin' : 'log';
+        const currentInputs = {
+            "Temperature(F)": parseFloat(document.getElementById(`temp-input-${suffix}`).value),
+            "Humidity(%)": parseFloat(document.getElementById(`humid-input-${suffix}`).value),
+            "Pressure(in)": parseFloat(document.getElementById(`press-input-${suffix}`).value),
+            "Visibility(mi)": parseFloat(document.getElementById(`vis-input-${suffix}`).value),
+            "Wind_Speed(mph)": parseFloat(document.getElementById(`wind-input-${suffix}`).value)
+        };
+
+        const activeNodeIds = new Set();
+        let curr = treeRoot;
+        while (curr) {
+            activeNodeIds.add(curr.id);
+            if (curr.type === 'leaf') break;
+            const inputVal = currentInputs[curr.feature];
+            curr = (inputVal <= curr.threshold) ? curr.left : curr.right;
+        }
+
+        const container = document.getElementById(`tree-container-${suffix}`);
+        if (container) {
+            container.querySelectorAll('.tree-node-card').forEach(card => {
+                const nodeId = parseInt(card.dataset.id);
+                if (activeNodeIds.has(nodeId)) {
+                    card.classList.add(type === 'linear' ? 'active-lin' : 'active-log');
+                } else {
+                    card.classList.remove('active-lin', 'active-log');
+                }
+            });
+        }
+    }
+
+    // Render tree SVG & Nodes
+    function renderTreeDOM(type) {
+        if (!TREE_DATA.algorithms || !TREE_DATA.algorithms.decision_tree) return;
+        const treeRoot = type === 'linear' ? TREE_DATA.algorithms.decision_tree.linear.tree_structure : TREE_DATA.algorithms.decision_tree.logistic.tree_structure;
+        if (!treeRoot) return;
+
+        const suffix = type === 'linear' ? 'lin' : 'log';
+        const container = document.getElementById(`tree-container-${suffix}`);
+        if (!container) return;
+
+        // Simple hierarchical layout
+        const nodeWidth = 140, nodeHeight = 70, xGap = 160, yGap = 100;
+        let maxDepth = 0, leafCount = 0;
+
+        function assignPositions(node, depth) {
+            if (depth > maxDepth) maxDepth = depth;
+            node.y = depth * yGap;
+            if (node.type === 'leaf') {
+                node.x = leafCount * xGap;
+                leafCount++;
             } else {
-                zoomScaleLog = Math.min(Math.max(zoomScaleLog + factor, 0.5), 3.0);
+                assignPositions(node.left, depth + 1);
+                assignPositions(node.right, depth + 1);
+                node.x = (node.left.x + node.right.x) / 2;
             }
         }
+        assignPositions(treeRoot, 0);
 
-        const scale = type === 'linear' ? zoomScaleLin : zoomScaleLog;
-        const svg = document.querySelector(`#tree-container-${type === 'linear' ? 'lin' : 'log'} svg`);
-        if (svg) {
-            const viewBox = svg.getAttribute("viewBox").split(" ");
-            const originalWidth = parseFloat(viewBox[2]);
-            const originalHeight = parseFloat(viewBox[3]);
-            svg.setAttribute("width", originalWidth * scale);
-            svg.setAttribute("height", originalHeight * scale);
-        }
-        
-        const displayId = type === 'linear' ? 'zoom-display-lin' : 'zoom-display-log';
-        const display = document.getElementById(displayId);
-        if (display) {
-            display.textContent = `${Math.round(scale * 100)}%`;
-        }
-    }
+        const totalWidth = Math.max(leafCount * xGap + 80, 800);
+        const totalHeight = (maxDepth + 1) * yGap + 100;
 
-    // Drag-to-scroll implementation
-    function setupDragToScroll(viewportId, type) {
-        const viewport = document.getElementById(viewportId);
-        if (!viewport) return;
+        container.style.width = `${totalWidth}px`;
+        container.style.height = `${totalHeight}px`;
+        container.style.position = 'relative';
 
-        let isDown = false;
-        let startX;
-        let startY;
-        let scrollLeft;
-        let scrollTop;
-
-        viewport.addEventListener('mousedown', (e) => {
-            if (e.target.closest('.tree-node-card') || e.target.closest('button')) return;
-            isDown = true;
-            viewport.classList.add('grabbing');
-            startX = e.pageX - viewport.offsetLeft;
-            startY = e.pageY - viewport.offsetTop;
-            scrollLeft = viewport.scrollLeft;
-            scrollTop = viewport.scrollTop;
-        });
-
-        viewport.addEventListener('mouseleave', () => {
-            isDown = false;
-            viewport.classList.remove('grabbing');
-        });
-
-        viewport.addEventListener('mouseup', () => {
-            isDown = false;
-            viewport.classList.remove('grabbing');
-        });
-
-        viewport.addEventListener('mousemove', (e) => {
-            if (!isDown) return;
-            e.preventDefault();
-            const x = e.pageX - viewport.offsetLeft;
-            const y = e.pageY - viewport.offsetTop;
-            const walkX = (x - startX) * 1.5;
-            const walkY = (y - startY) * 1.5;
-            viewport.scrollLeft = scrollLeft - walkX;
-            viewport.scrollTop = scrollTop - walkY;
-        });
-
-        // Wheel zoom (Ctrl + Mouse Wheel)
-        viewport.addEventListener('wheel', (e) => {
-            if (e.ctrlKey) {
-                e.preventDefault();
-                const factor = e.deltaY < 0 ? 0.1 : -0.1;
-                zoomTree(type, factor);
+        let html = `<svg style="position: absolute; top:0; left:0; width:${totalWidth}px; height:${totalHeight}px; pointer-events:none;">`;
+        function drawLinks(node) {
+            if (node.type !== 'leaf') {
+                const x1 = node.x + nodeWidth / 2;
+                const y1 = node.y + nodeHeight;
+                const xl = node.left.x + nodeWidth / 2;
+                const yl = node.left.y;
+                const xr = node.right.x + nodeWidth / 2;
+                const yr = node.right.y;
+                html += `<path d="M ${x1} ${y1} C ${x1} ${(y1+yl)/2}, ${xl} ${(y1+yl)/2}, ${xl} ${yl}" stroke="#cbd5e1" stroke-width="2" fill="none" />`;
+                html += `<path d="M ${x1} ${y1} C ${x1} ${(y1+yr)/2}, ${xr} ${(y1+yr)/2}, ${xr} ${yr}" stroke="#cbd5e1" stroke-width="2" fill="none" />`;
+                drawLinks(node.left);
+                drawLinks(node.right);
             }
-        }, { passive: false });
+        }
+        drawLinks(treeRoot);
+        html += `</svg>`;
+
+        function renderNodes(node) {
+            const isLeaf = node.type === 'leaf';
+            const title = isLeaf ? (type === 'linear' ? `Pred: ${node.prediction} mi` : `Severity: Level ${node.prediction}`) : `${node.feature} ≤ ${node.threshold}`;
+            const details = isLeaf ? `Samples: ${node.samples}` : `Gini: ${node.impurity} (N=${node.samples})`;
+            html += `
+                <div class="tree-node-card" data-id="${node.id}" style="position: absolute; left: ${node.x}px; top: ${node.y}px;">
+                    <div class="node-title">${title}</div>
+                    <div class="node-details">${details}</div>
+                </div>
+            `;
+            if (!isLeaf) {
+                renderNodes(node.left);
+                renderNodes(node.right);
+            }
+        }
+        renderNodes(treeRoot);
+        container.innerHTML = html;
+        updateTreeTrace(type);
     }
 
-    window.addEventListener('DOMContentLoaded', () => {
-        // Draw the initial decision tree visualizations
-        drawTreeVisualization('linear');
-        drawTreeVisualization('logistic');
-        
-        // Setup Drag-to-scroll and Ctrl+Wheel listeners
-        setupDragToScroll('tree-viewport-lin', 'linear');
-        setupDragToScroll('tree-viewport-log', 'logistic');
-
-        // Run initial predictions
-        executePrediction('decision_tree', 'linear');
-        executePrediction('decision_tree', 'logistic');
+    document.addEventListener('DOMContentLoaded', () => {
+        renderTreeDOM('linear');
+        renderTreeDOM('logistic');
     });
 </script>
-
-<style>
-    @keyframes spin {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
-    }
-</style>
 
 </body>
 </html>
