@@ -531,15 +531,26 @@
                 <!-- Linear Regression Playground -->
                 <div class="playground-container">
                     <h3 style="color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px; margin-bottom: 20px;">
-                        Linear Regression Playground
+                        Linear Regression Simulator Playground
                     </h3>
                     <p style="font-size: 13.5px; color: #475569; margin-bottom: 20px; line-height: 1.5;">
-                        Simulate custom weather conditions and watch the Ordinary Least Squares (OLS) linear model calculate distance predictions live.
+                        Choose whether to run <strong>Without Regularization</strong> (Standard OLS) or <strong>With Regularization</strong> (Ridge, Lasso, Elastic Net) and watch distance predictions calculate live.
                     </p>
 
                     <div class="playground-grid">
                         <div style="display: flex; flex-direction: column; justify-content: space-between;">
                             <div>
+                                <!-- Regularization Dropdown -->
+                                <div style="margin-bottom: 18px;">
+                                    <label for="penalty-select-lin" style="display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px;">Regularization Mode:</label>
+                                    <select id="penalty-select-lin" class="custom-select" style="width: 100%; padding: 10px; border-radius: 6px; font-weight: 600; border: 1.5px solid var(--border-color);" onchange="executePrediction('regression', 'linear')">
+                                        <option value="none">Without Regularization (Standard OLS)</option>
+                                        <option value="l2">With L2 Regularization (Ridge Regression)</option>
+                                        <option value="l1">With L1 Regularization (Lasso Regression)</option>
+                                        <option value="elasticnet">With L1 + L2 Regularization (Elastic Net)</option>
+                                    </select>
+                                </div>
+
                                 <div class="slider-group">
                                     <div class="slider-header">
                                         <span>Temperature <span class="slider-unit">(°F)</span></span>
@@ -580,7 +591,7 @@
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                     <polygon points="5 3 19 12 5 21 5 3"></polygon>
                                 </svg>
-                                <span>Run Regression Prediction</span>
+                                <span>Run Linear Prediction</span>
                             </button>
                         </div>
 
@@ -591,8 +602,8 @@
                                     <span id="pred-distance">0.456</span>
                                     <span class="prediction-unit" style="font-size: 18px;">miles</span>
                                 </div>
-                                <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin: 0;">
-                                    Calculated live by applying model weights and scaling factors to your inputs.
+                                <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin: 0;" id="pred-note-lin">
+                                    Calculated live by applying model weights and scaling factors.
                                 </p>
                             </div>
                         </div>
@@ -701,15 +712,26 @@
                 <!-- Logistic Regression Playground -->
                 <div class="playground-container">
                     <h3 style="color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px; margin-bottom: 20px;">
-                        Logistic Regression Playground
+                        Logistic Regression Simulator Playground
                     </h3>
                     <p style="font-size: 13.5px; color: #475569; margin-bottom: 20px; line-height: 1.5;">
-                        Simulate custom weather conditions and watch the softmax classifier calculate accident severity probabilities live.
+                        Choose whether to run <strong>Without Regularization</strong> (Standard Softmax) or <strong>With Regularization</strong> (Ridge, Lasso, Elastic Net) and observe probability shifts live.
                     </p>
 
                     <div class="playground-grid">
                         <div style="display: flex; flex-direction: column; justify-content: space-between;">
                             <div>
+                                <!-- Regularization Dropdown -->
+                                <div style="margin-bottom: 18px;">
+                                    <label for="penalty-select-log" style="display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px;">Regularization Mode:</label>
+                                    <select id="penalty-select-log" class="custom-select" style="width: 100%; padding: 10px; border-radius: 6px; font-weight: 600; border: 1.5px solid var(--border-color);" onchange="executePrediction('regression', 'logistic')">
+                                        <option value="none">Without Regularization (Standard Multinomial)</option>
+                                        <option value="l2">With L2 Regularization (Ridge Logistic)</option>
+                                        <option value="l1">With L1 Regularization (Lasso Logistic)</option>
+                                        <option value="elasticnet">With L1 + L2 Regularization (Elastic Net)</option>
+                                    </select>
+                                </div>
+
                                 <div class="slider-group">
                                     <div class="slider-header">
                                         <span>Temperature <span class="slider-unit">(°F)</span></span>
@@ -766,7 +788,7 @@
                                 
                                 <!-- Class Probabilities -->
                                 <div class="probability-bar-container">
-                                    <div style="font-size: 12px; color: var(--text-muted); font-weight: 500; margin-bottom: 12px;">
+                                    <div style="font-size: 12px; color: var(--text-muted); font-weight: 500; margin-bottom: 12px;" id="prob-bar-heading">
                                         Class Probabilities (Softmax Distribution)
                                     </div>
                                     
@@ -860,6 +882,9 @@
     async function executePrediction(category, type) {
         const suffix = type === 'linear' ? 'lin' : 'log';
         const predictBtn = document.getElementById(`predict-btn-${suffix}`);
+        const penaltySelect = document.getElementById(`penalty-select-${suffix}`);
+        const chosenPenalty = penaltySelect ? penaltySelect.value : 'none';
+
         const originalText = predictBtn.innerHTML;
         predictBtn.disabled = true;
         predictBtn.innerHTML = `
@@ -876,8 +901,8 @@
             "Pressure(in)": parseFloat(document.getElementById(`press-input-${suffix}`).value),
             "Visibility(mi)": parseFloat(document.getElementById(`vis-input-${suffix}`).value),
             "Wind_Speed(mph)": parseFloat(document.getElementById(`wind-input-${suffix}`).value),
-            "category": category,
-            "model_type": "none"
+            "category": "regression",
+            "model_type": chosenPenalty
         };
 
         try {
@@ -911,7 +936,6 @@
                             label.textContent = `${probVal.toFixed(1)}%`;
                         }
                     });
-                }
             } else {
                 console.error("Prediction failed:", data.error);
                 alert("Error during model prediction: " + data.error);
