@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Preprocessing • RoadSafety AI</title>
+    <title>Preprocessing • Road Safety Prediction Project</title>
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
@@ -11,114 +11,104 @@
 
 <!-- TOPBAR -->
 <header class="topbar">
-    <div class="topbar-left">
-        <a href="{{ url_for('data_loading') }}" class="brand-logo">
-            <div class="brand-icon-box">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-                </svg>
-            </div>
-            <span>RoadSafety Studio</span>
-        </a>
-        <div class="workspace-badge">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+    <a href="{{ url_for('index') }}" class="topbar-brand">
+        <div class="topbar-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
             </svg>
-            <span>us-accidents-prod</span>
         </div>
-    </div>
+        <div class="topbar-titles">
+            <h1>Road Safety Analysis & Severity Prediction</h1>
+        </div>
+    </a>
 
-    <div class="topbar-right">
-        <div class="status-pill">
-            <span class="status-dot"></span>
-            <span>100K Records Active</span>
+    <div class="topbar-meta">
+        <div class="badge-pill">
+            <span class="status-indicator"></span>
+            <span>Dataset: 50,000 Records</span>
         </div>
-        <button class="btn-secondary" onclick="window.location.reload();">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
-            </svg>
-            <span>Refresh</span>
-        </button>
+        <div class="badge-pill" style="background: rgba(37, 99, 235, 0.2); border-color: rgba(37, 99, 235, 0.4); color: #93c5fd;">
+            <span>7 Ensembles Active</span>
+        </div>
     </div>
 </header>
 
 <div class="layout">
-    <!-- SIDEBAR -->
+    <!-- Left Navigation Sidebar -->
     <nav class="sidebar">
-        <div>
-            <div class="sidebar-section">
-                <div class="sidebar-heading">Data Pipeline</div>
-                <ul class="sidebar-nav">
-                    <li>
-                        <a href="{{ url_for('data_loading') }}" class="nav-link {% if active == 'data-loading' %}active{% endif %}">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
-                                <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
-                                <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
-                            </svg>
-                            <span>Data Ingestion</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ url_for('eda') }}" class="nav-link {% if active == 'eda' %}active{% endif %}">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                 <line x1="18" y1="20" x2="18" y2="10"></line>
-                                 <line x1="12" y1="20" x2="12" y2="4"></line>
-                                 <line x1="6" y1="20" x2="6" y2="14"></line>
-                            </svg>
-                            <span>EDA Dashboard (5 Tasks)</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ url_for('preprocessing') }}" class="nav-link {% if active == 'preprocessing' %}active{% endif %}">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-                            </svg>
-                            <span>Preprocessing</span>
-                        </a>
-                    </li>
-                </ul>
-            </div>
+        <div class="sidebar-content">
+            <div class="sidebar-heading">Data Pipeline</div>
+            <ul>
+                <li>
+                    <a href="{{ url_for('data_loading') }}" class="menu-item {% if active == 'data-loading' %}active{% endif %}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+                            <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+                            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+                        </svg>
+                        <span>Data Loading</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('eda') }}" class="menu-item {% if active == 'eda' %}active{% endif %}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="20" x2="18" y2="10"></line>
+                            <line x1="12" y1="20" x2="12" y2="4"></line>
+                            <line x1="6" y1="20" x2="6" y2="14"></line>
+                        </svg>
+                        <span>EDA Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('preprocessing') }}" class="menu-item {% if active == 'preprocessing' %}active{% endif %}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                        </svg>
+                        <span>Preprocessing</span>
+                    </a>
+                </li>
+            </ul>
 
-            <div class="sidebar-section">
-                <div class="sidebar-heading">Machine Learning</div>
-                <ul class="sidebar-nav">
-                    <li>
-                        <a href="{{ url_for('regression_dashboard') }}" class="nav-link {% if active == 'regression' %}active{% endif %}">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
-                                <line x1="8" y1="21" x2="16" y2="21"></line>
-                                <line x1="12" y1="17" x2="12" y2="21"></line>
-                            </svg>
-                            <span>Regression (Linear & Logistic)</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ url_for('regularization_dashboard') }}" class="nav-link {% if active == 'regularization' %}active{% endif %}">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-                            </svg>
-                            <span>Regularization (L1, L2, ElasticNet)</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ url_for('decision_tree_dashboard') }}" class="nav-link {% if active in ['decision_tree', 'tree_models'] %}active{% endif %}">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M18 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3zM6 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3z"></path>
-                                <line x1="6" y1="12" x2="18" y2="12"></line>
-                            </svg>
-                            <span>Tree Algorithms (7 Models)</span>
-                        </a>
-                    </li>
-                </ul>
-            </div>
+            <div class="sidebar-heading">Supervised Learning</div>
+            <ul>
+                <li>
+                    <a href="{{ url_for('linear_regression') }}" class="menu-item {% if active == 'linear-regression' %}active{% endif %}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                        </svg>
+                        <span>Linear Regression</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('logistic_regression') }}" class="menu-item {% if active == 'logistic-regression' %}active{% endif %}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="m4.93 4.93 4.24 4.24"></path>
+                            <path d="m14.83 9.17 4.24-4.24"></path>
+                            <path d="m14.83 14.83 4.24 4.24"></path>
+                            <path d="m9.17 14.83-4.24 4.24"></path>
+                        </svg>
+                        <span>Logistic Regression</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('decision_trees') }}" class="menu-item {% if active == 'decision-trees' %}active{% endif %}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="14" width="7" height="7"></rect>
+                            <rect x="3" y="14" width="7" height="7"></rect>
+                        </svg>
+                        <span>Decision Trees (7 Models)</span>
+                    </a>
+                </li>
+            </ul>
         </div>
 
-        <div class="sidebar-user">
-            <div class="avatar">ML</div>
-            <div class="user-info">
-                <div class="user-name">ML Pipeline</div>
-                <div class="user-meta">Python 3.12 • Flask</div>
+        <div class="sidebar-footer">
+            <div class="sidebar-academic-tag">
+                <strong>Road Safety Analytics</strong>
+                <span>Flask • Scikit-Learn</span>
             </div>
         </div>
     </nav>
@@ -128,7 +118,7 @@
         <div class="page-title-bar">
             <div>
                 <h2>Data Preprocessing & Transformations</h2>
-                <p>Run end-to-end dataset cleansing pipelines. Compare downstream model performance across deletion and statistical imputation, inspect categorical translation maps, and preview standardized outputs.</p>
+                <p>Run data transformation and cleansing pipelines. Compare downstream model performance across deletion and statistical imputation, inspect categorical translation maps, and preview standardized outputs.</p>
             </div>
         </div>
 

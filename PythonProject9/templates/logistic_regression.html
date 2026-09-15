@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logistic Regression — Road Safety Prediction Project</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<header class="topbar">
+    <a href="{{ url_for('index') }}" class="topbar-brand">
+        <div class="topbar-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+        </div>
+        <div class="topbar-titles">
+            <h1>Road Safety Analysis & Severity Prediction</h1>
+        </div>
+    </a>
+
+    <div class="topbar-meta">
+        <div class="badge-pill">
+            <span class="status-indicator"></span>
+            <span>Dataset: 50,000 Records</span>
+        </div>
+        <div class="badge-pill" style="background: rgba(37, 99, 235, 0.2); border-color: rgba(37, 99, 235, 0.4); color: #93c5fd;">
+            <span>7 Ensembles Active</span>
+        </div>
+    </div>
+</header>
+
+<div class="layout">
+    <!-- Left Navigation Sidebar -->
+    <nav class="sidebar">
+        <div class="sidebar-content">
+            <div class="sidebar-heading">Data Pipeline</div>
+            <ul>
+                <li>
+                    <a href="{{ url_for('data_loading') }}" class="menu-item {% if active == 'data-loading' %}active{% endif %}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+                            <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+                            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+                        </svg>
+                        <span>Data Loading</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('eda') }}" class="menu-item {% if active == 'eda' %}active{% endif %}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="20" x2="18" y2="10"></line>
+                            <line x1="12" y1="20" x2="12" y2="4"></line>
+                            <line x1="6" y1="20" x2="6" y2="14"></line>
+                        </svg>
+                        <span>EDA Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('preprocessing') }}" class="menu-item {% if active == 'preprocessing' %}active{% endif %}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                        </svg>
+                        <span>Preprocessing</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="sidebar-heading">Supervised Learning</div>
+            <ul>
+                <li>
+                    <a href="{{ url_for('linear_regression') }}" class="menu-item {% if active == 'linear-regression' %}active{% endif %}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                        </svg>
+                        <span>Linear Regression</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('logistic_regression') }}" class="menu-item {% if active == 'logistic-regression' %}active{% endif %}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="m4.93 4.93 4.24 4.24"></path>
+                            <path d="m14.83 9.17 4.24-4.24"></path>
+                            <path d="m14.83 14.83 4.24 4.24"></path>
+                            <path d="m9.17 14.83-4.24 4.24"></path>
+                        </svg>
+                        <span>Logistic Regression</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('decision_trees') }}" class="menu-item {% if active == 'decision-trees' %}active{% endif %}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="14" width="7" height="7"></rect>
+                            <rect x="3" y="14" width="7" height="7"></rect>
+                        </svg>
+                        <span>Decision Trees (7 Models)</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="sidebar-academic-tag">
+                <strong>Road Safety Analytics</strong>
+                <span>Flask • Scikit-Learn</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main content -->
+    <main class="content">
+        <div class="page-header">
+            <h2>Logistic Regression — Accident Severity Classification (Severe vs. Minor)</h2>
+            <p>Classifies crash outcomes into binary severity: <strong>Severe (Level 3–4)</strong> vs. <strong>Minor/Moderate (Level 1–2)</strong>. Evaluates Sigmoid activation probabilities, odds ratios, and regularized loss penalization.</p>
+        </div>
+
+        {% if error %}
+            <div class="error">{{ error }}</div>
+        {% endif %}
+
+        <!-- Dropdown Selection Form -->
+        <div class="dropdown-panel">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="m4.93 4.93 4.24 4.24"></path></svg>
+                <strong>Regularization Penalty:</strong>
+            </div>
+            <form method="GET" action="{{ url_for('logistic_regression') }}" id="logRegForm">
+                <select name="reg_type" class="select-input" onchange="document.getElementById('logRegForm').submit();">
+                    <option value="none" {% if results.reg_type == 'none' %}selected{% endif %}>
+                        Without Regularization (Standard Log-Loss)
+                    </option>
+                    <option value="ridge" {% if results.reg_type == 'ridge' %}selected{% endif %}>
+                        With Regularization: Ridge (L2 Penalty)
+                    </option>
+                    <option value="lasso" {% if results.reg_type == 'lasso' %}selected{% endif %}>
+                        With Regularization: Lasso (L1 Penalty)
+                    </option>
+                </select>
+            </form>
+        </div>
+
+        {% if results %}
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                <h3 style="color: #0f172a; font-size: 18px; font-weight: 800; margin: 0;">Model: {{ results.model_name }}</h3>
+                <span class="badge" style="background: #ecfdf5; color: #047857; padding: 4px 10px; font-size: 12px; font-weight: 700;">Binary Target: Severity_Severe</span>
+            </div>
+
+            <!-- 4 Metric Cards -->
+            <div class="metric-grid" style="grid-template-columns: repeat(4, 1fr);">
+                <div class="metric-card emerald">
+                    <span class="metric-title">Testing Accuracy</span>
+                    <div class="metric-val" style="color: #059669;">{{ results.metrics.test_accuracy }}%</div>
+                    <span class="metric-sub">Generalization rate on test split</span>
+                </div>
+                <div class="metric-card sky">
+                    <span class="metric-title">Training Accuracy</span>
+                    <div class="metric-val" style="color: #0284c7;">{{ results.metrics.train_accuracy }}%</div>
+                    <span class="metric-sub">Convergence on training data</span>
+                </div>
+                <div class="metric-card indigo">
+                    <span class="metric-title">Precision (Severe)</span>
+                    <div class="metric-val" style="color: #2563eb;">{{ results.metrics.precision }}%</div>
+                    <span class="metric-sub">TP / (TP + FP)</span>
+                </div>
+                <div class="metric-card purple">
+                    <span class="metric-title">Recall (Severe)</span>
+                    <div class="metric-val" style="color: #7c3aed;">{{ results.metrics.recall }}%</div>
+                    <span class="metric-sub">TP / (TP + FN)</span>
+                </div>
+            </div>
+
+            <!-- Confusion Matrix Breakdown Cards -->
+            <div class="card">
+                <div class="card-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="12" x2="21" y2="12"></line><line x1="12" y1="3" x2="12" y2="21"></line></svg>
+                    Confusion Matrix Classification Outcomes (Test Set Breakdown)
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 10px;">
+                    <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 14px; text-align: center;">
+                        <span style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: #047857;">True Positives (TP)</span>
+                        <div style="font-size: 24px; font-weight: 800; color: #065f46; margin-top: 4px;">{{ results.metrics.tp }}</div>
+                        <small style="color: #047857; font-size: 11.5px;">Correctly identified Severe</small>
+                    </div>
+                    <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 14px; text-align: center;">
+                        <span style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: #15803d;">True Negatives (TN)</span>
+                        <div style="font-size: 24px; font-weight: 800; color: #166534; margin-top: 4px;">{{ results.metrics.tn }}</div>
+                        <small style="color: #15803d; font-size: 11.5px;">Correctly identified Minor</small>
+                    </div>
+                    <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 14px; text-align: center;">
+                        <span style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: #b91c1c;">False Positives (FP)</span>
+                        <div style="font-size: 24px; font-weight: 800; color: #991b1b; margin-top: 4px;">{{ results.metrics.fp }}</div>
+                        <small style="color: #b91c1c; font-size: 11.5px;">Type I Error (False Alarm)</small>
+                    </div>
+                    <div style="background: #fff7ed; border: 1px solid #fed7aa; border-radius: 8px; padding: 14px; text-align: center;">
+                        <span style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: #c2410c;">False Negatives (FN)</span>
+                        <div style="font-size: 24px; font-weight: 800; color: #9a3412; margin-top: 4px;">{{ results.metrics.fn }}</div>
+                        <small style="color: #c2410c; font-size: 11.5px;">Type II Error (Missed Severe)</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Learned Sigmoid Decision Boundary -->
+            <div class="card">
+                <div class="card-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                    Learned Log-Odds Linear Decision Boundary ($z = \theta^T x$)
+                </div>
+                <div class="equation-box">
+                    {{ results.equation }}
+                </div>
+                <p style="font-size: 13px; color: #64748b; margin-top: 6px;">
+                    * Predicted probability: <code>P(Severe = 1 | x) = 1 / (1 + e⁻ᶻ)</code>. If probability &ge; <strong>0.50</strong>, accident is classified as <strong>Severe</strong>.
+                </p>
+            </div>
+
+            <!-- Coefficients & Odds Ratios Table -->
+            <div class="card">
+                <div class="card-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"></line><line x1="18" y1="20" x2="18" y2="4"></line><line x1="6" y1="20" x2="6" y2="16"></line></svg>
+                    Learned Weights ($\theta$) & Multiplicative Odds Ratios ($e^\theta$)
+                </div>
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Feature Name</th>
+                                <th>Learned Weight ($\theta$)</th>
+                                <th>Odds Ratio ($e^\theta$)</th>
+                                <th>Effect on Severity Likelihood</th>
+                                <th>Regularization Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for c in results.coefficients %}
+                            <tr>
+                                <td><strong>{{ c.feature }}</strong></td>
+                                <td><code>{{ c.weight }}</code></td>
+                                <td><strong style="color: #0f172a;">{{ c.odds_ratio }}x</strong></td>
+                                <td>
+                                    {% if c.weight > 0 %}
+                                        <span style="color: #dc2626; font-weight: 600;">Increases odds of severe accident by {{ ((c.odds_ratio - 1) * 100)|round(1) }}%</span>
+                                    {% elif c.weight < 0 %}
+                                        <span style="color: #16a34a; font-weight: 600;">Decreases odds of severe accident by {{ ((1 - c.odds_ratio) * 100)|round(1) }}%</span>
+                                    {% else %}
+                                        <span style="color: #94a3b8; font-style: italic;">Zero impact (Eliminated)</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if c.is_zero %}
+                                        <span class="badge badge-pruned">
+                                            Lasso Pruned to Exactly 0
+                                        </span>
+                                    {% else %}
+                                        <span class="badge badge-active">
+                                            Active Predictor
+                                        </span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Confusion Matrix Heatmap -->
+            <div class="card">
+                <div class="card-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    Confusion Matrix Visualization
+                </div>
+                <div style="text-align: center; padding: 12px;">
+                    <img src="{{ url_for('static', filename=results.plots.cm_plot) }}" alt="Confusion Matrix Heatmap" style="max-width: 480px; width: 100%; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
+                </div>
+            </div>
+
+            <!-- Interactive Severity Predictor Form -->
+            <div class="predict-box">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 32px; height: 32px; border-radius: 8px; background: #059669; color: white; display: flex; align-items: center; justify-content: center;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><path d="m4.93 4.93 4.24 4.24"></path></svg>
+                    </div>
+                    <div>
+                        <h3>Live Accident Severity Probability Classifier</h3>
+                        <p style="font-size: 13.5px; color: #64748b; margin: 0;">
+                            Input roadway, environmental, and temporal parameters to compute severe crash likelihood:
+                        </p>
+                    </div>
+                </div>
+
+                <form method="POST" action="{{ url_for('logistic_regression') }}">
+                    <input type="hidden" name="reg_type" value="{{ results.reg_type }}">
+                    
+                    <div style="margin-top: 18px;">
+                        <strong style="font-size: 12px; text-transform: uppercase; color: #64748b; letter-spacing: 0.05em;">Atmospheric & Weather Conditions</strong>
+                        <div class="form-grid" style="margin-top: 8px;">
+                            <div class="form-group">
+                                <label>Temperature (°F):</label>
+                                <input type="number" step="0.1" name="Temperature(F)" value="72.0" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Relative Humidity (%):</label>
+                                <input type="number" step="0.1" name="Humidity(%)" value="65.0" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Atmospheric Pressure (in):</label>
+                                <input type="number" step="0.01" name="Pressure(in)" value="29.92" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Visual Range (mi):</label>
+                                <input type="number" step="0.1" name="Visibility(mi)" value="10.0" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Wind Velocity (mph):</label>
+                                <input type="number" step="0.1" name="Wind_Speed(mph)" value="8.5" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 20px;">
+                        <strong style="font-size: 12px; text-transform: uppercase; color: #64748b; letter-spacing: 0.05em;">Roadway Features & Day/Night Phase</strong>
+                        <div class="form-grid" style="margin-top: 8px;">
+                            <div class="form-group">
+                                <label>Pedestrian Crossing:</label>
+                                <select name="Crossing">
+                                    <option value="0">No Crossing (0)</option>
+                                    <option value="1">Crossing Present (1)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Highway Junction:</label>
+                                <select name="Junction">
+                                    <option value="0">No Junction (0)</option>
+                                    <option value="1">Highway Junction (1)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Traffic Signal Installed:</label>
+                                <select name="Traffic_Signal">
+                                    <option value="0">No Signal (0)</option>
+                                    <option value="1">Signal Active (1)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Diurnal Lighting Period:</label>
+                                <select name="Sunrise_Sunset_Day">
+                                    <option value="1">Daylight Conditions (1)</option>
+                                    <option value="0">Night Conditions (0)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-primary" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%);">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+                        <span>Classify Accident Severity Probability</span>
+                    </button>
+                </form>
+
+                {% if results.prediction %}
+                <div class="result-banner {% if results.prediction.is_severe %}result-severe{% else %}result-minor{% endif %}">
+                    <div>
+                        <span style="font-size: 12px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">
+                            {% if results.prediction.is_severe %}🚨 Critical Severity Alert{% else %}✅ Low/Moderate Impact Assessment{% endif %}
+                        </span>
+                        <div style="font-size: 28px; font-weight: 800; line-height: 1.1; margin-top: 4px;">
+                            {{ results.prediction.class }}
+                        </div>
+                        <small style="font-size: 12px;">
+                            {% if results.prediction.is_severe %}
+                                Emergency dispatch & traffic detour recommended immediately.
+                            {% else %}
+                                Standard local clearing and routine road management sufficient.
+                            {% endif %}
+                        </small>
+                    </div>
+                    <div style="text-align: right;">
+                        <span style="font-size: 12px; font-weight: 700; text-transform: uppercase;">Estimated Severe Probability</span>
+                        <div style="font-size: 28px; font-weight: 800; margin-top: 2px;">
+                            {{ results.prediction.probability }}%
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        {% endif %}
+    </main>
+</div>
+
+</body>
+</html>

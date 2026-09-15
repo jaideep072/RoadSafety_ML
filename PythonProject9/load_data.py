@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import random
 
-DATA_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "US_Accidents_March23.csv")
+DATA_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "US_Accidents_Sample_100k.csv")
 
 def generate_dummy_data(path: str, nrows: int = 10000):
     print(f"Dataset not found at {path}. Automatically generating a portable synthetic dataset of {nrows} rows...")
@@ -82,14 +82,25 @@ def generate_dummy_data(path: str, nrows: int = 10000):
     df.to_csv(path, index=False)
     print(f"Synthetic dataset generated successfully at {path} ({nrows} rows).")
 
-def load_data(path: str = DATA_PATH, nrows: int = 100000) -> pd.DataFrame:
+ORIGINAL_DATA_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "US_Accidents_Sample_100k.csv")
+PREPROCESSED_DATA_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "roadsafety_preprocessed.csv")
+DATA_PATH = ORIGINAL_DATA_PATH
+
+def load_data(path: str = None, nrows: int = 100000) -> pd.DataFrame:
+    if path is None:
+        path = DATA_PATH
     if not os.path.exists(path):
-        generate_dummy_data(path, nrows=10000)
+        if "preprocessed" in path:
+            # Fallback to original
+            path = ORIGINAL_DATA_PATH
+        else:
+            generate_dummy_data(path, nrows=10000)
     df = pd.read_csv(path, nrows=nrows)
     return df
 
-def get_data_summary() -> dict:
-    df = load_data()
+def get_data_summary(dataset_type: str = "original") -> dict:
+    target_path = PREPROCESSED_DATA_PATH if dataset_type == "preprocessed" else ORIGINAL_DATA_PATH
+    df = load_data(path=target_path)
     
     # Replace NaN with None so it is valid JSON (null)
     preview_df = df.head(10).replace({np.nan: None})
@@ -140,7 +151,8 @@ def get_data_summary() -> dict:
         "missing_counts": {col: int(df[col].isnull().sum()) for col in df.columns},
         "column_details": column_details,
         "preview": preview_df.to_dict("records"),
-        "filename": os.path.basename(DATA_PATH),
+        "filename": os.path.basename(target_path),
+        "dataset_type": dataset_type
     }
     return summary
 

@@ -5,7 +5,9 @@ from sklearn.linear_model import LogisticRegression
 # Load dataset (Project 14 - pointing to 100k sample)
 import os
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-file_path = os.path.join(BASE_DIR, "data", "US_Accidents_March23.csv")
+file_path = os.path.join(BASE_DIR, "data", "US_Accidents_Sample_100k.csv")
+if not os.path.exists(file_path):
+    file_path = os.path.join(BASE_DIR, "data", "US_Accidents_March23.csv")
 df = pd.read_csv(file_path, nrows=100000)
 
 print("Dataset shape:", df.shape)
