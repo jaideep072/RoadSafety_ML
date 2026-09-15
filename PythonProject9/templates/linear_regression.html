@@ -5,6 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Linear Regression — Road Safety Prediction Project</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('roadsafety_theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme') || 'light';
+            const next = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('roadsafety_theme', next);
+        }
+    </script>
 </head>
 <body>
 
@@ -28,6 +40,23 @@
         <div class="badge-pill">
             <span>7 Ensembles Active</span>
         </div>
+        <button id="themeToggleBtn" class="theme-toggle-btn" title="Toggle Light / Dark Mode" onclick="toggleTheme()" type="button">
+            <svg class="theme-icon-sun" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="5"></circle>
+                <line x1="12" y1="1" x2="12" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="23"></line>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                <line x1="1" y1="12" x2="3" y2="12"></line>
+                <line x1="21" y1="12" x2="23" y2="12"></line>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+            <svg class="theme-icon-moon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+            <span>Theme</span>
+        </button>
         <a href="{{ url_for('download_preprocessed_csv') }}" class="topbar-btn" title="Download clean preprocessed CSV dataset">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -255,11 +284,11 @@
                     <span>Regression Diagnostics & Error Distribution</span>
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 10px;">
-                    <div style="border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; text-align: center; background: #ffffff;">
+                    <div style="border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; text-align: center; background: var(--card-bg);">
                         <h4 style="margin-bottom: 12px; font-size: 13.5px; color: var(--text-primary); font-weight: 700;">Actual vs. Predicted Distance (miles)</h4>
                         <img src="{{ url_for('static', filename=results.plots.actual_vs_pred) }}" alt="Actual vs Predicted" style="max-width: 100%; border-radius: 6px;">
                     </div>
-                    <div style="border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; text-align: center; background: #ffffff;">
+                    <div style="border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; text-align: center; background: var(--card-bg);">
                         <h4 style="margin-bottom: 12px; font-size: 13.5px; color: var(--text-primary); font-weight: 700;">Residuals Error Distribution Histogram</h4>
                         <img src="{{ url_for('static', filename=results.plots.residuals) }}" alt="Residuals Histogram" style="max-width: 100%; border-radius: 6px;">
                     </div>
@@ -271,6 +300,48 @@
                 <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; margin-bottom: 12px;">
                     <h3>Live Traffic Blockage Predictor</h3>
                     <p>Input environmental conditions and roadway features to forecast traffic blockage distance:</p>
+                </div>
+
+                <!-- 1-Click Demo Preset Scenarios -->
+                <div class="preset-section">
+                    <div class="preset-header">
+                        <span class="preset-title">1-Click Demo Scenarios</span>
+                        <span class="preset-badge">Instant Autofill</span>
+                    </div>
+                    <div class="preset-grid">
+                        <button type="button" class="preset-btn" onclick="applyLinearPreset('storm')">
+                            <div class="preset-btn-top">
+                                <span class="preset-name"><span class="preset-icon">🌧️</span> Stormy Highway</span>
+                                <span class="preset-tag">Severe Queue</span>
+                            </div>
+                            <span class="preset-desc">42°F • 95% Hum • 2.0mi Vis • 32mph Wind • Junction</span>
+                        </button>
+                        <button type="button" class="preset-btn" onclick="applyLinearPreset('sunny')">
+                            <div class="preset-btn-top">
+                                <span class="preset-name"><span class="preset-icon">☀️</span> Clear City</span>
+                                <span class="preset-tag">Low Delay</span>
+                            </div>
+                            <span class="preset-desc">78°F • 45% Hum • 10mi Vis • 6mph Wind • Signal</span>
+                        </button>
+                        <button type="button" class="preset-btn" onclick="applyLinearPreset('fog')">
+                            <div class="preset-btn-top">
+                                <span class="preset-name"><span class="preset-icon">❄️</span> Freezing Fog</span>
+                                <span class="preset-tag">Critical</span>
+                            </div>
+                            <span class="preset-desc">24°F • 98% Hum • 0.8mi Vis • 18.5mph Wind • Junction</span>
+                        </button>
+                        <button type="button" class="preset-btn" onclick="applyLinearPreset('rush')">
+                            <div class="preset-btn-top">
+                                <span class="preset-name"><span class="preset-icon">🚗</span> Rush Hour</span>
+                                <span class="preset-tag">Urban Transit</span>
+                            </div>
+                            <span class="preset-desc">68°F • 60% Hum • 8.5mi Vis • 11mph Wind • Cross & Signal</span>
+                        </button>
+                    </div>
+                    <div id="linearPresetToast" class="preset-toast">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        <span>Scenario parameters loaded! Click Calculate to forecast distance.</span>
+                    </div>
                 </div>
 
                 <form method="POST" action="{{ url_for('linear_regression') }}">
@@ -348,6 +419,39 @@
         {% endif %}
     </main>
 </div>
+
+<script>
+    function applyLinearPreset(type) {
+        const presets = {
+            storm: { temp: 42.0, hum: 95.0, press: 29.40, vis: 2.0, wind: 32.0, cross: "0", junc: "1", sig: "0" },
+            sunny: { temp: 78.0, hum: 45.0, press: 30.10, vis: 10.0, wind: 6.0, cross: "1", junc: "0", sig: "1" },
+            fog: { temp: 24.0, hum: 98.0, press: 29.80, vis: 0.8, wind: 18.5, cross: "0", junc: "1", sig: "0" },
+            rush: { temp: 68.0, hum: 60.0, press: 29.92, vis: 8.5, wind: 11.0, cross: "1", junc: "1", sig: "1" }
+        };
+        const p = presets[type];
+        if (!p) return;
+        
+        document.querySelector('input[name="Temperature(F)"]').value = p.temp;
+        document.querySelector('input[name="Humidity(%)"]').value = p.hum;
+        document.querySelector('input[name="Pressure(in)"]').value = p.press;
+        document.querySelector('input[name="Visibility(mi)"]').value = p.vis;
+        document.querySelector('input[name="Wind_Speed(mph)"]').value = p.wind;
+        document.querySelector('select[name="Crossing"]').value = p.cross;
+        document.querySelector('select[name="Junction"]').value = p.junc;
+        document.querySelector('select[name="Traffic_Signal"]').value = p.sig;
+        
+        document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
+        if (window.event && window.event.currentTarget) {
+            window.event.currentTarget.classList.add('active');
+        }
+        
+        const toast = document.getElementById('linearPresetToast');
+        if (toast) {
+            toast.classList.add('visible');
+            setTimeout(() => toast.classList.remove('visible'), 3200);
+        }
+    }
+</script>
 
 </body>
 </html>
