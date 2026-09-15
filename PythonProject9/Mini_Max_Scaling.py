@@ -4,7 +4,9 @@ from sklearn.preprocessing import MinMaxScaler
 
 import os
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-file_path = os.path.join(BASE_DIR, "data", "US_Accidents_March23.csv")
+file_path = os.path.join(BASE_DIR, "data", "US_Accidents_Sample_100k.csv")
+if not os.path.exists(file_path):
+    file_path = os.path.join(BASE_DIR, "data", "US_Accidents_March23.csv")
 df = pd.read_csv(file_path, nrows=100000)
 
 num_cols = ["Temperature(F)", "Visibility(mi)", "Wind_Speed(mph)"]

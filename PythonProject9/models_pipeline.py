@@ -20,7 +20,11 @@ from sklearn.metrics import mean_squared_error, r2_score, accuracy_score, precis
 
 # Paths
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_PATH = os.path.join(BASE_DIR, "data", "US_Accidents_March23.csv")
+PREPROCESSED_PATH = os.path.join(BASE_DIR, "data", "roadsafety_preprocessed.csv")
+ORIGINAL_DATA_PATH = os.path.join(BASE_DIR, "data", "US_Accidents_Sample_100k.csv")
+if not os.path.exists(ORIGINAL_DATA_PATH):
+    ORIGINAL_DATA_PATH = os.path.join(BASE_DIR, "data", "US_Accidents_March23.csv")
+DATA_PATH = PREPROCESSED_PATH if os.path.exists(PREPROCESSED_PATH) else ORIGINAL_DATA_PATH
 MODELS_DIR = os.path.join(BASE_DIR, "models")
 CACHE_PATH = os.path.join(BASE_DIR, "static", "models_cache.json")
 
@@ -70,7 +74,7 @@ LINEAR_TARGET = "Distance(mi)"
 LOGISTIC_TARGET = "Severity"
 
 TREE_ALGO_NAMES = [
-    ("decision_tree", "Decision Tree (CART)", "Single partitioning tree that recursively splits weather features."),
+    ("decision_tree", "Decision Tree", "Single partitioning tree that recursively splits weather features."),
     ("random_forest", "Random Forest", "Bagging ensemble of diverse decision trees with feature sub-sampling."),
     ("adaboost", "AdaBoost", "Adaptive boosting focusing iteratively on previously misclassified accident instances."),
     ("gradient_boosting", "Gradient Boosting", "Sequentially adds decision trees optimizing pseudo-residuals."),

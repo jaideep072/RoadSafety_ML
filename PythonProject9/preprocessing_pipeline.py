@@ -10,7 +10,11 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 
-DATA_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "US_Accidents_March23.csv")
+DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+DATA_PATH = os.path.join(DATA_DIR, "US_Accidents_Sample_100k.csv")
+if not os.path.exists(DATA_PATH):
+    DATA_PATH = os.path.join(DATA_DIR, "US_Accidents_March23.csv")
+PREPROCESSED_PATH = os.path.join(DATA_DIR, "roadsafety_preprocessed.csv")
 CACHE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "preprocessing_cache.json")
 
 def _missing_value_analysis(df, numeric_cols):

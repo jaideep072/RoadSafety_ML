@@ -1,167 +1,69 @@
-import os
-
-from flask import Flask, jsonify, render_template, send_from_directory
+﻿import os
+from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS
-
 from load_data import get_data_summary
 from roadsafety_eda import run_eda
 
-
 app = Flask(__name__)
-
-# Enable CORS
 CORS(app)
 
 
-# =========================================================
-# HOME / DATA LOADING PAGE
-# =========================================================
 @app.route("/")
-def home():
-    return data_loading()
+def index():
+    return render_template("index.html", active="none")
 
 
-# =========================================================
-# DATA LOADING PAGE
-# =========================================================
 @app.route("/data-loading")
 def data_loading():
+    """Loads either original or preprocessed dataset and renders summary into the page."""
+    error = None
+    summary = None
+    dataset_type = request.args.get("dataset", "original")
     try:
-        # Load dataset summary
-        summary = get_data_summary()
-
-        return render_template(
-            "index.html",
-            active="data-loading",
-            summary=summary,
-            error=None
-        )
-
+        summary = get_data_summary(dataset_type=dataset_type)
     except FileNotFoundError as e:
-        return render_template(
-            "index.html",
-            active="data-loading",
-            summary=None,
-            error=str(e)
-        )
-
+        error = str(e)
     except Exception as e:
-        return render_template(
-            "index.html",
-            active="data-loading",
-            summary=None,
-            error=f"Unexpected error: {e}"
-        )
+        error = f"Unexpected error: {e}"
+
+    return render_template(
+        "index.html",
+        active="data-loading",
+        summary=summary,
+        dataset_type=dataset_type,
+        error=error,
+    )
 
 
-# =========================================================
-# DATA SUMMARY API
-# =========================================================
-@app.route("/api/data-summary")
-def data_loading_api():
-    try:
-        summary = get_data_summary()
-
-        return jsonify({
-            "success": True,
-            "data": summary
-        })
-
-    except FileNotFoundError as e:
-        return jsonify({
-            "success": False,
-            "error": str(e)
-        }), 404
-
-    except Exception as e:
-        return jsonify({
-            "success": False,
-            "error": f"Unexpected error: {e}"
-        }), 500
-
-
-# =========================================================
-# EDA PAGE
-# =========================================================
 @app.route("/eda")
 def eda():
-    try:
-        # Run EDA
-        eda_output = run_eda()
-
-        return render_template(
-            "eda.html",
-            results=eda_output,
-            active="eda",
-            error=None
-        )
-
-    except FileNotFoundError as e:
-        return render_template(
-            "eda.html",
-            results=None,
-            active="eda",
-            error=str(e)
-        )
-
-    except Exception as e:
-        return render_template(
-            "eda.html",
-            results=None,
-            active="eda",
-            error=f"Unexpected error: {e}"
-        )
-
-
-# =========================================================
-# EDA API
-# =========================================================
-@app.route("/api/eda")
-def eda_api():
+    """Runs exploratory data analysis and renders results."""
+    error = None
+    eda_output = None
     try:
         eda_output = run_eda()
-
-        return jsonify({
-            "success": True,
-            "data": eda_output
-        })
-
     except FileNotFoundError as e:
-        return jsonify({
-            "success": False,
-            "error": str(e)
-        }), 404
-
+        try:
+            eda_output = run_eda(force_run=True)
+        except Exception as retry_error:
+            error = f"Unexpected error: {retry_error}"
     except Exception as e:
-        return jsonify({
-            "success": False,
-            "error": f"Unexpected error: {e}"
-        }), 500
+        try:
+            eda_output = run_eda(force_run=True)
+        except Exception as retry_error:
+            error = f"Unexpected error: {retry_error}"
 
-
-# =========================================================
-# SERVE EDA CHARTS
-# =========================================================
-@app.route("/api/charts/<filename>")
-def serve_charts(filename):
-
-    charts_dir = os.path.join(
-        os.path.dirname(__file__),
-        "static",
-        "charts"
-    )
-
-    return send_from_directory(
-        charts_dir,
-        filename
+    return render_template(
+        "eda.html",
+        active="eda",
+        results=eda_output,
+        error=error,
     )
 
 
-# =========================================================
-# PREPROCESSING PAGE
-# =========================================================
 @app.route("/preprocessing")
 def preprocessing():
+    """Runs the preprocessing pipeline step-by-step and displays results."""
     from preprocessing_pipeline import run_preprocessing_pipeline
     error = None
     preprocess_output = None
@@ -180,134 +82,109 @@ def preprocessing():
     )
 
 
-# =========================================================
-# PREPROCESSING API
-# =========================================================
-@app.route("/api/preprocessing")
-def preprocessing_api():
-    from preprocessing_pipeline import run_preprocessing_pipeline
-    try:
-        preprocess_output = run_preprocessing_pipeline()
-        return jsonify({
-            "success": True,
-            "data": preprocess_output
-        })
-    except FileNotFoundError as e:
-        return jsonify({
-            "success": False,
-            "error": str(e)
-        }), 404
-    except Exception as e:
-        return jsonify({
-            "success": False,
-            "error": f"Unexpected error: {e}"
-        }), 500
-
-
-# =========================================================
-# REGRESSION PAGE
-# =========================================================
-@app.route("/regression")
-def regression_dashboard():
-    from models_pipeline import train_models
+@app.route("/linear-regression", methods=["GET", "POST"])
+def linear_regression():
+    """Runs Linear Regression predicting Distance(mi) with dropdown for Without Regularization, Ridge (L2), and Lasso (L1)."""
+    from linear_regression_model import train_and_evaluate_linear
     error = None
-    models_output = None
-    try:
-        models_output = train_models()
-    except FileNotFoundError as e:
-        error = str(e)
-    except Exception as e:
-        error = f"Unexpected error: {e}"
-
-    return render_template(
-        "regression.html",
-        active="regression",
-        results=models_output,
-        error=error,
-    )
-
-
-# =========================================================
-# REGULARIZATION PAGE
-# =========================================================
-@app.route("/regularization")
-def regularization_dashboard():
-    from models_pipeline import train_models
-    error = None
-    models_output = None
-    try:
-        models_output = train_models()
-    except FileNotFoundError as e:
-        error = str(e)
-    except Exception as e:
-        error = f"Unexpected error: {e}"
-
-    return render_template(
-        "regularization.html",
-        active="regularization",
-        results=models_output,
-        error=error,
-    )
-
-
-# =========================================================
-# DECISION TREE PAGE
-# =========================================================
-@app.route("/decision-tree")
-def decision_tree_dashboard():
-    from models_pipeline import train_models
-    error = None
-    models_output = None
-    try:
-        models_output = train_models()
-    except FileNotFoundError as e:
-        error = str(e)
-    except Exception as e:
-        error = f"Unexpected error: {e}"
-
-    return render_template(
-        "decision_tree.html",
-        active="decision_tree",
-        results=models_output,
-        error=error,
-    )
-
-
-# =========================================================
-# MODEL PREDICTION API
-# =========================================================
-@app.route("/api/predict", methods=["POST"])
-def predict_api():
-    from flask import request
-    from models_pipeline import predict_sample
-    try:
-        payload = request.get_json()
-        features_dict = {
-            "Temperature(F)": float(payload["Temperature(F)"]),
-            "Humidity(%)": float(payload["Humidity(%)"]),
-            "Pressure(in)": float(payload["Pressure(in)"]),
-            "Visibility(mi)": float(payload["Visibility(mi)"]),
-            "Wind_Speed(mph)": float(payload["Wind_Speed(mph)"])
+    results = None
+    reg_type = request.values.get("reg_type", "none")
+    
+    student_input = None
+    if request.method == "POST":
+        student_input = {
+            "Temperature(F)": request.form.get("Temperature(F)", 70.0),
+            "Humidity(%)": request.form.get("Humidity(%)", 60.0),
+            "Pressure(in)": request.form.get("Pressure(in)", 29.92),
+            "Visibility(mi)": request.form.get("Visibility(mi)", 10.0),
+            "Wind_Speed(mph)": request.form.get("Wind_Speed(mph)", 8.0),
+            "Crossing": request.form.get("Crossing", 0),
+            "Junction": request.form.get("Junction", 0),
+            "Traffic_Signal": request.form.get("Traffic_Signal", 0)
         }
-        category = payload.get("category", "regression")
-        model_type = payload.get("model_type", "none")
-        prediction = predict_sample(features_dict, category=category, model_type=model_type)
-        return jsonify({
-            "success": True,
-            "prediction": prediction
-        })
+        
+    try:
+        results = train_and_evaluate_linear(reg_type=reg_type, student_input=student_input)
     except Exception as e:
-        return jsonify({
-            "success": False,
-            "error": str(e)
-        }), 500
-
-
-# =========================================================
-# RUN FLASK APPLICATION
-# =========================================================
-if __name__ == "__main__":
-    app.run(
-        debug=True,
-        port=5004
+        error = f"Error evaluating Linear Regression: {e}"
+        
+    return render_template(
+        "linear_regression.html",
+        active="linear-regression",
+        results=results,
+        error=error,
     )
+
+
+@app.route("/logistic-regression", methods=["GET", "POST"])
+def logistic_regression():
+    """Runs Logistic Regression predicting Severity (Severe vs Minor) with dropdown for Without Regularization, Ridge (L2), and Lasso (L1)."""
+    from logistic_regression_model import train_and_evaluate_logistic
+    error = None
+    results = None
+    reg_type = request.values.get("reg_type", "none")
+    
+    student_input = None
+    if request.method == "POST":
+        student_input = {
+            "Temperature(F)": request.form.get("Temperature(F)", 70.0),
+            "Humidity(%)": request.form.get("Humidity(%)", 60.0),
+            "Pressure(in)": request.form.get("Pressure(in)", 29.92),
+            "Visibility(mi)": request.form.get("Visibility(mi)", 10.0),
+            "Wind_Speed(mph)": request.form.get("Wind_Speed(mph)", 8.0),
+            "Crossing": request.form.get("Crossing", 0),
+            "Junction": request.form.get("Junction", 0),
+            "Traffic_Signal": request.form.get("Traffic_Signal", 0),
+            "Sunrise_Sunset_Day": request.form.get("Sunrise_Sunset_Day", 1)
+        }
+        
+    try:
+        results = train_and_evaluate_logistic(reg_type=reg_type, student_input=student_input)
+    except Exception as e:
+        error = f"Error evaluating Logistic Regression: {e}"
+        
+    return render_template(
+        "logistic_regression.html",
+        active="logistic-regression",
+        results=results,
+        error=error,
+    )
+
+
+@app.route("/decision-trees", methods=["GET", "POST"])
+def decision_trees():
+    """Runs Decision Trees and Ensembles with dropdown for all 7 algorithms in progressive order."""
+    from decision_trees_model import train_and_evaluate_tree
+    error = None
+    results = None
+    algo = request.values.get("algo", "dt")
+    
+    student_input = None
+    if request.method == "POST":
+        student_input = {
+            "Temperature(F)": request.form.get("Temperature(F)", 70.0),
+            "Humidity(%)": request.form.get("Humidity(%)", 60.0),
+            "Pressure(in)": request.form.get("Pressure(in)", 29.92),
+            "Visibility(mi)": request.form.get("Visibility(mi)", 10.0),
+            "Wind_Speed(mph)": request.form.get("Wind_Speed(mph)", 8.0),
+            "Crossing": request.form.get("Crossing", 0),
+            "Junction": request.form.get("Junction", 0),
+            "Traffic_Signal": request.form.get("Traffic_Signal", 0),
+            "Sunrise_Sunset_Day": request.form.get("Sunrise_Sunset_Day", 1)
+        }
+        
+    try:
+        results = train_and_evaluate_tree(algo_key=algo, student_input=student_input)
+    except Exception as e:
+        error = f"Error evaluating Decision Tree / Ensemble: {e}"
+        
+    return render_template(
+        "decision_trees.html",
+        active="decision-trees",
+        results=results,
+        error=error,
+    )
+
+
+if __name__ == "__main__":
+    app.run(debug=True, port=5004)
