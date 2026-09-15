@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Preprocessing • Road Safety Prediction Project</title>
-    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+    <title>Preprocessing — Road Safety Prediction Project</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
@@ -13,7 +12,7 @@
 <header class="topbar">
     <a href="{{ url_for('index') }}" class="topbar-brand">
         <div class="topbar-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
             </svg>
         </div>
@@ -27,9 +26,17 @@
             <span class="status-indicator"></span>
             <span>Dataset: 50,000 Records</span>
         </div>
-        <div class="badge-pill" style="background: rgba(37, 99, 235, 0.2); border-color: rgba(37, 99, 235, 0.4); color: #93c5fd;">
+        <div class="badge-pill">
             <span>7 Ensembles Active</span>
         </div>
+        <a href="{{ url_for('download_preprocessed_csv') }}" class="topbar-btn" title="Download clean preprocessed CSV dataset">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span>Download CSV</span>
+        </a>
     </div>
 </header>
 
@@ -115,11 +122,34 @@
 
     <!-- MAIN CONTENT -->
     <main class="content">
-        <div class="page-title-bar">
-            <div>
-                <h2>Data Preprocessing & Transformations</h2>
-                <p>Run data transformation and cleansing pipelines. Compare downstream model performance across deletion and statistical imputation, inspect categorical translation maps, and preview standardized outputs.</p>
+        <div class="page-header">
+            <h2>Data Preprocessing & Transformations</h2>
+            <p>Inspect step-by-step data cleansing transformations. Compare downstream model performance across deletion and statistical imputation, inspect categorical translation maps, and download the standardized output dataset.</p>
+        </div>
+
+        <!-- Download Action Banner Card (Task 2) -->
+        <div class="download-action-banner">
+            <div class="download-banner-info">
+                <div class="download-banner-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                </div>
+                <div class="download-banner-text">
+                    <h4>Preprocessed Feature Dataset Ready (.csv)</h4>
+                    <p>Cleaned matrix with 34 numerical columns, zero null values, and standardized numerical scales.</p>
+                </div>
             </div>
+            <a href="{{ url_for('download_preprocessed_csv') }}" class="btn-primary" style="margin-top: 0; text-decoration: none;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                <span>Download Preprocessed CSV</span>
+            </a>
         </div>
 
         {% if error %}
@@ -130,10 +160,11 @@
 
             <!-- 1. Data Quality & Missingness Profiling -->
             <div class="section-group">
-                <h3 style="color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px;">Data Quality & Missingness Profiling</h3>
+                <h3>Data Quality & Missingness Profiling</h3>
+                <p>Missing value distribution across raw telemetry attributes prior to transformation.</p>
                 <div class="two-column-row" style="margin-top: 16px;">
                     <div class="column-card">
-                        <h4 style="margin-bottom: 8px; color: #1f3a5f;">Missing Values per Column</h4>
+                        <h4>Missing Values per Column</h4>
                         <div class="table-wrapper" style="max-height: 250px;">
                             <table class="data-table">
                                 <thead>
@@ -146,7 +177,7 @@
                                     {% for col, pct in results.missing.per_column.items() %}
                                     <tr>
                                         <td>{{ col }}</td>
-                                        <td><strong style="color: #b00020;">{{ pct }}</strong></td>
+                                        <td><strong>{{ pct }}</strong></td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
@@ -154,7 +185,7 @@
                         </div>
                     </div>
                     <div class="column-card">
-                        <h4 style="margin-bottom: 8px; color: #1f3a5f;">Temperature(F) Missingness by Sunrise_Sunset</h4>
+                        <h4>Temperature(F) Missingness by Sunrise_Sunset</h4>
                         <table class="data-table">
                             <thead>
                                 <tr>
@@ -177,9 +208,9 @@
 
             <!-- 2. Outlier Capping Analysis -->
             <div class="section-group">
-                <h3 style="color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px;">Outlier Bounds Profiling & Capping</h3>
-                <p style="font-size: 13.5px; color: #475569; margin-bottom: 12px; line-height: 1.5;">
-                    Extreme value outlier analysis: We calculate upper and lower bounds using the standard Interquartile Range (IQR) method ($Q1 - 1.5 \times IQR$ to $Q3 + 1.5 \times IQR$). For pipeline processing, features are clipped at these thresholds to prevent convergence issues and stabilize standard scaling estimators.
+                <h3>Outlier Bounds Profiling & Capping</h3>
+                <p>
+                    Extreme value outlier analysis: We calculate upper and lower bounds using the standard Interquartile Range (IQR) method ($Q1 - 1.5 \times IQR$ to $Q3 + 1.5 \times IQR$). Features are clipped at these thresholds to prevent convergence issues and stabilize standard scaling estimators.
                 </p>
                 <table class="data-table" style="margin-top: 16px;">
                     <thead>
@@ -194,32 +225,33 @@
                         <tr>
                             <td>{{ item.column }}</td>
                             <td>{{ item.bounds }}</td>
-                            <td><strong style="color: #b00020;">{{ item.capped }}</strong> rows</td>
+                            <td><strong>{{ item.capped }}</strong> rows</td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
+
             <!-- 3. Imputation Strategy Feasibility Evaluation -->
             <div class="section-group">
-                <h3 style="color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px;">Imputation Strategy Feasibility Evaluation</h3>
+                <h3>Imputation Strategy Feasibility Evaluation</h3>
                 
                 <div class="two-column-row" style="margin-top: 16px;">
                     <!-- Row-wise Deletion -->
                     <div class="column-card">
-                        <h4 style="margin-bottom: 8px; color: #1f3a5f;">Row-wise Deletion (Listwise)</h4>
-                        <div style="margin-bottom: 12px; font-size: 14px;">
+                        <h4>Row-wise Deletion (Listwise)</h4>
+                        <div style="margin-bottom: 12px; font-size: 13.5px;">
                             <strong>Applicable:</strong> 
                             {% if results.missing_analysis.rowdrop.applicable %}
-                                <span style="color: #10b981; font-weight: bold;">✔ Yes</span>
+                                <span class="badge badge-active">✔ Yes</span>
                             {% else %}
-                                <span style="color: #ef4444; font-weight: bold;">✘ No (Data Loss too high)</span>
+                                <span class="badge">✘ No (High Data Loss)</span>
                             {% endif %}
                         </div>
-                        <p style="font-size: 13.5px; color: #475569; margin-bottom: 12px; line-height: 1.5;">
+                        <p style="font-size: 13px; margin-bottom: 12px; line-height: 1.5;">
                             {{ results.missing_analysis.rowdrop.reason }}
                         </p>
-                        <table class="data-table" style="font-size: 13px;">
+                        <table class="data-table">
                             <tbody>
                                 <tr>
                                     <td>Total Rows</td>
@@ -239,21 +271,21 @@
 
                     <!-- Column-wise Deletion -->
                     <div class="column-card">
-                        <h4 style="margin-bottom: 8px; color: #1f3a5f;">Column-wise Deletion</h4>
-                        <div style="margin-bottom: 12px; font-size: 14px;">
+                        <h4>Column-wise Deletion</h4>
+                        <div style="margin-bottom: 12px; font-size: 13.5px;">
                             <strong>Applicable:</strong> 
                             {% if results.missing_analysis.coldrop.applicable %}
-                                <span style="color: #10b981; font-weight: bold;">✔ Yes (Some columns dropped)</span>
+                                <span class="badge badge-active">✔ Yes</span>
                             {% else %}
-                                <span style="color: #64748b; font-weight: bold;">ⓘ No Columns Exceed {{ results.missing_analysis.coldrop.threshold_pct }}% threshold</span>
+                                <span class="badge">ⓘ Below {{ results.missing_analysis.coldrop.threshold_pct }}% threshold</span>
                             {% endif %}
                         </div>
-                        <p style="font-size: 13.5px; color: #475569; margin-bottom: 12px; line-height: 1.5;">
+                        <p style="font-size: 13px; margin-bottom: 12px; line-height: 1.5;">
                             {{ results.missing_analysis.coldrop.reason }}
                         </p>
-                        <h5 style="margin-bottom: 6px; font-size: 13px; color: #334155;">Pruning Diagnostics:</h5>
+                        <h5 style="margin-bottom: 6px; font-size: 12px; color: var(--text-muted); text-transform: uppercase;">Pruning Diagnostics:</h5>
                         <div class="table-wrapper" style="max-height: 200px;">
-                            <table class="data-table" style="font-size: 12px;">
+                            <table class="data-table">
                                 <thead>
                                     <tr>
                                         <th>Column</th>
@@ -266,9 +298,9 @@
                                         <td>{{ col }}</td>
                                         <td>
                                             {% if detail.drop %}
-                                                <span style="color: #ef4444; font-weight: bold;">Dropped</span> ({{ detail.reason }})
+                                                <span class="badge">Dropped</span> ({{ detail.reason }})
                                             {% else %}
-                                                <span style="color: #10b981; font-weight: bold;">Retained</span> ({{ detail.reason }})
+                                                <span class="badge badge-active">Retained</span> ({{ detail.reason }})
                                             {% endif %}
                                         </td>
                                     </tr>
@@ -282,9 +314,9 @@
                 <div class="two-column-row" style="margin-top: 16px;">
                     <!-- Mean Imputation -->
                     <div class="column-card">
-                        <h4 style="margin-bottom: 8px; color: #1f3a5f;">Mean Imputation Strategy</h4>
+                        <h4>Mean Imputation Strategy</h4>
                         <div class="table-wrapper" style="max-height: 200px;">
-                            <table class="data-table" style="font-size: 12.5px;">
+                            <table class="data-table">
                                 <thead>
                                     <tr>
                                         <th>Column</th>
@@ -300,7 +332,7 @@
                                             {% if item.fill_value is not none %}
                                                 <strong>{{ item.fill_value }}</strong>
                                             {% else %}
-                                                <span style="color: #94a3b8;">N/A</span>
+                                                <span style="color: var(--text-muted);">N/A</span>
                                             {% endif %}
                                         </td>
                                         <td>{{ item.reason }}</td>
@@ -313,9 +345,9 @@
 
                     <!-- Median Imputation -->
                     <div class="column-card">
-                        <h4 style="margin-bottom: 8px; color: #1f3a5f;">Median Imputation Strategy</h4>
+                        <h4>Median Imputation Strategy</h4>
                         <div class="table-wrapper" style="max-height: 200px;">
-                            <table class="data-table" style="font-size: 12.5px;">
+                            <table class="data-table">
                                 <thead>
                                     <tr>
                                         <th>Column</th>
@@ -331,7 +363,7 @@
                                             {% if item.fill_value is not none %}
                                                 <strong>{{ item.fill_value }}</strong>
                                             {% else %}
-                                                <span style="color: #94a3b8;">N/A</span>
+                                                <span style="color: var(--text-muted);">N/A</span>
                                             {% endif %}
                                         </td>
                                         <td>{{ item.reason }}</td>
@@ -346,7 +378,7 @@
 
             <!-- 4. Listwise Deletion Benchmark -->
             <div class="section-group">
-                <h3 style="color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px;">Listwise Deletion Benchmark (Logistic Regression)</h3>
+                <h3>Listwise Deletion Benchmark (Logistic Regression)</h3>
                 <table class="data-table" style="margin-top: 16px;">
                     <thead>
                         <tr>
@@ -365,11 +397,11 @@
                         </tr>
                         <tr>
                             <td>Percentage of Training Data Discarded</td>
-                            <td><strong style="color: #b00020;">{{ results.listwise.discarded_pct }}</strong></td>
+                            <td><strong>{{ results.listwise.discarded_pct }}</strong></td>
                         </tr>
                         <tr>
                             <td>Downstream Model Accuracy (Logistic Regression)</td>
-                            <td><strong style="color: #10b981;">{{ results.listwise.accuracy }}</strong></td>
+                            <td><strong>{{ results.listwise.accuracy }}</strong></td>
                         </tr>
                     </tbody>
                 </table>
@@ -377,7 +409,7 @@
 
             <!-- 5. Comparative Model Accuracy by Strategy -->
             <div class="section-group">
-                <h3 style="color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px;">Comparative Model Accuracy by Strategy</h3>
+                <h3>Comparative Model Accuracy by Strategy</h3>
                 <table class="data-table" style="margin-top: 16px;">
                     <thead>
                         <tr>
@@ -391,19 +423,20 @@
                         <tr>
                             <td>{{ row.strategy }}</td>
                             <td>{{ row.rows }}</td>
-                            <td><strong {% if loop.last %}style="color: #10b981;"{% endif %}>{{ row.accuracy }}</strong></td>
+                            <td><strong>{{ row.accuracy }}</strong></td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
+
             <!-- 6. Encodings Mappings (Nominal & Ordinal) -->
             <div class="section-group">
-                <h3 style="color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px;">Categorical Translation & Encodings</h3>
+                <h3>Categorical Translation & Encodings</h3>
                 <div class="two-column-row" style="margin-top: 16px;">
                     <div class="column-card">
-                        <h4 style="margin-bottom: 8px; color: #1f3a5f;">Nominal Encoding (One-Hot Encoder)</h4>
-                        <p style="font-size: 13px; color: #475569; margin-bottom: 12px; line-height: 1.5;">
+                        <h4>Nominal Encoding (One-Hot Encoder)</h4>
+                        <p style="font-size: 13px; margin-bottom: 12px; line-height: 1.5;">
                             Converts categorical nominal features into binary column matrices, dropping the first category to avoid multicollinearity (the dummy variable trap).
                         </p>
                         <table class="data-table">
@@ -418,10 +451,10 @@
                                 </tr>
                             </tbody>
                         </table>
-                        <h5 style="margin-top: 12px; margin-bottom: 6px; color: #475569;">Example Features Generated:</h5>
-                        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                        <h5 style="margin-top: 14px; margin-bottom: 8px; font-size: 11.5px; color: var(--text-muted); text-transform: uppercase;">Example Features Generated:</h5>
+                        <div style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: center;">
                             {% for feat in results.encoding.ohe_features %}
-                                <span style="background-color: #f8fafc; border: 1px solid #cbd5e1; padding: 4px 8px; border-radius: 4px; font-family: monospace; font-size: 12px;">
+                                <span class="tag">
                                     {{ feat }}
                                 </span>
                             {% endfor %}
@@ -429,7 +462,7 @@
                     </div>
                     
                     <div class="column-card">
-                        <h4 style="margin-bottom: 8px; color: #1f3a5f;">Ordinal Encoding Mappings (Dynamic)</h4>
+                        <h4>Ordinal Encoding Mappings (Dynamic)</h4>
                         <table class="data-table">
                             <thead>
                                 <tr>
@@ -444,10 +477,10 @@
                                     {% for cat, val in mapping.items() %}
                                     <tr>
                                         {% if loop.first %}
-                                            <td rowspan="{{ mapping|length }}" style="vertical-align: middle; {% if not outer_loop_first %}border-top: 2px solid #cbd5e1;{% endif %}">{{ col }}</td>
+                                            <td rowspan="{{ mapping|length }}" style="vertical-align: middle;"><strong>{{ col }}</strong></td>
                                         {% endif %}
-                                        <td {% if loop.first and not outer_loop_first %}style="border-top: 2px solid #cbd5e1;"{% endif %}>{{ cat }}</td>
-                                        <td {% if loop.first and not outer_loop_first %}style="border-top: 2px solid #cbd5e1;"{% endif %}><strong>{{ val }}</strong></td>
+                                        <td>{{ cat }}</td>
+                                        <td><strong>{{ val }}</strong></td>
                                     </tr>
                                     {% endfor %}
                                 {% endfor %}
@@ -457,20 +490,20 @@
                 </div>
             </div>
 
-            <!-- 7. Advanced Categorical Encodings (Target & Embedding-Based) -->
+            <!-- 7. Advanced Categorical Encodings -->
             <div class="section-group">
-                <h3 style="color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px;">High-Card & Vector Categorical Encodings</h3>
+                <h3>High-Cardinality & Vector Categorical Encodings</h3>
                 <div class="two-column-row" style="margin-top: 16px;">
                     <!-- Target Encoding -->
                     <div class="column-card">
-                        <h4 style="margin-bottom: 8px; color: #1f3a5f;">Target Encoding (Mean of Target "Severity")</h4>
-                        <p style="font-size: 13px; color: #475569; margin-bottom: 12px; line-height: 1.5;">
-                            Learned Category-Target Relationships: We map each wind direction category to the average severity of its corresponding accidents. This acts as a powerful numerical proxy for categorical values in linear models.
+                        <h4>Target Encoding (Mean of Target "Severity")</h4>
+                        <p style="font-size: 13px; margin-bottom: 12px; line-height: 1.5;">
+                            Maps each categorical value to the average severity of its corresponding accidents as a continuous feature proxy.
                         </p>
                         
                         <div class="table-wrapper" style="max-height: 180px; margin-bottom: 12px;">
-                            <table class="data-table" style="font-size: 12px; margin-bottom: 0;">
-                                <thead style="position: sticky; top: 0; background: #fff; z-index: 10;">
+                            <table class="data-table" style="font-size: 12px;">
+                                <thead>
                                     <tr>
                                         <th>Category (Wind_Direction)</th>
                                         <th>Mapped Mean Severity</th>
@@ -487,8 +520,8 @@
                             </table>
                         </div>
 
-                        <h5 style="margin-top: 12px; margin-bottom: 6px; color: #475569; font-size: 13px;">Target Encoded Feature (Preview):</h5>
-                        <table class="data-table" style="font-size: 12px;">
+                        <h5 style="margin-top: 12px; margin-bottom: 6px; font-size: 11.5px; color: var(--text-muted); text-transform: uppercase;">Target Encoded Feature (Preview):</h5>
+                        <table class="data-table">
                             <thead>
                                 <tr>
                                     <th>Wind_Direction_target_Severity</th>
@@ -506,25 +539,25 @@
 
                     <!-- Embedding-Based Encoding -->
                     <div class="column-card">
-                        <h4 style="margin-bottom: 8px; color: #1f3a5f;">Embedding-Based Integer Indexing</h4>
-                        <p style="font-size: 13px; color: #475569; margin-bottom: 12px; line-height: 1.5;">
-                            Neural Network Embedding Map: Rather than generating hundreds of sparse columns, we assign a compact, zero-based integer ID to each wind direction. This mapping feeds directly into the network's Embedding layer for low-dimensional representation vector learning.
+                        <h4>Embedding-Based Integer Indexing</h4>
+                        <p style="font-size: 13px; margin-bottom: 12px; line-height: 1.5;">
+                            Assigns a compact, zero-based integer ID to each category for vector embedding layers.
                         </p>
                         
-                        <div style="display: flex; gap: 16px; margin-bottom: 12px; background: #f8fafc; padding: 10px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                        <div style="display: flex; gap: 16px; margin-bottom: 12px; background: #f4f4f5; padding: 10px; border-radius: 6px; border: 1px solid var(--gray-border); justify-content: center;">
                             <div>
-                                <span style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: bold; display: block;">Input Dimension</span>
-                                <strong style="font-size: 16px; color: #0f172a;">{{ results.embedding.Wind_Direction.embedding_input_dimension }}</strong>
+                                <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: bold; display: block;">Input Dimension</span>
+                                <strong>{{ results.embedding.Wind_Direction.embedding_input_dimension }}</strong>
                             </div>
                             <div>
-                                <span style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: bold; display: block;">Output Dimension</span>
-                                <strong style="font-size: 16px; color: #0f172a;">{{ results.embedding.Wind_Direction.embedding_output_dimension }} (Vectors)</strong>
+                                <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: bold; display: block;">Output Dimension</span>
+                                <strong>{{ results.embedding.Wind_Direction.embedding_output_dimension }} (Vectors)</strong>
                             </div>
                         </div>
 
                         <div class="table-wrapper" style="max-height: 180px; margin-bottom: 12px;">
-                            <table class="data-table" style="font-size: 12px; margin-bottom: 0;">
-                                <thead style="position: sticky; top: 0; background: #fff; z-index: 10;">
+                            <table class="data-table">
+                                <thead>
                                     <tr>
                                         <th>Category (Wind_Direction)</th>
                                         <th>Assigned ID</th>
@@ -534,15 +567,15 @@
                                     {% for cat, val in results.embedding.Wind_Direction.category_to_id.items() %}
                                     <tr>
                                         <td><code>{{ cat }}</code></td>
-                                        <td><span class="tag" style="background-color: #f1f5f9; color: #0f172a; padding: 2px 6px; border-radius: 4px; font-family: monospace;">{{ val }}</span></td>
+                                        <td><span class="tag">{{ val }}</span></td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
                             </table>
                         </div>
 
-                        <h5 style="margin-top: 12px; margin-bottom: 6px; color: #475569; font-size: 13px;">Encoded Embeddings Index (Preview):</h5>
-                        <table class="data-table" style="font-size: 12px;">
+                        <h5 style="margin-top: 12px; margin-bottom: 6px; font-size: 11.5px; color: var(--text-muted); text-transform: uppercase;">Encoded Embeddings Index (Preview):</h5>
+                        <table class="data-table">
                             <thead>
                                 <tr>
                                     <th>Wind_Direction_embedding_id</th>
@@ -551,7 +584,7 @@
                             <tbody>
                                 {% for row in results.embedding.Wind_Direction.train_preview %}
                                 <tr>
-                                    <td><span class="tag" style="background-color: #eff6ff; color: #2563eb; padding: 2px 6px; border-radius: 4px; font-family: monospace; font-weight: bold;">{{ row.Wind_Direction_embedding_id }}</span></td>
+                                    <td><span class="tag">{{ row.Wind_Direction_embedding_id }}</span></td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -559,15 +592,16 @@
                     </div>
                 </div>
             </div>
+
             <!-- 8. Feature Scaling: Min-Max Normalization -->
             <div class="section-group">
-                <h3 style="color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px;">Feature Scaling: Min-Max Normalization</h3>
-                <p style="font-size: 13.5px; color: #475569; margin-bottom: 12px; line-height: 1.5;">
+                <h3>Feature Scaling: Min-Max Normalization</h3>
+                <p>
                     Rescales features linearly to fit within a bounded range of 0.0 to 1.0. Preserves zero values and is ideal for neural network input scaling.
                 </p>
                 <div class="two-column-row" style="margin-top: 16px;">
                     <div class="column-card">
-                        <h4 style="margin-bottom: 8px; color: #b00020;">Before Scaling (First 5 Rows):</h4>
+                        <h4>Before Scaling (First 5 Rows):</h4>
                         <table class="data-table">
                             <thead>
                                 <tr>
@@ -589,7 +623,7 @@
                     </div>
                     
                     <div class="column-card">
-                        <h4 style="margin-bottom: 8px; color: #10b981;">After Min-Max Normalization (0.0 to 1.0):</h4>
+                        <h4>After Min-Max Normalization (0.0 to 1.0):</h4>
                         <table class="data-table">
                             <thead>
                                 <tr>
@@ -614,13 +648,13 @@
 
             <!-- 9. Feature Scaling: Z-Score Standardization -->
             <div class="section-group">
-                <h3 style="color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px;">Feature Scaling: Z-Score Standardization</h3>
-                <p style="font-size: 13.5px; color: #475569; margin-bottom: 12px; line-height: 1.5;">
+                <h3>Feature Scaling: Z-Score Standardization</h3>
+                <p>
                     Standardizes features by centering them to a mean of 0 and scaling them to a standard deviation of 1. Recommended for algorithms that assume normally distributed inputs.
                 </p>
                 <div class="two-column-row" style="margin-top: 16px;">
                     <div class="column-card">
-                        <h4 style="margin-bottom: 8px; color: #b00020;">Before Standardization (First 5 Rows):</h4>
+                        <h4>Before Standardization (First 5 Rows):</h4>
                         <table class="data-table">
                             <thead>
                                 <tr>
@@ -642,7 +676,7 @@
                     </div>
                     
                     <div class="column-card">
-                        <h4 style="margin-bottom: 8px; color: #10b981;">After Z-Score Standardization (Mean=0, Std=1):</h4>
+                        <h4>After Z-Score Standardization (Mean=0, Std=1):</h4>
                         <table class="data-table">
                             <thead>
                                 <tr>
