@@ -11,7 +11,7 @@
 <header class="topbar">
     <a href="{{ url_for('index') }}" class="topbar-brand">
         <div class="topbar-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
             </svg>
         </div>
@@ -25,9 +25,17 @@
             <span class="status-indicator"></span>
             <span>Dataset: 50,000 Records</span>
         </div>
-        <div class="badge-pill" style="background: rgba(37, 99, 235, 0.2); border-color: rgba(37, 99, 235, 0.4); color: #93c5fd;">
+        <div class="badge-pill">
             <span>7 Ensembles Active</span>
         </div>
+        <a href="{{ url_for('download_preprocessed_csv') }}" class="topbar-btn" title="Download clean preprocessed CSV dataset">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span>Download CSV</span>
+        </a>
     </div>
 </header>
 
@@ -123,7 +131,7 @@
         {% endif %}
 
         {% if results %}
-            <!-- SUMMARY STATS TILES -->
+            <!-- SUMMARY STATS TILES (CENTERED) -->
             <div class="stats-strip">
                 <div class="stat-box">
                     <div class="stat-head">
@@ -147,7 +155,7 @@
                         </svg>
                     </div>
                     <div class="stat-value">{{ results.duplicate_count }}</div>
-                    <div class="stat-meta" style="color: #166534; font-weight: 600;">✓ 100% Unique Cases</div>
+                    <div class="stat-meta">100% Unique Cases</div>
                 </div>
 
                 <div class="stat-box">
@@ -188,13 +196,13 @@
                         <img src="{{ url_for('static', filename='charts/missing_values.png') }}" alt="Missing Values Distribution" loading="lazy">
                         <div class="light-popover">
                             <div class="popover-header">
-                                <span class="popover-badge">💡 Key Finding & Model Impact</span>
+                                <span class="popover-badge">Key Finding & Model Impact</span>
                             </div>
                             <div class="popover-body">Identifies high-missingness attributes like <code>End_Lat</code>, <code>End_Lng</code>, and <code>Wind_Chill(F)</code>. Informs median imputation strategies and pruning prior to model fitting.</div>
                         </div>
                     </div>
                     <div class="graph-card-footer">
-                        <span class="hint-hover"><span>ℹ️</span> Hover for insight</span>
+                        <span class="hint-hover"><span>ℹ</span> Hover for insight</span>
                         <span>Click to enlarge ↗</span>
                     </div>
                 </div>
@@ -209,13 +217,13 @@
                         <img src="{{ url_for('static', filename='charts/severity_distribution.png') }}" alt="Severity Distribution" loading="lazy">
                         <div class="light-popover">
                             <div class="popover-header">
-                                <span class="popover-badge">💡 Key Finding & Model Impact</span>
+                                <span class="popover-badge">Key Finding & Model Impact</span>
                             </div>
                             <div class="popover-body">Severe class imbalance: Severity 2 (~60%) and 3 (~20%) dominate, with Levels 1 & 4 as minority edge cases. Informs weighted loss functions and tree split evaluation.</div>
                         </div>
                     </div>
                     <div class="graph-card-footer">
-                        <span class="hint-hover"><span>ℹ️</span> Hover for insight</span>
+                        <span class="hint-hover"><span>ℹ</span> Hover for insight</span>
                         <span>Click to enlarge ↗</span>
                     </div>
                 </div>
@@ -230,13 +238,13 @@
                         <img src="{{ url_for('static', filename='charts/accidents_by_hour.png') }}" alt="Hourly Trend" loading="lazy">
                         <div class="light-popover">
                             <div class="popover-header">
-                                <span class="popover-badge">💡 Key Finding & Model Impact</span>
+                                <span class="popover-badge">Key Finding & Model Impact</span>
                             </div>
                             <div class="popover-body">Bimodal distribution showing sharp traffic volume peaks during commute windows (7–9 AM and 4–6 PM). Strong predictive signal for accident probability.</div>
                         </div>
                     </div>
                     <div class="graph-card-footer">
-                        <span class="hint-hover"><span>ℹ️</span> Hover for insight</span>
+                        <span class="hint-hover"><span>ℹ</span> Hover for insight</span>
                         <span>Click to enlarge ↗</span>
                     </div>
                 </div>
@@ -251,13 +259,13 @@
                         <img src="{{ url_for('static', filename='charts/accidents_by_dayofweek.png') }}" alt="Weekly Trend" loading="lazy">
                         <div class="light-popover">
                             <div class="popover-header">
-                                <span class="popover-badge">💡 Key Finding & Model Impact</span>
+                                <span class="popover-badge">Key Finding & Model Impact</span>
                             </div>
                             <div class="popover-body">Weekdays (Mon–Fri) experience 75%+ higher crash volume than weekends due to commercial transit, industrial logistics, and high-density work traffic.</div>
                         </div>
                     </div>
                     <div class="graph-card-footer">
-                        <span class="hint-hover"><span>ℹ️</span> Hover for insight</span>
+                        <span class="hint-hover"><span>ℹ</span> Hover for insight</span>
                         <span>Click to enlarge ↗</span>
                     </div>
                 </div>
@@ -272,13 +280,13 @@
                         <img src="{{ url_for('static', filename='charts/accidents_by_month.png') }}" alt="Monthly Trend" loading="lazy">
                         <div class="light-popover">
                             <div class="popover-header">
-                                <span class="popover-badge">💡 Key Finding & Model Impact</span>
+                                <span class="popover-badge">Key Finding & Model Impact</span>
                             </div>
                             <div class="popover-body">Winter and late autumn months show heightened accident rates driven by inclement weather conditions, black ice, and decreased day-lighting hours.</div>
                         </div>
                     </div>
                     <div class="graph-card-footer">
-                        <span class="hint-hover"><span>ℹ️</span> Hover for insight</span>
+                        <span class="hint-hover"><span>ℹ</span> Hover for insight</span>
                         <span>Click to enlarge ↗</span>
                     </div>
                 </div>
@@ -293,13 +301,13 @@
                         <img src="{{ url_for('static', filename='charts/top_weather_conditions.png') }}" alt="Top Weather" loading="lazy">
                         <div class="light-popover">
                             <div class="popover-header">
-                                <span class="popover-badge">💡 Key Finding & Model Impact</span>
+                                <span class="popover-badge">Key Finding & Model Impact</span>
                             </div>
                             <div class="popover-body">Clear and Overcast weather dominate baseline rates; Rain, Snow, and Fog correlate strongly with elevated severity multiplier flags.</div>
                         </div>
                     </div>
                     <div class="graph-card-footer">
-                        <span class="hint-hover"><span>ℹ️</span> Hover for insight</span>
+                        <span class="hint-hover"><span>ℹ</span> Hover for insight</span>
                         <span>Click to enlarge ↗</span>
                     </div>
                 </div>
@@ -314,13 +322,13 @@
                         <img src="{{ url_for('static', filename='charts/top_states.png') }}" alt="Top States" loading="lazy">
                         <div class="light-popover">
                             <div class="popover-header">
-                                <span class="popover-badge">💡 Key Finding & Model Impact</span>
+                                <span class="popover-badge">Key Finding & Model Impact</span>
                             </div>
                             <div class="popover-body">High population & large transit hubs (California, Florida, Texas, South Carolina) lead reporting volumes. Categorical target encoding recommended.</div>
                         </div>
                     </div>
                     <div class="graph-card-footer">
-                        <span class="hint-hover"><span>ℹ️</span> Hover for insight</span>
+                        <span class="hint-hover"><span>ℹ</span> Hover for insight</span>
                         <span>Click to enlarge ↗</span>
                     </div>
                 </div>
@@ -335,13 +343,13 @@
                         <img src="{{ url_for('static', filename='charts/temp_by_severity.png') }}" alt="Temperature by Severity" loading="lazy">
                         <div class="light-popover">
                             <div class="popover-header">
-                                <span class="popover-badge">💡 Key Finding & Model Impact</span>
+                                <span class="popover-badge">Key Finding & Model Impact</span>
                             </div>
                             <div class="popover-body">Sub-freezing temperatures (&lt; 32°F) show elevated proportion of severe crashes due to ice-compromised braking distance.</div>
                         </div>
                     </div>
                     <div class="graph-card-footer">
-                        <span class="hint-hover"><span>ℹ️</span> Hover for insight</span>
+                        <span class="hint-hover"><span>ℹ</span> Hover for insight</span>
                         <span>Click to enlarge ↗</span>
                     </div>
                 </div>
@@ -356,13 +364,13 @@
                         <img src="{{ url_for('static', filename='charts/visibility_by_severity.png') }}" alt="Visibility by Severity" loading="lazy">
                         <div class="light-popover">
                             <div class="popover-header">
-                                <span class="popover-badge">💡 Key Finding & Model Impact</span>
+                                <span class="popover-badge">Key Finding & Model Impact</span>
                             </div>
                             <div class="popover-body">Reduced visibility (&lt; 2 miles) creates critical driver reaction delays, driving up multi-vehicle pileups and severe road blockages.</div>
                         </div>
                     </div>
                     <div class="graph-card-footer">
-                        <span class="hint-hover"><span>ℹ️</span> Hover for insight</span>
+                        <span class="hint-hover"><span>ℹ</span> Hover for insight</span>
                         <span>Click to enlarge ↗</span>
                     </div>
                 </div>
@@ -377,13 +385,13 @@
                         <img src="{{ url_for('static', filename='charts/infrastructure_impact.png') }}" alt="Infrastructure Impact" loading="lazy">
                         <div class="light-popover">
                             <div class="popover-header">
-                                <span class="popover-badge">💡 Key Finding & Model Impact</span>
+                                <span class="popover-badge">Key Finding & Model Impact</span>
                             </div>
                             <div class="popover-body">Traffic Signals, Crossings, and Junctions are high-frequency collision zones. Highly predictive binary flag features for tabular classifiers.</div>
                         </div>
                     </div>
                     <div class="graph-card-footer">
-                        <span class="hint-hover"><span>ℹ️</span> Hover for insight</span>
+                        <span class="hint-hover"><span>ℹ</span> Hover for insight</span>
                         <span>Click to enlarge ↗</span>
                     </div>
                 </div>
@@ -398,13 +406,13 @@
                         <img src="{{ url_for('static', filename='charts/day_night_vs_severity.png') }}" alt="Day vs Night Severity" loading="lazy">
                         <div class="light-popover">
                             <div class="popover-header">
-                                <span class="popover-badge">💡 Key Finding & Model Impact</span>
+                                <span class="popover-badge">Key Finding & Model Impact</span>
                             </div>
                             <div class="popover-body">Nighttime collisions have a proportionally higher severity rate due to speed differentials, driver fatigue, and reduced reaction buffers.</div>
                         </div>
                     </div>
                     <div class="graph-card-footer">
-                        <span class="hint-hover"><span>ℹ️</span> Hover for insight</span>
+                        <span class="hint-hover"><span>ℹ</span> Hover for insight</span>
                         <span>Click to enlarge ↗</span>
                     </div>
                 </div>
@@ -419,13 +427,13 @@
                         <img src="{{ url_for('static', filename='charts/accident_heatmap.png') }}" alt="Accident Heatmap" loading="lazy">
                         <div class="light-popover">
                             <div class="popover-header">
-                                <span class="popover-badge">💡 Key Finding & Model Impact</span>
+                                <span class="popover-badge">Key Finding & Model Impact</span>
                             </div>
                             <div class="popover-body">Shows dense accident corridors along East and West coasts, major Interstate corridors (I-95, I-5, I-10, I-80), and metropolitan hubs.</div>
                         </div>
                     </div>
                     <div class="graph-card-footer">
-                        <span class="hint-hover"><span>ℹ️</span> Hover for insight</span>
+                        <span class="hint-hover"><span>ℹ</span> Hover for insight</span>
                         <span>Click to enlarge ↗</span>
                     </div>
                 </div>
@@ -442,13 +450,13 @@
                     <img src="{{ url_for('static', filename='charts/correlation_heatmap.png') }}" alt="Correlation Heatmap" style="max-height: 480px;" loading="lazy">
                     <div class="light-popover">
                         <div class="popover-header">
-                            <span class="popover-badge">💡 Key Finding & Model Impact</span>
+                            <span class="popover-badge">Key Finding & Model Impact</span>
                         </div>
                         <div class="popover-body">Reveals collinear relationships (e.g. Temperature vs Heat Index, Pressure vs Elevation). Guides feature selection and multicollinearity mitigation.</div>
                     </div>
                 </div>
                 <div class="graph-card-footer">
-                    <span class="hint-hover"><span>ℹ️</span> Hover for insight</span>
+                    <span class="hint-hover"><span>ℹ</span> Hover for insight</span>
                     <span>Click to enlarge ↗</span>
                 </div>
             </div>
