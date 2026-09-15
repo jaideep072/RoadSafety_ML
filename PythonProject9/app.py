@@ -1,5 +1,5 @@
-﻿import os
-from flask import Flask, render_template, request, jsonify
+import os
+from flask import Flask, render_template, request, jsonify, send_file
 from flask_cors import CORS
 from load_data import get_data_summary
 from roadsafety_eda import run_eda
@@ -11,6 +11,21 @@ CORS(app)
 @app.route("/")
 def index():
     return render_template("index.html", active="none")
+
+
+@app.route("/download/preprocessed-csv")
+def download_preprocessed_csv():
+    """Serves the clean preprocessed dataset as a downloadable CSV file."""
+    csv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "roadsafety_preprocessed.csv")
+    if not os.path.exists(csv_path):
+        from preprocessing_pipeline import run_preprocessing_pipeline
+        run_preprocessing_pipeline()
+    return send_file(
+        csv_path,
+        mimetype="text/csv",
+        as_attachment=True,
+        download_name="roadsafety_preprocessed.csv"
+    )
 
 
 @app.route("/data-loading")
