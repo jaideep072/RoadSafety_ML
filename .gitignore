@@ -1,34 +1,42 @@
-# Python
+# Python Bytecode & Cache
 __pycache__/
 *.py[cod]
+*$py.class
 *.pyo
+.pytest_cache/
+.coverage
+htmlcov/
 
-# Virtual environment
+# Virtual Environments
 .venv/
 venv/
 env/
+ENV/
 
-# PyCharm
+# IDE Configuration
 .idea/
+.vscode/
+*.swp
+*.swo
 
-# Jupyter
-.ipynb_checkpoints/
-
-# Environment/secrets
+# Environment Variables & Secrets
 .env
 .env.*
 
-# OS files
+# Operating System Files
 .DS_Store
 Thumbs.db
+desktop.ini
 
-# Python build files
-build/
+# Node / Frontend
+node_modules/
 dist/
+build/
 *.egg-info/
 
-# Large dataset
-PythonProject9/data/US_Accidents_March23.csv
+# CatBoost Logs
+catboost_info/
 
-# Project Documentation
-PROJECT_COMPLETE_EXPLANATION.txt
+# Huge Raw Dataset (Keep sample dataset, ignore multi-gigabyte full dump)
+data/raw/US_Accidents_March23.csv
+PythonProject9/data/US_Accidents_March23.csv
