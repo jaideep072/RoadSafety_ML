@@ -1,0 +1,1179 @@
+{
+    "original_rows": 100000,
+    "cleaned_rows": 100000,
+    "target_name": "Severity (Classification) & Distance(mi) (Regression)",
+    "training_samples": 80000,
+    "testing_samples": 20000,
+    "processed_features": 48,
+    "dropped_reasons": {
+        "ID": "Arbitrary database primary key with no generalizable relationship to crash severity. Overfits if retained.",
+        "Description": "Unstructured free-form incident text. Excluded to ensure consistent tabular schema.",
+        "Country": "Zero-variance constant feature: 100% of observations are 'US'. Provides zero predictive variance.",
+        "End_Lat": "High missingness (>60% nulls). Geographically redundant with primary Start_Lat coordinate.",
+        "End_Lng": "High missingness (>60% nulls). Geographically redundant with primary Start_Lng coordinate.",
+        "Number": "Street address number with high missingness (>65% nulls). Continuous latitude and longitude coordinates used instead.",
+        "Street": "High-cardinality nominal text identifier (>30,000 unique levels). Prone to severe overfitting.",
+        "Zipcode": "High-cardinality postal code string. Geographic latitude and longitude coordinates provide continuous spatial density.",
+        "Weather_Timestamp": "Data collection timestamp metadata with no predictive bearing on road physics.",
+        "End_Time": "Incident clearance timestamp: recorded post-accident, introducing post-event observation leakage.",
+        "Airport_Code": "Weather station identifier: redundant with direct atmospheric readings (Temperature, Pressure, Humidity)."
+    },
+    "engineered_infrastructure": [
+        "Traffic_Signal",
+        "Crossing",
+        "Junction",
+        "Amenity",
+        "Stop",
+        "Station",
+        "Railway",
+        "Roundabout",
+        "Give_Way",
+        "Traffic_Calming",
+        "Bump",
+        "No_Exit"
+    ],
+    "engineered_environmental": [
+        "Temperature(F)",
+        "Humidity(%)",
+        "Pressure(in)",
+        "Visibility(mi)",
+        "Wind_Speed(mph)"
+    ],
+    "engineered_spatial_temporal": [
+        "Start_Lat",
+        "Start_Lng",
+        "Distance(mi)",
+        "Sunrise_Sunset_Day",
+        "Civil_Twilight_Day"
+    ],
+    "categorical_features": [
+        "Side",
+        "Timezone",
+        "Weather_Condition",
+        "Wind_Direction"
+    ],
+    "missing_report": {
+        "End_Lat": {
+            "count": 100000,
+            "pct": 100.0,
+            "strategy": "Median Imputation"
+        },
+        "End_Lng": {
+            "count": 100000,
+            "pct": 100.0,
+            "strategy": "Median Imputation"
+        },
+        "City": {
+            "count": 1,
+            "pct": 0.0,
+            "strategy": "Median Imputation"
+        },
+        "Zipcode": {
+            "count": 7,
+            "pct": 0.01,
+            "strategy": "Median Imputation"
+        },
+        "Timezone": {
+            "count": 7,
+            "pct": 0.01,
+            "strategy": "Median Imputation"
+        },
+        "Airport_Code": {
+            "count": 7,
+            "pct": 0.01,
+            "strategy": "Median Imputation"
+        },
+        "Weather_Timestamp": {
+            "count": 1054,
+            "pct": 1.05,
+            "strategy": "Median Imputation"
+        },
+        "Temperature(F)": {
+            "count": 1591,
+            "pct": 1.59,
+            "strategy": "SimpleImputer(strategy='median') + StandardScaler()"
+        },
+        "Wind_Chill(F)": {
+            "count": 95678,
+            "pct": 95.68,
+            "strategy": "Median Imputation"
+        },
+        "Humidity(%)": {
+            "count": 1856,
+            "pct": 1.86,
+            "strategy": "SimpleImputer(strategy='median') + StandardScaler()"
+        },
+        "Pressure(in)": {
+            "count": 1292,
+            "pct": 1.29,
+            "strategy": "SimpleImputer(strategy='median') + StandardScaler()"
+        },
+        "Visibility(mi)": {
+            "count": 1846,
+            "pct": 1.85,
+            "strategy": "SimpleImputer(strategy='median') + StandardScaler()"
+        },
+        "Wind_Direction": {
+            "count": 1064,
+            "pct": 1.06,
+            "strategy": "Median Imputation"
+        },
+        "Wind_Speed(mph)": {
+            "count": 23820,
+            "pct": 23.82,
+            "strategy": "SimpleImputer(strategy='median') + StandardScaler()"
+        },
+        "Precipitation(in)": {
+            "count": 92632,
+            "pct": 92.63,
+            "strategy": "Median Imputation"
+        },
+        "Weather_Condition": {
+            "count": 1604,
+            "pct": 1.6,
+            "strategy": "Median Imputation"
+        },
+        "Sunrise_Sunset": {
+            "count": 1,
+            "pct": 0.0,
+            "strategy": "Median Imputation"
+        },
+        "Civil_Twilight": {
+            "count": 1,
+            "pct": 0.0,
+            "strategy": "Median Imputation"
+        },
+        "Nautical_Twilight": {
+            "count": 1,
+            "pct": 0.0,
+            "strategy": "Median Imputation"
+        },
+        "Astronomical_Twilight": {
+            "count": 1,
+            "pct": 0.0,
+            "strategy": "Median Imputation"
+        }
+    },
+    "missing": {
+        "per_column": {
+            "End_Lat": "100.000% (80000 rows)",
+            "End_Lng": "100.000% (80000 rows)",
+            "Wind_Chill(F)": "95.668% (76534 rows)",
+            "Precipitation(in)": "92.705% (74164 rows)",
+            "Wind_Speed(mph)": "23.822% (19058 rows)",
+            "Humidity(%)": "1.901% (1521 rows)",
+            "Visibility(mi)": "1.886% (1509 rows)",
+            "Temperature(F)": "1.628% (1302 rows)",
+            "Weather_Condition": "1.625% (1300 rows)",
+            "Pressure(in)": "1.307% (1046 rows)",
+            "Wind_Direction": "1.084% (867 rows)",
+            "Weather_Timestamp": "1.075% (860 rows)",
+            "Airport_Code": "0.006% (5 rows)",
+            "Zipcode": "0.006% (5 rows)",
+            "Timezone": "0.006% (5 rows)",
+            "City": "0.001% (1 rows)",
+            "Sunrise_Sunset": "0.001% (1 rows)",
+            "Civil_Twilight": "0.001% (1 rows)",
+            "Nautical_Twilight": "0.001% (1 rows)",
+            "Astronomical_Twilight": "0.001% (1 rows)"
+        },
+        "grouped": {
+            "Day": "1.54%",
+            "Night": "1.78%"
+        }
+    },
+    "missing_analysis": {
+        "total_rows": 100000,
+        "total_missing_cells": 422463,
+        "rows_with_missing": 100000,
+        "col_info": {
+            "ID": {
+                "missing": 0,
+                "pct": 0.0,
+                "dtype": "str"
+            },
+            "Source": {
+                "missing": 0,
+                "pct": 0.0,
+                "dtype": "str"
+            },
+            "Severity": {
+                "missing": 0,
+                "pct": 0.0,
+                "dtype": "int64"
+            },
+            "Start_Time": {
+                "missing": 0,
+                "pct": 0.0,
+                "dtype": "str"
+            },
+            "End_Time": {
+                "missing": 0,
+                "pct": 0.0,
+                "dtype": "str"
+            },
+            "Start_Lat": {
+                "missing": 0,
+                "pct": 0.0,
+                "dtype": "float64"
+            },
+            "Start_Lng": {
+                "missing": 0,
+                "pct": 0.0,
+                "dtype": "float64"
+            },
+            "End_Lat": {
+                "missing": 100000,
+                "pct": 100.0,
+                "dtype": "float64"
+            },
+            "End_Lng": {
+                "missing": 100000,
+                "pct": 100.0,
+                "dtype": "float64"
+            },
+            "Distance(mi)": {
+                "missing": 0,
+                "pct": 0.0,
+                "dtype": "float64"
+            },
+            "Description": {
+                "missing": 0,
+                "pct": 0.0,
+                "dtype": "str"
+            },
+            "Street": {
+                "missing": 0,
+                "pct": 0.0,
+                "dtype": "str"
+            },
+            "City": {
+                "missing": 1,
+                "pct": 0.001,
+                "dtype": "str"
+            },
+            "County": {
+                "missing": 0,
+                "pct": 0.0,
+                "dtype": "str"
+            },
+            "State": {
+                "missing": 0,
+                "pct": 0.0,
+                "dtype": "str"
+            },
+            "Zipcode": {
+                "missing": 7,
+                "pct": 0.007,
+                "dtype": "str"
+            },
+            "Country": {
+                "missing": 0,
+                "pct": 0.0,
+                "dtype": "str"
+            },
+            "Timezone": {
+                "missing": 7,
+                "pct": 0.007,
+                "dtype": "str"
+            },
+            "Airport_Code": {
+                "missing": 7,
+                "pct": 0.007,
+                "dtype": "str"
+            },
+            "Weather_Timestamp": {
+                "missing": 1054,
+                "pct": 1.054,
+                "dtype": "str"
+            },
+            "Temperature(F)": {
+                "missing": 1591,
+                "pct": 1.591,
+                "dtype": "float64"
+            },
+            "Wind_Chill(F)": {
+                "missing": 95678,
+                "pct": 95.678,
+                "dtype": "float64"
+            },
+            "Humidity(%)": {
+                "missing": 1856,
+                "pct": 1.856,
+                "dtype": "float64"
+            },
+            "Pressure(in)": {
+                "missing": 1292,
+                "pct": 1.292,
+                "dtype": "float64"
+            },
+            "Visibility(mi)": {
+                "missing": 1846,
+                "pct": 1.846,
+                "dtype": "float64"
+            },
+            "Wind_Direction": {
+                "missing": 1064,
+                "pct": 1.064,
+                "dtype": "str"
+            },
+            "Wind_Speed(mph)": {
+                "missing": 23820,
+                "pct": 23.82,
+                "dtype": "float64"
+            },
+            "Precipitation(in)": {
+                "missing": 92632,
+                "pct": 92.632,
+                "dtype": "float64"
+            },
+            "Weather_Condition": {
+                "missing": 1604,
+                "pct": 1.604,
+                "dtype": "str"
+            },
+            "Amenity": {
+                "missing": 0,
+                "pct": 0.0,
+                "dtype": "bool"
+            },
+            "Bump": {
+                "missing": 0,
+                "pct": 0.0,
+                "dtype": "bool"
+            },
+            "Crossing": {
+                "missing": 0,
+                "pct": 0.0,
+                "dtype": "bool"
+            },
+            "Give_Way": {
+                "missing": 0,
+                "pct": 0.0,
+                "dtype": "bool"
+            },
+            "Junction": {
+                "missing": 0,
+                "pct": 0.0,
+                "dtype": "bool"
+            },
+            "No_Exit": {
+                "missing": 0,
+                "pct": 0.0,
+                "dtype": "bool"
+            },
+            "Railway": {
+                "missing": 0,
+                "pct": 0.0,
+                "dtype": "bool"
+            },
+            "Roundabout": {
+                "missing": 0,
+                "pct": 0.0,
+                "dtype": "bool"
+            },
+            "Station": {
+                "missing": 0,
+                "pct": 0.0,
+                "dtype": "bool"
+            },
+            "Stop": {
+                "missing": 0,
+                "pct": 0.0,
+                "dtype": "bool"
+            },
+            "Traffic_Calming": {
+                "missing": 0,
+                "pct": 0.0,
+                "dtype": "bool"
+            },
+            "Traffic_Signal": {
+                "missing": 0,
+                "pct": 0.0,
+                "dtype": "bool"
+            },
+            "Turning_Loop": {
+                "missing": 0,
+                "pct": 0.0,
+                "dtype": "bool"
+            },
+            "Sunrise_Sunset": {
+                "missing": 1,
+                "pct": 0.001,
+                "dtype": "str"
+            },
+            "Civil_Twilight": {
+                "missing": 1,
+                "pct": 0.001,
+                "dtype": "str"
+            },
+            "Nautical_Twilight": {
+                "missing": 1,
+                "pct": 0.001,
+                "dtype": "str"
+            },
+            "Astronomical_Twilight": {
+                "missing": 1,
+                "pct": 0.001,
+                "dtype": "str"
+            }
+        },
+        "missing_cols": {
+            "End_Lat": {
+                "missing": 100000,
+                "pct": 100.0,
+                "dtype": "float64"
+            },
+            "End_Lng": {
+                "missing": 100000,
+                "pct": 100.0,
+                "dtype": "float64"
+            },
+            "City": {
+                "missing": 1,
+                "pct": 0.001,
+                "dtype": "str"
+            },
+            "Zipcode": {
+                "missing": 7,
+                "pct": 0.007,
+                "dtype": "str"
+            },
+            "Timezone": {
+                "missing": 7,
+                "pct": 0.007,
+                "dtype": "str"
+            },
+            "Airport_Code": {
+                "missing": 7,
+                "pct": 0.007,
+                "dtype": "str"
+            },
+            "Weather_Timestamp": {
+                "missing": 1054,
+                "pct": 1.054,
+                "dtype": "str"
+            },
+            "Temperature(F)": {
+                "missing": 1591,
+                "pct": 1.591,
+                "dtype": "float64"
+            },
+            "Wind_Chill(F)": {
+                "missing": 95678,
+                "pct": 95.678,
+                "dtype": "float64"
+            },
+            "Humidity(%)": {
+                "missing": 1856,
+                "pct": 1.856,
+                "dtype": "float64"
+            },
+            "Pressure(in)": {
+                "missing": 1292,
+                "pct": 1.292,
+                "dtype": "float64"
+            },
+            "Visibility(mi)": {
+                "missing": 1846,
+                "pct": 1.846,
+                "dtype": "float64"
+            },
+            "Wind_Direction": {
+                "missing": 1064,
+                "pct": 1.064,
+                "dtype": "str"
+            },
+            "Wind_Speed(mph)": {
+                "missing": 23820,
+                "pct": 23.82,
+                "dtype": "float64"
+            },
+            "Precipitation(in)": {
+                "missing": 92632,
+                "pct": 92.632,
+                "dtype": "float64"
+            },
+            "Weather_Condition": {
+                "missing": 1604,
+                "pct": 1.604,
+                "dtype": "str"
+            },
+            "Sunrise_Sunset": {
+                "missing": 1,
+                "pct": 0.001,
+                "dtype": "str"
+            },
+            "Civil_Twilight": {
+                "missing": 1,
+                "pct": 0.001,
+                "dtype": "str"
+            },
+            "Nautical_Twilight": {
+                "missing": 1,
+                "pct": 0.001,
+                "dtype": "str"
+            },
+            "Astronomical_Twilight": {
+                "missing": 1,
+                "pct": 0.001,
+                "dtype": "str"
+            }
+        },
+        "rowdrop": {
+            "applicable": false,
+            "rows_before": 100000,
+            "rows_after": 0,
+            "rows_dropped": 100000,
+            "pct_dropped": 100.0,
+            "reason": "100000 rows (100.0%) would be lost. Listwise deletion discards too much sample variance.",
+            "preview": []
+        },
+        "coldrop": {
+            "applicable": true,
+            "threshold_pct": 30.0,
+            "cols_dropped": [
+                "End_Lat",
+                "End_Lng",
+                "Wind_Chill(F)",
+                "Precipitation(in)"
+            ],
+            "cols_retained": [
+                "City",
+                "Zipcode",
+                "Timezone",
+                "Airport_Code",
+                "Weather_Timestamp",
+                "Temperature(F)",
+                "Humidity(%)",
+                "Pressure(in)",
+                "Visibility(mi)",
+                "Wind_Direction",
+                "Wind_Speed(mph)",
+                "Weather_Condition",
+                "Sunrise_Sunset",
+                "Civil_Twilight",
+                "Nautical_Twilight",
+                "Astronomical_Twilight"
+            ],
+            "per_col_reasons": {
+                "End_Lat": {
+                    "drop": true,
+                    "reason": "100.00% missing \u2014 exceeds 30.0% threshold. Column dropped."
+                },
+                "End_Lng": {
+                    "drop": true,
+                    "reason": "100.00% missing \u2014 exceeds 30.0% threshold. Column dropped."
+                },
+                "City": {
+                    "drop": false,
+                    "reason": "Only 0.00% missing (1 cells). Retained for imputation."
+                },
+                "Zipcode": {
+                    "drop": false,
+                    "reason": "Only 0.01% missing (7 cells). Retained for imputation."
+                },
+                "Timezone": {
+                    "drop": false,
+                    "reason": "Only 0.01% missing (7 cells). Retained for imputation."
+                },
+                "Airport_Code": {
+                    "drop": false,
+                    "reason": "Only 0.01% missing (7 cells). Retained for imputation."
+                },
+                "Weather_Timestamp": {
+                    "drop": false,
+                    "reason": "Only 1.05% missing (1054 cells). Retained for imputation."
+                },
+                "Temperature(F)": {
+                    "drop": false,
+                    "reason": "Only 1.59% missing (1591 cells). Retained for imputation."
+                },
+                "Wind_Chill(F)": {
+                    "drop": true,
+                    "reason": "95.68% missing \u2014 exceeds 30.0% threshold. Column dropped."
+                },
+                "Humidity(%)": {
+                    "drop": false,
+                    "reason": "Only 1.86% missing (1856 cells). Retained for imputation."
+                },
+                "Pressure(in)": {
+                    "drop": false,
+                    "reason": "Only 1.29% missing (1292 cells). Retained for imputation."
+                },
+                "Visibility(mi)": {
+                    "drop": false,
+                    "reason": "Only 1.85% missing (1846 cells). Retained for imputation."
+                },
+                "Wind_Direction": {
+                    "drop": false,
+                    "reason": "Only 1.06% missing (1064 cells). Retained for imputation."
+                },
+                "Wind_Speed(mph)": {
+                    "drop": false,
+                    "reason": "Only 23.82% missing (23820 cells). Retained for imputation."
+                },
+                "Precipitation(in)": {
+                    "drop": true,
+                    "reason": "92.63% missing \u2014 exceeds 30.0% threshold. Column dropped."
+                },
+                "Weather_Condition": {
+                    "drop": false,
+                    "reason": "Only 1.60% missing (1604 cells). Retained for imputation."
+                },
+                "Sunrise_Sunset": {
+                    "drop": false,
+                    "reason": "Only 0.00% missing (1 cells). Retained for imputation."
+                },
+                "Civil_Twilight": {
+                    "drop": false,
+                    "reason": "Only 0.00% missing (1 cells). Retained for imputation."
+                },
+                "Nautical_Twilight": {
+                    "drop": false,
+                    "reason": "Only 0.00% missing (1 cells). Retained for imputation."
+                },
+                "Astronomical_Twilight": {
+                    "drop": false,
+                    "reason": "Only 0.00% missing (1 cells). Retained for imputation."
+                }
+            },
+            "reason": "Columns exceeding >30.0% threshold: ['End_Lat', 'End_Lng', 'Wind_Chill(F)', 'Precipitation(in)']."
+        },
+        "mean_imputation": {
+            "results": [
+                {
+                    "column": "Temperature(F)",
+                    "n_filled": 1591,
+                    "fill_value": 66.6413,
+                    "applicable": true,
+                    "reason": "Numeric column \u2014 1591 missing value(s) replaced with mean (66.6413)."
+                },
+                {
+                    "column": "Humidity(%)",
+                    "n_filled": 1856,
+                    "fill_value": 59.7942,
+                    "applicable": true,
+                    "reason": "Numeric column \u2014 1856 missing value(s) replaced with mean (59.7942)."
+                },
+                {
+                    "column": "Pressure(in)",
+                    "n_filled": 1292,
+                    "fill_value": 29.961,
+                    "applicable": true,
+                    "reason": "Numeric column \u2014 1292 missing value(s) replaced with mean (29.961)."
+                },
+                {
+                    "column": "Visibility(mi)",
+                    "n_filled": 1846,
+                    "fill_value": 9.3386,
+                    "applicable": true,
+                    "reason": "Numeric column \u2014 1846 missing value(s) replaced with mean (9.3386)."
+                },
+                {
+                    "column": "Wind_Speed(mph)",
+                    "n_filled": 23820,
+                    "fill_value": 8.0442,
+                    "applicable": true,
+                    "reason": "Numeric column \u2014 23820 missing value(s) replaced with mean (8.0442)."
+                }
+            ],
+            "preview": [
+                {
+                    "Temperature(F)": 36.9,
+                    "Humidity(%)": 91.0,
+                    "Pressure(in)": 29.68,
+                    "Visibility(mi)": 10.0,
+                    "Wind_Speed(mph)": 8.0442
+                },
+                {
+                    "Temperature(F)": 37.9,
+                    "Humidity(%)": 100.0,
+                    "Pressure(in)": 29.65,
+                    "Visibility(mi)": 10.0,
+                    "Wind_Speed(mph)": 8.0442
+                },
+                {
+                    "Temperature(F)": 36.0,
+                    "Humidity(%)": 100.0,
+                    "Pressure(in)": 29.67,
+                    "Visibility(mi)": 10.0,
+                    "Wind_Speed(mph)": 3.5
+                },
+                {
+                    "Temperature(F)": 35.1,
+                    "Humidity(%)": 96.0,
+                    "Pressure(in)": 29.64,
+                    "Visibility(mi)": 9.0,
+                    "Wind_Speed(mph)": 4.6
+                },
+                {
+                    "Temperature(F)": 36.0,
+                    "Humidity(%)": 89.0,
+                    "Pressure(in)": 29.65,
+                    "Visibility(mi)": 6.0,
+                    "Wind_Speed(mph)": 3.5
+                }
+            ]
+        },
+        "median_imputation": {
+            "results": [
+                {
+                    "column": "Temperature(F)",
+                    "n_filled": 1591,
+                    "fill_value": 66.0,
+                    "applicable": true,
+                    "reason": "Numeric column \u2014 1591 missing value(s) replaced with median (66.0)."
+                },
+                {
+                    "column": "Humidity(%)",
+                    "n_filled": 1856,
+                    "fill_value": 62.0,
+                    "applicable": true,
+                    "reason": "Numeric column \u2014 1856 missing value(s) replaced with median (62.0)."
+                },
+                {
+                    "column": "Pressure(in)",
+                    "n_filled": 1292,
+                    "fill_value": 29.97,
+                    "applicable": true,
+                    "reason": "Numeric column \u2014 1292 missing value(s) replaced with median (29.97)."
+                },
+                {
+                    "column": "Visibility(mi)",
+                    "n_filled": 1846,
+                    "fill_value": 10.0,
+                    "applicable": true,
+                    "reason": "Numeric column \u2014 1846 missing value(s) replaced with median (10.0)."
+                },
+                {
+                    "column": "Wind_Speed(mph)",
+                    "n_filled": 23820,
+                    "fill_value": 6.9,
+                    "applicable": true,
+                    "reason": "Numeric column \u2014 23820 missing value(s) replaced with median (6.9)."
+                }
+            ],
+            "preview": [
+                {
+                    "Temperature(F)": 36.9,
+                    "Humidity(%)": 91.0,
+                    "Pressure(in)": 29.68,
+                    "Visibility(mi)": 10.0,
+                    "Wind_Speed(mph)": 6.9
+                },
+                {
+                    "Temperature(F)": 37.9,
+                    "Humidity(%)": 100.0,
+                    "Pressure(in)": 29.65,
+                    "Visibility(mi)": 10.0,
+                    "Wind_Speed(mph)": 6.9
+                },
+                {
+                    "Temperature(F)": 36.0,
+                    "Humidity(%)": 100.0,
+                    "Pressure(in)": 29.67,
+                    "Visibility(mi)": 10.0,
+                    "Wind_Speed(mph)": 3.5
+                },
+                {
+                    "Temperature(F)": 35.1,
+                    "Humidity(%)": 96.0,
+                    "Pressure(in)": 29.64,
+                    "Visibility(mi)": 9.0,
+                    "Wind_Speed(mph)": 4.6
+                },
+                {
+                    "Temperature(F)": 36.0,
+                    "Humidity(%)": 89.0,
+                    "Pressure(in)": 29.65,
+                    "Visibility(mi)": 6.0,
+                    "Wind_Speed(mph)": 3.5
+                }
+            ]
+        }
+    },
+    "listwise": {
+        "strategy": "Listwise Deletion",
+        "rows": "6,059",
+        "accuracy": "53.39%"
+    },
+    "imputation": [
+        {
+            "strategy": "Listwise Deletion",
+            "rows": "6,059",
+            "accuracy": "53.39%"
+        },
+        {
+            "strategy": "Median Imputation",
+            "rows": "8,000",
+            "accuracy": "54.25%"
+        },
+        {
+            "strategy": "KNN Imputation (k=5)",
+            "rows": "8,000",
+            "accuracy": "54.15%"
+        },
+        {
+            "strategy": "Median + Missing Indicator",
+            "rows": "8,000",
+            "accuracy": "53.90%"
+        }
+    ],
+    "outliers": [
+        {
+            "column": "Temperature(F)",
+            "bounds": "[32.25, 100.65]",
+            "capped": 634
+        },
+        {
+            "column": "Visibility(mi)",
+            "bounds": "[10.00, 10.00]",
+            "capped": 13633
+        },
+        {
+            "column": "Wind_Speed(mph)",
+            "bounds": "[0.70, 14.30]",
+            "capped": 4921
+        }
+    ],
+    "iqr_summary": {
+        "column_outliers": {
+            "Temperature(F)": 0,
+            "Visibility(mi)": 0,
+            "Wind_Speed(mph)": 0
+        },
+        "n_outliers": 0,
+        "n_rows_with_outlier": 0,
+        "max_outliers": 0,
+        "n_numeric_columns": 3
+    },
+    "encoding": {
+        "nominal_count": 1,
+        "ohe_count": 24,
+        "ohe_features": [
+            "Wind_Direction_Calm",
+            "Wind_Direction_E",
+            "Wind_Direction_ENE",
+            "Wind_Direction_ESE",
+            "Wind_Direction_East",
+            "Wind_Direction_Missing",
+            "Wind_Direction_N",
+            "Wind_Direction_NE"
+        ]
+    },
+    "ordinal": {
+        "columns": [
+            "Sunrise_Sunset",
+            "Civil_Twilight"
+        ],
+        "train_preview": [
+            {
+                "Sunrise_Sunset": 0.0,
+                "Civil_Twilight": 0.0
+            },
+            {
+                "Sunrise_Sunset": 1.0,
+                "Civil_Twilight": 1.0
+            },
+            {
+                "Sunrise_Sunset": 0.0,
+                "Civil_Twilight": 0.0
+            },
+            {
+                "Sunrise_Sunset": 0.0,
+                "Civil_Twilight": 0.0
+            },
+            {
+                "Sunrise_Sunset": 1.0,
+                "Civil_Twilight": 1.0
+            }
+        ],
+        "test_preview": [
+            {
+                "Sunrise_Sunset": 1.0,
+                "Civil_Twilight": 1.0
+            },
+            {
+                "Sunrise_Sunset": 1.0,
+                "Civil_Twilight": 1.0
+            },
+            {
+                "Sunrise_Sunset": 0.0,
+                "Civil_Twilight": 0.0
+            },
+            {
+                "Sunrise_Sunset": 0.0,
+                "Civil_Twilight": 0.0
+            },
+            {
+                "Sunrise_Sunset": 1.0,
+                "Civil_Twilight": 1.0
+            }
+        ],
+        "mappings": {
+            "Sunrise_Sunset": {
+                "Night": 0.0,
+                "Day": 1.0
+            },
+            "Civil_Twilight": {
+                "Night": 0.0,
+                "Day": 1.0
+            }
+        }
+    },
+    "target_encoding": {
+        "Wind_Direction": {
+            "mapping": {
+                "CALM": 2.3101,
+                "Calm": 2.4392,
+                "E": 2.3261,
+                "ENE": 2.4874,
+                "ESE": 2.4338,
+                "East": 2.4594,
+                "Missing": 2.4948,
+                "N": 2.2885,
+                "NE": 2.4706,
+                "NNE": 2.46,
+                "NNW": 2.3983,
+                "NW": 2.427,
+                "North": 2.4177,
+                "S": 2.1806,
+                "SE": 2.3975,
+                "SSE": 2.3819,
+                "SSW": 2.4664,
+                "SW": 2.4753,
+                "South": 2.4298,
+                "VAR": 2.2277,
+                "Variable": 2.4523,
+                "W": 2.1628,
+                "WNW": 2.4697,
+                "WSW": 2.4983,
+                "West": 2.4706
+            },
+            "train_preview": [
+                {
+                    "Wind_Direction_target_Severity": 2.4298
+                },
+                {
+                    "Wind_Direction_target_Severity": 2.3975
+                },
+                {
+                    "Wind_Direction_target_Severity": 2.4392
+                },
+                {
+                    "Wind_Direction_target_Severity": 2.4392
+                },
+                {
+                    "Wind_Direction_target_Severity": 2.4298
+                }
+            ],
+            "test_preview": [
+                {
+                    "Wind_Direction_target_Severity": 2.3819
+                },
+                {
+                    "Wind_Direction_target_Severity": 2.427
+                },
+                {
+                    "Wind_Direction_target_Severity": 2.4874
+                },
+                {
+                    "Wind_Direction_target_Severity": 2.4338
+                },
+                {
+                    "Wind_Direction_target_Severity": 2.4523
+                }
+            ]
+        }
+    },
+    "embedding": {
+        "Wind_Direction": {
+            "category_to_id": {
+                "CALM": 0,
+                "Calm": 1,
+                "E": 2,
+                "ENE": 3,
+                "ESE": 4,
+                "East": 5,
+                "Missing": 6,
+                "N": 7,
+                "NE": 8,
+                "NNE": 9,
+                "NNW": 10,
+                "NW": 11,
+                "North": 12,
+                "S": 13,
+                "SE": 14,
+                "SSE": 15,
+                "SSW": 16,
+                "SW": 17,
+                "South": 18,
+                "VAR": 19,
+                "Variable": 20,
+                "W": 21,
+                "WNW": 22,
+                "WSW": 23,
+                "West": 24
+            },
+            "embedding_input_dimension": 25,
+            "embedding_output_dimension": 13,
+            "train_preview": [
+                {
+                    "Wind_Direction_embedding_id": 18
+                },
+                {
+                    "Wind_Direction_embedding_id": 14
+                },
+                {
+                    "Wind_Direction_embedding_id": 1
+                },
+                {
+                    "Wind_Direction_embedding_id": 1
+                },
+                {
+                    "Wind_Direction_embedding_id": 18
+                }
+            ],
+            "test_preview": [
+                {
+                    "Wind_Direction_embedding_id": 15
+                },
+                {
+                    "Wind_Direction_embedding_id": 11
+                },
+                {
+                    "Wind_Direction_embedding_id": 3
+                },
+                {
+                    "Wind_Direction_embedding_id": 4
+                },
+                {
+                    "Wind_Direction_embedding_id": 20
+                }
+            ]
+        }
+    },
+    "minmax": {
+        "columns": [
+            "Temperature(F)",
+            "Visibility(mi)",
+            "Wind_Speed(mph)"
+        ],
+        "before": [
+            {
+                "Temperature(F)": 66.9,
+                "Visibility(mi)": 10.0,
+                "Wind_Speed(mph)": 3.5
+            },
+            {
+                "Temperature(F)": 84.0,
+                "Visibility(mi)": 10.0,
+                "Wind_Speed(mph)": 6.9
+            },
+            {
+                "Temperature(F)": 60.1,
+                "Visibility(mi)": 10.0,
+                "Wind_Speed(mph)": 6.9
+            },
+            {
+                "Temperature(F)": 54.0,
+                "Visibility(mi)": 10.0,
+                "Wind_Speed(mph)": 6.9
+            },
+            {
+                "Temperature(F)": 89.6,
+                "Visibility(mi)": 10.0,
+                "Wind_Speed(mph)": 4.6
+            }
+        ],
+        "after": [
+            {
+                "Temperature(F)": 0.5066,
+                "Visibility(mi)": 0.0,
+                "Wind_Speed(mph)": 0.2059
+            },
+            {
+                "Temperature(F)": 0.7566,
+                "Visibility(mi)": 0.0,
+                "Wind_Speed(mph)": 0.4559
+            },
+            {
+                "Temperature(F)": 0.4072,
+                "Visibility(mi)": 0.0,
+                "Wind_Speed(mph)": 0.4559
+            },
+            {
+                "Temperature(F)": 0.318,
+                "Visibility(mi)": 0.0,
+                "Wind_Speed(mph)": 0.4559
+            },
+            {
+                "Temperature(F)": 0.8385,
+                "Visibility(mi)": 0.0,
+                "Wind_Speed(mph)": 0.2868
+            }
+        ]
+    },
+    "standard": {
+        "columns": [
+            "Temperature(F)",
+            "Visibility(mi)",
+            "Wind_Speed(mph)"
+        ],
+        "before": [
+            {
+                "Temperature(F)": 66.9,
+                "Visibility(mi)": 10.0,
+                "Wind_Speed(mph)": 3.5
+            },
+            {
+                "Temperature(F)": 84.0,
+                "Visibility(mi)": 10.0,
+                "Wind_Speed(mph)": 6.9
+            },
+            {
+                "Temperature(F)": 60.1,
+                "Visibility(mi)": 10.0,
+                "Wind_Speed(mph)": 6.9
+            },
+            {
+                "Temperature(F)": 54.0,
+                "Visibility(mi)": 10.0,
+                "Wind_Speed(mph)": 6.9
+            },
+            {
+                "Temperature(F)": 89.6,
+                "Visibility(mi)": 10.0,
+                "Wind_Speed(mph)": 4.6
+            }
+        ],
+        "after": [
+            {
+                "Temperature(F)": 0.0187,
+                "Visibility(mi)": 0.0,
+                "Wind_Speed(mph)": -1.3461
+            },
+            {
+                "Temperature(F)": 1.3867,
+                "Visibility(mi)": 0.0,
+                "Wind_Speed(mph)": -0.219
+            },
+            {
+                "Temperature(F)": -0.5253,
+                "Visibility(mi)": 0.0,
+                "Wind_Speed(mph)": -0.219
+            },
+            {
+                "Temperature(F)": -1.0133,
+                "Visibility(mi)": 0.0,
+                "Wind_Speed(mph)": -0.219
+            },
+            {
+                "Temperature(F)": 1.8347,
+                "Visibility(mi)": 0.0,
+                "Wind_Speed(mph)": -0.9814
+            }
+        ]
+    }
+}
