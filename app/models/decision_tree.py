@@ -2,10 +2,12 @@
 Decision Tree and Ensemble Models trainer and evaluator for RoadSafety_ML.
 Computes non-linear accident severity classification, feature importances,
 confusion matrices, tree depth visualization, and real-time live inference.
+Includes comprehensive 7-ensemble benchmark leaderboard with champion architecture tracking.
 """
 
 from pathlib import Path
 from typing import Dict, Any, Optional, List
+import time
 import numpy as np
 import pandas as pd
 import matplotlib
@@ -27,9 +29,83 @@ from app.data.loader import load_dataset
 from app.evaluation.classification import evaluate_classification_model
 from app.models.ensembles import ALGO_CONFIG, train_ensemble_model
 
+BENCHMARK_CACHE_PATH = MODELS_DIR / "tree_benchmark_cache.pkl"
+
+
+def get_all_trees_benchmark(X_train, X_test, y_train, y_test, active_features):
+    """
+    Computes or retrieves cached benchmark results across all 7 ensemble algorithms.
+    """
+    if BENCHMARK_CACHE_PATH.exists():
+        try:
+            return joblib.load(BENCHMARK_CACHE_PATH)
+        except Exception:
+            pass
+
+    benchmark_list = []
+    models_summary = {}
+
+    for k, cfg in ALGO_CONFIG.items():
+        t0 = time.time()
+        mod = cfg["classifier"]()
+        mod.fit(X_train, y_train)
+        training_time = round(time.time() - t0, 2)
+
+        y_tr_pred = mod.predict(X_train)
+        y_te_pred = mod.predict(X_test)
+        
+        y_te_prob = None
+        if hasattr(mod, "predict_proba"):
+            try:
+                y_te_prob = mod.predict_proba(X_test)[:, 1]
+            except Exception:
+                y_te_prob = None
+
+        tr_ev = evaluate_classification_model(y_train, y_tr_pred)
+        te_ev = evaluate_classification_model(y_test, y_te_pred, y_prob=y_te_prob)
+
+        item = {
+            "id": k,
+            "name": cfg["name"],
+            "dropdown_name": cfg["name"],
+            "family": cfg["category"],
+            "description": cfg["description"],
+            "train_accuracy": tr_ev.accuracy,
+            "test_accuracy": te_ev.accuracy,
+            "precision": te_ev.precision,
+            "recall": te_ev.recall,
+            "f1": te_ev.f1,
+            "roc_auc": round(float(te_ev.roc_auc), 4) if te_ev.roc_auc else None,
+            "tp": te_ev.tp,
+            "tn": te_ev.tn,
+            "fp": te_ev.fp,
+            "fn": te_ev.fn,
+            "training_time": training_time,
+            "overfitting_gap": round(float(tr_ev.accuracy - te_ev.accuracy), 2)
+        }
+        benchmark_list.append(item)
+        models_summary[k] = item
+
+    # Sort by test accuracy descending to find champion
+    benchmark_sorted = sorted(benchmark_list, key=lambda x: x["test_accuracy"], reverse=True)
+    champion = benchmark_sorted[0]
+
+    cache_data = {
+        "benchmark": benchmark_sorted,
+        "models_summary": models_summary,
+        "champion": champion
+    }
+
+    try:
+        joblib.dump(cache_data, BENCHMARK_CACHE_PATH)
+    except Exception:
+        pass
+
+    return cache_data
+
 
 def train_and_evaluate_tree(
-    algo_key: str = "dt",
+    algo_key: str = "id3",
     student_input: Optional[Dict[str, Any]] = None,
     save_model: bool = True
 ) -> Dict[str, Any]:
@@ -42,7 +118,7 @@ def train_and_evaluate_tree(
     MODELS_DIR.mkdir(parents=True, exist_ok=True)
 
     if algo_key not in ALGO_CONFIG:
-        algo_key = "dt"
+        algo_key = "id3"
 
     config = ALGO_CONFIG[algo_key]
     model = config["classifier"]()
@@ -63,7 +139,9 @@ def train_and_evaluate_tree(
         X, y, test_size=0.2, random_state=42, stratify=y
     )
 
+    t0 = time.time()
     model.fit(X_train, y_train)
+    training_time = round(time.time() - t0, 2)
 
     y_train_pred = model.predict(X_train)
     y_test_pred = model.predict(X_test)
@@ -97,62 +175,69 @@ def train_and_evaluate_tree(
             })
         feature_importances = sorted(feature_importances, key=lambda x: x["importance"], reverse=True)
 
+    # Add 1-based ranks to feature importances
+    for idx, item in enumerate(feature_importances):
+        item["rank"] = idx + 1
+
     # Visualization: Confusion Matrix
     cm_plot = f"dt_cm_{algo_key}.png"
     cm = np.array(test_metrics.confusion_matrix)
 
-    plt.figure(figsize=(5, 4), dpi=130)
+    plt.figure(figsize=(6, 4.5), dpi=130)
     sns.heatmap(
-        cm, annot=True, fmt="d", cmap="Blues", cbar=False,
-        xticklabels=["Moderate/Minor", "Severe"],
-        yticklabels=["Moderate/Minor", "Severe"],
-        annot_kws={"size": 13, "weight": "bold"}
+        cm, annot=True, fmt="d", cmap="Blues", cbar=True,
+        xticklabels=["Minor / Moderate", "Severe"],
+        yticklabels=["Minor / Moderate", "Severe"],
+        annot_kws={"size": 12, "weight": "bold"}
     )
-    plt.xlabel("Predicted Severity", fontsize=10, fontweight="bold")
-    plt.ylabel("Actual Severity", fontsize=10, fontweight="bold")
-    plt.title(f"Confusion Matrix ({config['name']})", fontsize=10, fontweight="bold", pad=10)
+    plt.xlabel("Predicted Severity Class", fontsize=10, fontweight="bold", color="#1e293b", labelpad=8)
+    plt.ylabel("Actual Severity Class", fontsize=10, fontweight="bold", color="#1e293b", labelpad=8)
+    plt.title(f"Confusion Matrix — {config['name']}", fontsize=11, fontweight="bold", color="#0f172a", pad=10)
     plt.tight_layout()
     plt.savefig(STATIC_DIR / cm_plot)
     plt.savefig(CHARTS_DIR / cm_plot)
-    plt.close()
+    plt.close("all")
 
     # Visualization: Feature Importances Bar Chart
     imp_plot = f"dt_imp_{algo_key}.png"
     if feature_importances:
         top_imp = feature_importances[:8]
-        plt.figure(figsize=(6, 4), dpi=120)
+        plt.figure(figsize=(7.5, 4.5), dpi=130)
         names = [item["feature"] for item in reversed(top_imp)]
         vals = [item["importance"] for item in reversed(top_imp)]
-        plt.barh(names, vals, color="#0284c7")
-        plt.xlabel("Importance (%)", fontsize=10)
-        plt.title(f"Feature Importances ({config['name']})", fontsize=10, fontweight="bold")
+        plt.barh(names, vals, color="#2563eb", height=0.55, edgecolor="none")
+        plt.xlabel("Gini / Split Feature Importance Share (%)", fontsize=9.5, color="#334155", labelpad=6)
+        plt.title(f"Top Predictor Features Ranking — {config['name']}", fontsize=11, fontweight="bold", color="#0f172a", pad=10)
         plt.tight_layout()
         plt.savefig(STATIC_DIR / imp_plot)
         plt.savefig(CHARTS_DIR / imp_plot)
-        plt.close()
+        plt.close("all")
     else:
         imp_plot = None
 
-    # Visualization: Decision Tree Graph (Only for single Base Decision Tree)
+    # Visualization: Decision Tree Graph (For single Decision Tree models: CART or ID3)
     tree_plot = None
-    if algo_key == "dt":
-        tree_plot = "dt_tree_dt.png"
+    if algo_key in ["cart", "id3", "dt"]:
+        tree_plot = f"dt_tree_{algo_key}.png"
         fig, ax = plt.subplots(figsize=(16, 8), dpi=140)
         plot_tree(
             model,
             feature_names=active_features,
-            class_names=["Moderate/Minor", "Severe"],
+            class_names=["Minor/Mod", "Severe"],
             filled=True,
             rounded=True,
             fontsize=8,
             max_depth=3,
             ax=ax
         )
-        plt.title("Decision Tree Architecture (Levels 0 to 3) — Base Tree", fontsize=13, fontweight="bold", pad=12)
+        plt.title(f"Level-Wise Decision Tree Architecture (Levels 0 to 3) — {config['name']}", fontsize=13, fontweight="bold", pad=12)
         plt.tight_layout()
         plt.savefig(STATIC_DIR / tree_plot, bbox_inches="tight", facecolor="white")
         plt.savefig(CHARTS_DIR / tree_plot, bbox_inches="tight", facecolor="white")
-        plt.close()
+        plt.close("all")
+
+    # Hyperparameters dictionary
+    hyperparams = config.get("hyperparams", {"random_state": "42"})
 
     # Single-Instance Live Predictor
     prediction = None
@@ -164,22 +249,35 @@ def train_and_evaluate_tree(
         model_filename = f"{config['file_prefix']}_classifier.pkl"
         joblib.dump(model, MODELS_DIR / model_filename)
 
+    # Get multi-model benchmark leaderboard
+    benchmark_data = get_all_trees_benchmark(X_train, X_test, y_train, y_test, active_features)
+
     return {
         "algo_key": algo_key,
         "algo_name": config["name"],
         "category": config["category"],
         "description": config["description"],
+        "training_time": training_time,
+        "hyperparams": hyperparams,
+        "metadata": {
+            "target_variable": "Severity_Severe (1 = Level 3-4, 0 = Level 1-2)",
+            "training_samples": f"{len(X_train):,}",
+            "testing_samples": f"{len(X_test):,}",
+            "features_evaluated": f"{len(active_features)} features",
+            "evaluation_split": "80% Train / 20% Stratified Test Split"
+        },
         "metrics": {
             "test_accuracy": test_metrics.accuracy,
             "train_accuracy": train_metrics.accuracy,
             "precision": test_metrics.precision,
             "recall": test_metrics.recall,
             "f1": test_metrics.f1,
-            "roc_auc": test_metrics.roc_auc,
+            "roc_auc": round(float(test_metrics.roc_auc), 4) if test_metrics.roc_auc else None,
             "tp": test_metrics.tp,
             "tn": test_metrics.tn,
             "fp": test_metrics.fp,
-            "fn": test_metrics.fn
+            "fn": test_metrics.fn,
+            "overfitting_gap": round(float(train_metrics.accuracy - test_metrics.accuracy), 2)
         },
         "feature_importances": feature_importances,
         "plots": {
@@ -189,6 +287,8 @@ def train_and_evaluate_tree(
         },
         "prediction": prediction,
         "algo_list": [(k, v["name"]) for k, v in ALGO_CONFIG.items()],
+        "benchmark": benchmark_data["benchmark"],
+        "champion": benchmark_data["champion"],
         "features": active_features
     }
 
@@ -208,7 +308,7 @@ def predict_tree_severity(
         except Exception:
             prob = 85.0 if pred_class == 1 else 15.0
         return {
-            "class": "Severe Accident" if pred_class == 1 else "Minor / Moderate Accident",
+            "class": "Severe Accident (Severity 3-4)" if pred_class == 1 else "Minor / Moderate Accident (Severity 1-2)",
             "is_severe": pred_class == 1,
             "probability": prob
         }

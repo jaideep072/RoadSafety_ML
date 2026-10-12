@@ -122,6 +122,33 @@ def train_and_evaluate_linear(
     plt.savefig(CHARTS_DIR / plot_residuals)
     plt.close()
 
+    # 3-Model Regularization Benchmark Comparison for Road Safety
+    comparison_models = [
+        {"key": "none", "name": "Ordinary Least Squares (OLS)", "regularization": "None (Unconstrained)"},
+        {"key": "ridge", "name": "Ridge Regression", "regularization": "L2 Penalty (alpha=1.0)"},
+        {"key": "lasso", "name": "Lasso Regression", "regularization": "L1 Penalty (alpha=0.01)"}
+    ]
+    benchmark_list = []
+    for cm in comparison_models:
+        mod, _ = get_linear_model(cm["key"])
+        mod.fit(X_train, y_train)
+        tr_p = mod.predict(X_train)
+        te_p = mod.predict(X_test)
+        tr_ev = evaluate_regression_model(y_train, tr_p, len(active_features))
+        te_ev = evaluate_regression_model(y_test, te_p, len(active_features))
+        zero_cnt = int(sum(1 for c in mod.coef_ if abs(c) < 1e-4))
+        benchmark_list.append({
+            "key": cm["key"],
+            "name": cm["name"],
+            "regularization": cm["regularization"],
+            "train_r2": round(float(tr_ev.r2), 2),
+            "test_r2": round(float(te_ev.r2), 2),
+            "mae": round(float(te_ev.mae), 4),
+            "rmse": round(float(te_ev.rmse), 4),
+            "zero_features": zero_cnt,
+            "overfitting_gap": round(float(tr_ev.r2 - te_ev.r2), 2)
+        })
+
     # Single-Instance Live Prediction
     prediction = None
     if student_input:
@@ -143,6 +170,8 @@ def train_and_evaluate_linear(
             "mae": test_metrics.mae,
             "mse": test_metrics.mse
         },
+        "benchmark": benchmark_list,
+        "lasso_zero_features": next((b["zero_features"] for b in benchmark_list if b["key"] == "lasso"), 0),
         "intercept": intercept,
         "coefficients": coefficients,
         "equation": equation_str,
