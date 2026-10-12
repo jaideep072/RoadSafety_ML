@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Unsupervised Accident Clustering & Spatial Density — Road Safety Analytics</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <script>
         (function() {
             const savedTheme = localStorage.getItem('roadsafety_theme') || 'light';
@@ -36,6 +35,9 @@
     <div class="topbar-meta">
         <div class="badge-pill">
             <span class="status-indicator"></span>
+            <span>Dataset: 50,000 Records</span>
+        </div>
+        <div class="badge-pill">
             <span>Clustering Studio Active</span>
         </div>
         <button id="themeToggleBtn" class="theme-toggle-btn" title="Toggle Light / Dark Mode" onclick="toggleTheme()" type="button">
@@ -167,25 +169,25 @@
     <main class="content">
         <div class="page-header">
             <h2>Unsupervised Clustering & Spatial Density Studio</h2>
-            <p>Partition road incident records using K-Means, DBSCAN (with automated Knee eps detection), Hierarchical Agglomerative clustering, and Geographic Density mapping.</p>
+            <p>Identify high-risk road incident clusters and density corridors using K-Means, DBSCAN (with automated Knee locator &epsilon; detection), and Hierarchical Agglomerative clustering.</p>
         </div>
 
         {% if error %}
-            <div class="alert-box alert-danger">
-                <strong>Clustering Exception:</strong> {{ error }}
+            <div class="error">
+                <strong>Clustering Error:</strong> {{ error }}
             </div>
         {% endif %}
 
         {% if results and results.warnings %}
             {% for w in results.warnings %}
-                <div class="alert-box alert-warning" style="margin-bottom: 1rem;">
+                <div style="background: rgba(245, 158, 11, 0.12); border-left: 4px solid #f59e0b; padding: 12px 16px; border-radius: 6px; margin-bottom: 20px; color: #b45309; font-size: 13.5px;">
                     <strong>Notice:</strong> {{ w }}
                 </div>
             {% endfor %}
         {% endif %}
 
-        <!-- Navigation Sub-Tabs -->
-        <div class="tab-nav">
+        <!-- Navigation Sub-Tabs (Clean Pills) -->
+        <div class="tab-nav" style="margin-bottom: 24px;">
             <a href="{{ url_for('clustering', algo='kmeans') }}" class="tab-btn {% if active_tab == 'kmeans' %}active{% endif %}">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="6" cy="6" r="3"></circle>
@@ -208,49 +210,50 @@
                     <path d="M12 7v5"></path>
                     <path d="M6 17v-3a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3"></path>
                 </svg>
-                <span>Hierarchical (Dendrogram)</span>
-            </a>
-            <a href="{{ url_for('clustering', algo='geographic') }}" class="tab-btn {% if active_tab == 'geographic' %}active{% endif %}">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
-                    <line x1="8" y1="2" x2="8" y2="18"></line>
-                    <line x1="16" y1="6" x2="16" y2="22"></line>
-                </svg>
-                <span>Geographic Density</span>
+                <span>Hierarchical (Dendrogram Tree)</span>
             </a>
         </div>
 
-        <!-- 1. K-MEANS SECTION -->
+        <!-- ========================================== -->
+        <!-- 1. K-MEANS CLUSTERING SECTION               -->
+        <!-- ========================================== -->
         {% if active_tab == 'kmeans' and results %}
-            <div class="card">
-                <div class="card-header">
-                    <h3>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="3"></circle>
-                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-                        </svg>
-                        <span>K-Means Configuration & Parameter Tuning</span>
-                    </h3>
+            <!-- Parameters Control Card -->
+            <div class="card" style="margin-bottom: 24px; padding: 20px;">
+                <div class="card-title" style="margin-bottom: 14px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                    <span>K-Means Hyperparameter Selection</span>
                 </div>
-                <div class="card-body">
-                    <form method="POST" action="{{ url_for('clustering', algo='kmeans') }}" class="form-inline-flex">
-                        <div class="form-group" style="width: auto;">
-                            <label for="n_clusters">Number of Clusters (k):</label>
-                            <input type="number" id="n_clusters" name="n_clusters" min="2" max="10" value="{{ results.n_clusters }}" class="form-control" style="width: 120px;">
-                        </div>
-                        <div class="form-group" style="width: auto;">
-                            <button type="submit" class="btn btn-primary">Run K-Means</button>
-                        </div>
-                    </form>
-                </div>
+                <form method="POST" action="{{ url_for('clustering', algo='kmeans') }}" style="display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 200px;">
+                        <label for="n_clusters" style="font-weight: 700; color: var(--text-primary); font-size: 13.5px; margin-bottom: 6px; display: block;">
+                            Number of Clusters (K):
+                        </label>
+                        <select id="n_clusters" name="n_clusters" class="select-input" style="width: 100%;">
+                            {% for k in range(2, 9) %}
+                            <option value="{{ k }}" {% if results.n_clusters == k %}selected{% endif %}>
+                                {{ k }} Clusters
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <button type="submit" class="btn-primary" style="padding: 10px 22px;">
+                            <span>Run K-Means</span>
+                        </button>
+                    </div>
+                </form>
             </div>
 
-            <!-- Metrics Row -->
-            <div class="metrics-grid">
+            <!-- KPI Cards -->
+            <div class="metric-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 24px;">
                 <div class="metric-card">
-                    <span class="metric-title">Cluster Count (k)</span>
-                    <div class="metric-val">{{ results.n_clusters }}</div>
-                    <span class="metric-sub">Partition centroids</span>
+                    <span class="metric-title">Optimal Cluster Count (K)</span>
+                    <div class="metric-val" style="color: var(--primary);">{{ results.n_clusters }}</div>
+                    <span class="metric-sub">Centroid partitions</span>
                 </div>
                 <div class="metric-card">
                     <span class="metric-title">Inertia (WCSS)</span>
@@ -259,157 +262,151 @@
                 </div>
                 <div class="metric-card">
                     <span class="metric-title">Silhouette Score</span>
-                    <div class="metric-val">{{ results.metrics.silhouette if results.metrics.silhouette is not none else 'N/A' }}</div>
-                    <span class="metric-sub">Separation quality (-1 to 1)</span>
-                </div>
-                <div class="metric-card">
-                    <span class="metric-title">Davies-Bouldin Index</span>
-                    <div class="metric-val">{{ results.metrics.davies_bouldin if results.metrics.davies_bouldin is not none else 'N/A' }}</div>
-                    <span class="metric-sub">Cluster overlap (lower is better)</span>
+                    <div class="metric-val" style="color: #10b981;">{{ results.metrics.silhouette if results.metrics.silhouette is not none else 'N/A' }}</div>
+                    <span class="metric-sub">Separation coherence (-1 to 1)</span>
                 </div>
             </div>
 
-            <!-- Plots Grid -->
-            <div class="plots-grid">
-                <div class="card">
-                    <div class="card-header">
-                        <h4>2D Cluster Scatter Visualization</h4>
+            <!-- Visualizations Stack (Clean 1 chart per card) -->
+            <div style="margin-bottom: 24px; display: flex; flex-direction: column; gap: 24px;">
+                <div class="card" style="padding: 20px; text-align: center;">
+                    <div class="card-title" style="margin-bottom: 14px; text-align: left;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        <span>Geographic & Atmospheric 2D Cluster Scatter Visualization</span>
                     </div>
-                    <div class="card-body" style="text-align: center;">
-                        <img src="{{ url_for('static', filename='charts/' + results.scatter_plot) }}" alt="K-Means Scatter" style="max-width: 100%; height: auto; border-radius: 8px;">
-                    </div>
+                    <img src="{{ url_for('static', filename='charts/' + results.scatter_plot) }}" alt="K-Means Scatter" style="max-width: 820px; width: 100%; border-radius: 8px; margin: 0 auto; display: block;">
                 </div>
+
                 {% if results.elbow_plot %}
-                <div class="card">
-                    <div class="card-header">
-                        <h4>Elbow Method Optimization Curve</h4>
+                <div class="card" style="padding: 20px; text-align: center;">
+                    <div class="card-title" style="margin-bottom: 14px; text-align: left;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                        <span>Elbow Method Optimization Curve (Inertia vs K)</span>
                     </div>
-                    <div class="card-body" style="text-align: center;">
-                        <img src="{{ url_for('static', filename='charts/' + results.elbow_plot) }}" alt="K-Means Elbow Curve" style="max-width: 100%; height: auto; border-radius: 8px;">
-                    </div>
+                    <img src="{{ url_for('static', filename='charts/' + results.elbow_plot) }}" alt="K-Means Elbow Curve" style="max-width: 820px; width: 100%; border-radius: 8px; margin: 0 auto; display: block;">
                 </div>
                 {% endif %}
             </div>
 
-            <!-- Cluster Distributions Table -->
-            <div class="card">
-                <div class="card-header">
-                    <h4>Cluster Size Distribution</h4>
+            <!-- Cluster Partition Distribution Table -->
+            <div class="card" style="margin-bottom: 24px;">
+                <div class="card-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                    <span>Cluster Size Distribution &amp; Share</span>
                 </div>
-                <div class="card-body">
-                    <div class="table-wrapper">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Cluster Identifier</th>
-                                    <th>Point Count</th>
-                                    <th>Proportion (%)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for s in results.cluster_stats %}
-                                <tr>
-                                    <td><strong>{{ s.name }}</strong></td>
-                                    <td>{{ s.count }}</td>
-                                    <td>{{ s.percentage }}%</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="text-align: left;">Cluster Identifier</th>
+                                <th>Incident Count</th>
+                                <th>Proportion (%)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for s in results.cluster_stats %}
+                            <tr>
+                                <td style="text-align: left;"><strong>{{ s.name }}</strong></td>
+                                <td>{{ "{:,}".format(s.count) }}</td>
+                                <td><strong style="color: var(--primary);">{{ s.percentage }}%</strong></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
-            <!-- Centroids Table -->
+            <!-- Centroid Feature Values Table -->
             {% if results.centers_summary %}
-            <div class="card">
-                <div class="card-header">
-                    <h4>Cluster Centroid Feature Values (Original Scale)</h4>
+            <div class="card" style="margin-bottom: 24px;">
+                <div class="card-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                    <span>Cluster Centroid Coordinates (Original Physical Scale)</span>
                 </div>
-                <div class="card-body">
-                    <div class="table-wrapper">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Cluster</th>
-                                    {% for f in results.features %}
-                                    <th>{{ f }}</th>
-                                    {% endfor %}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for c in results.centers_summary %}
-                                <tr>
-                                    <td><strong>{{ c.cluster }}</strong></td>
-                                    {% for f in results.features %}
-                                    <td>{{ c[f] }}</td>
-                                    {% endfor %}
-                                </tr>
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="text-align: left;">Cluster</th>
+                                {% for f in results.features %}
+                                <th>{{ f }}</th>
                                 {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for c in results.centers_summary %}
+                            <tr>
+                                <td style="text-align: left;"><strong>{{ c.cluster }}</strong></td>
+                                {% for f in results.features %}
+                                <td><code>{{ c[f] }}</code></td>
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
             {% endif %}
         {% endif %}
 
-        <!-- 2. DBSCAN SECTION -->
+        <!-- ========================================== -->
+        <!-- 2. DBSCAN DENSITY SECTION                  -->
+        <!-- ========================================== -->
         {% if active_tab == 'dbscan' and results %}
-            <div class="card">
-                <div class="card-header">
-                    <h3>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="3"></circle>
-                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-                        </svg>
-                        <span>DBSCAN Density Parameters & Auto-Knee &epsilon; Detection</span>
-                    </h3>
+            <!-- Parameters Control Card -->
+            <div class="card" style="margin-bottom: 24px; padding: 20px;">
+                <div class="card-title" style="margin-bottom: 14px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+                    <span>DBSCAN Density Hyperparameters &amp; Auto-Knee &epsilon; Detection</span>
                 </div>
-                <div class="card-body">
-                    <form method="POST" action="{{ url_for('clustering', algo='dbscan') }}" class="form-inline-flex">
-                        <div class="form-group" style="width: auto;">
-                            <label for="min_samples">min_samples (Density Threshold):</label>
-                            <input type="number" id="min_samples" name="min_samples" min="2" max="50" value="{{ results.min_samples }}" class="form-control" style="width: 120px;">
-                        </div>
-                        <div class="form-group" style="width: auto;">
-                            <label for="eps">Epsilon (&epsilon;) [Leave blank for Auto-Knee]:</label>
-                            <input type="number" step="0.05" id="eps" name="eps" value="{{ results.eps }}" class="form-control" style="width: 140px;">
-                        </div>
-                        <div class="form-group" style="width: auto; padding-bottom: 8px;">
-                            <label class="checkbox-label">
-                                <input type="checkbox" name="auto_eps" value="true" {% if results.knee_metadata %}checked{% endif %}>
-                                <span>Auto-Detect Epsilon via Knee Method</span>
-                            </label>
-                        </div>
-                        <div class="form-group" style="width: auto;">
-                            <button type="submit" class="btn btn-primary">Run DBSCAN</button>
-                        </div>
-                    </form>
-                </div>
+                <form method="POST" action="{{ url_for('clustering', algo='dbscan') }}" style="display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 180px;">
+                        <label for="min_samples" style="font-weight: 700; color: var(--text-primary); font-size: 13.5px; margin-bottom: 6px; display: block;">
+                            Min Samples (min_samples):
+                        </label>
+                        <input type="number" id="min_samples" name="min_samples" min="2" max="50" value="{{ results.min_samples }}" class="select-input" style="width: 100%;">
+                    </div>
+                    <div style="flex: 1; min-width: 180px;">
+                        <label for="eps" style="font-weight: 700; color: var(--text-primary); font-size: 13.5px; margin-bottom: 6px; display: block;">
+                            Epsilon (&epsilon;) [Leave blank for Auto-Knee]:
+                        </label>
+                        <input type="number" step="0.01" id="eps" name="eps" value="{{ results.eps }}" class="select-input" style="width: 100%;">
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px; padding-bottom: 10px;">
+                        <input type="checkbox" id="auto_eps" name="auto_eps" value="true" {% if results.knee_metadata %}checked{% endif %} style="cursor: pointer; width: 16px; height: 16px;">
+                        <label for="auto_eps" style="font-size: 13px; font-weight: 600; color: var(--text-primary); cursor: pointer;">
+                            Auto-Detect via Knee Locator
+                        </label>
+                    </div>
+                    <div>
+                        <button type="submit" class="btn-primary" style="padding: 10px 22px;">
+                            <span>Run DBSCAN</span>
+                        </button>
+                    </div>
+                </form>
             </div>
 
-            <!-- Metrics Row -->
-            <div class="metrics-grid">
+            <!-- KPI Cards -->
+            <div class="metric-grid" style="grid-template-columns: repeat(5, 1fr); margin-bottom: 24px;">
                 <div class="metric-card">
                     <span class="metric-title">Epsilon (&epsilon;)</span>
-                    <div class="metric-val">{{ results.eps }}</div>
+                    <div class="metric-val" style="color: var(--primary);">{{ results.eps }}</div>
                     <span class="metric-sub">Neighborhood radius</span>
                 </div>
                 <div class="metric-card">
                     <span class="metric-title">Clusters Found</span>
                     <div class="metric-val">{{ results.n_clusters }}</div>
-                    <span class="metric-sub">Dense partitions</span>
+                    <span class="metric-sub">Excludes noise</span>
                 </div>
                 <div class="metric-card">
                     <span class="metric-title">Core Points</span>
-                    <div class="metric-val" style="color: #10b981;">{{ results.n_core }}</div>
-                    <span class="metric-sub">High-density core</span>
+                    <div class="metric-val" style="color: #10b981;">{{ "{:,}".format(results.n_core) }}</div>
+                    <span class="metric-sub">Dense core records</span>
                 </div>
                 <div class="metric-card">
                     <span class="metric-title">Noise / Outliers</span>
-                    <div class="metric-val" style="color: #ef4444;">{{ results.n_noise }}</div>
-                    <span class="metric-sub">Sparse anomaly records</span>
+                    <div class="metric-val" style="color: #ef4444;">{{ "{:,}".format(results.n_noise) }}</div>
+                    <span class="metric-sub">Isolated incident anomalies</span>
                 </div>
                 <div class="metric-card">
                     <span class="metric-title">Silhouette Score</span>
@@ -418,164 +415,133 @@
                 </div>
             </div>
 
-            <!-- Plots Grid -->
-            <div class="plots-grid">
-                <div class="card">
-                    <div class="card-header">
-                        <h4>DBSCAN Density Clusters & Noise Scatter</h4>
+            <!-- Visualizations Stack (Clean 1 chart per card) -->
+            <div style="margin-bottom: 24px; display: flex; flex-direction: column; gap: 24px;">
+                <div class="card" style="padding: 20px; text-align: center;">
+                    <div class="card-title" style="margin-bottom: 14px; text-align: left;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        <span>DBSCAN Density Corridors &amp; Noise Outliers Scatter</span>
                     </div>
-                    <div class="card-body" style="text-align: center;">
-                        <img src="{{ url_for('static', filename='charts/' + results.scatter_plot) }}" alt="DBSCAN Clusters" style="max-width: 100%; height: auto; border-radius: 8px;">
-                    </div>
+                    <img src="{{ url_for('static', filename='charts/' + results.scatter_plot) }}" alt="DBSCAN Clusters" style="max-width: 820px; width: 100%; border-radius: 8px; margin: 0 auto; display: block;">
                 </div>
+
                 {% if results.knee_metadata and results.knee_metadata.chart_filename %}
-                <div class="card">
-                    <div class="card-header">
-                        <h4>Automated Knee k-Distance Graph</h4>
+                <div class="card" style="padding: 20px; text-align: center;">
+                    <div class="card-title" style="margin-bottom: 14px; text-align: left;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                        <span>Automated Knee Point Detection Curve (k-Distance vs Sorted Samples)</span>
                     </div>
-                    <div class="card-body" style="text-align: center;">
-                        <img src="{{ url_for('static', filename='charts/' + results.knee_metadata.chart_filename) }}" alt="K-Distance Graph" style="max-width: 100%; height: auto; border-radius: 8px;">
-                    </div>
+                    <img src="{{ url_for('static', filename='charts/' + results.knee_metadata.chart_filename) }}" alt="K-Distance Graph" style="max-width: 820px; width: 100%; border-radius: 8px; margin: 0 auto; display: block;">
                 </div>
                 {% endif %}
             </div>
 
-            <!-- Cluster Distribution Table -->
-            <div class="card">
-                <div class="card-header">
-                    <h4>DBSCAN Partition Breakdown</h4>
+            <!-- Partition Breakdown Table -->
+            <div class="card" style="margin-bottom: 24px;">
+                <div class="card-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                    <span>DBSCAN Density Partition Breakdown</span>
                 </div>
-                <div class="card-body">
-                    <div class="table-wrapper">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Partition</th>
-                                    <th>Count</th>
-                                    <th>Proportion (%)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for s in results.cluster_stats %}
-                                <tr>
-                                    <td><strong>{{ s.name }}</strong></td>
-                                    <td>{{ s.count }}</td>
-                                    <td>{{ s.percentage }}%</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="text-align: left;">Partition / Cluster</th>
+                                <th>Incident Count</th>
+                                <th>Proportion (%)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for s in results.cluster_stats %}
+                            <tr>
+                                <td style="text-align: left;"><strong>{{ s.name }}</strong></td>
+                                <td>{{ "{:,}".format(s.count) }}</td>
+                                <td><strong style="color: var(--primary);">{{ s.percentage }}%</strong></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         {% endif %}
 
-        <!-- 3. HIERARCHICAL SECTION -->
+        <!-- ========================================== -->
+        <!-- 3. HIERARCHICAL AGGLOMERATIVE SECTION       -->
+        <!-- ========================================== -->
         {% if active_tab == 'hierarchical' and results %}
-            <div class="card">
-                <div class="card-header">
-                    <h3>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="3"></circle>
-                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-                        </svg>
-                        <span>Agglomerative Hierarchical Clustering Configuration</span>
-                    </h3>
+            <!-- Parameters Control Card -->
+            <div class="card" style="margin-bottom: 24px; padding: 20px;">
+                <div class="card-title" style="margin-bottom: 14px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="3" width="6" height="4" rx="1"></rect><rect x="3" y="17" width="6" height="4" rx="1"></rect><rect x="15" y="17" width="6" height="4" rx="1"></rect><path d="M12 7v5"></path><path d="M6 17v-3a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3"></path></svg>
+                    <span>Agglomerative Hierarchical Parameters &amp; Linkage Strategy</span>
                 </div>
-                <div class="card-body">
-                    <form method="POST" action="{{ url_for('clustering', algo='hierarchical') }}" class="form-inline-flex">
-                        <div class="form-group" style="width: auto;">
-                            <label for="n_clusters">Number of Clusters (k):</label>
-                            <input type="number" id="n_clusters" name="n_clusters" min="2" max="8" value="{{ results.n_clusters }}" class="form-control" style="width: 120px;">
-                        </div>
-                        <div class="form-group" style="width: auto;">
-                            <label for="linkage">Linkage Criterion:</label>
-                            <select id="linkage" name="linkage" class="form-control" style="min-width: 220px;">
-                                <option value="ward" {% if results.linkage == 'ward' %}selected{% endif %}>Ward (Minimum Variance)</option>
-                                <option value="complete" {% if results.linkage == 'complete' %}selected{% endif %}>Complete (Maximum Distance)</option>
-                                <option value="average" {% if results.linkage == 'average' %}selected{% endif %}>Average (Mean Distance)</option>
-                                <option value="single" {% if results.linkage == 'single' %}selected{% endif %}>Single (Minimum Distance)</option>
-                            </select>
-                        </div>
-                        <div class="form-group" style="width: auto;">
-                            <button type="submit" class="btn btn-primary">Run Hierarchical</button>
-                        </div>
-                    </form>
-                </div>
+                <form method="POST" action="{{ url_for('clustering', algo='hierarchical') }}" style="display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 180px;">
+                        <label for="n_clusters" style="font-weight: 700; color: var(--text-primary); font-size: 13.5px; margin-bottom: 6px; display: block;">
+                            Number of Clusters (K):
+                        </label>
+                        <select id="n_clusters" name="n_clusters" class="select-input" style="width: 100%;">
+                            {% for k in range(2, 9) %}
+                            <option value="{{ k }}" {% if results.n_clusters == k %}selected{% endif %}>
+                                {{ k }} Clusters (Tree Cut)
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div style="flex: 1.5; min-width: 220px;">
+                        <label for="linkage" style="font-weight: 700; color: var(--text-primary); font-size: 13.5px; margin-bottom: 6px; display: block;">
+                            Linkage Distance Criterion:
+                        </label>
+                        <select id="linkage" name="linkage" class="select-input" style="width: 100%;">
+                            <option value="ward" {% if results.linkage == 'ward' %}selected{% endif %}>Ward (Minimum Variance — Default)</option>
+                            <option value="complete" {% if results.linkage == 'complete' %}selected{% endif %}>Complete (Maximum Distance)</option>
+                            <option value="average" {% if results.linkage == 'average' %}selected{% endif %}>Average (Mean Distance)</option>
+                            <option value="single" {% if results.linkage == 'single' %}selected{% endif %}>Single (Minimum Distance)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <button type="submit" class="btn-primary" style="padding: 10px 22px;">
+                            <span>Run Hierarchical</span>
+                        </button>
+                    </div>
+                </form>
             </div>
 
-            <!-- Metrics Row -->
-            <div class="metrics-grid">
+            <!-- KPI Cards -->
+            <div class="metric-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 24px;">
                 <div class="metric-card">
-                    <span class="metric-title">Cluster Count (k)</span>
-                    <div class="metric-val">{{ results.n_clusters }}</div>
+                    <span class="metric-title">Cluster Count (K)</span>
+                    <div class="metric-val" style="color: var(--primary);">{{ results.n_clusters }}</div>
                     <span class="metric-sub">Tree cuts</span>
                 </div>
                 <div class="metric-card">
-                    <span class="metric-title">Linkage Method</span>
-                    <div class="metric-val">{{ results.linkage.capitalize() }}</div>
-                    <span class="metric-sub">Distance criterion</span>
+                    <span class="metric-title">Linkage Criterion</span>
+                    <div class="metric-val" style="text-transform: capitalize;">{{ results.linkage }}</div>
+                    <span class="metric-sub">Dissimilarity metric</span>
                 </div>
                 <div class="metric-card">
                     <span class="metric-title">Silhouette Score</span>
-                    <div class="metric-val">{{ results.metrics.silhouette if results.metrics.silhouette is not none else 'N/A' }}</div>
+                    <div class="metric-val" style="color: #10b981;">{{ results.metrics.silhouette if results.metrics.silhouette is not none else 'N/A' }}</div>
                     <span class="metric-sub">Cluster coherence</span>
                 </div>
-                <div class="metric-card">
-                    <span class="metric-title">Davies-Bouldin</span>
-                    <div class="metric-val">{{ results.metrics.davies_bouldin if results.metrics.davies_bouldin is not none else 'N/A' }}</div>
-                    <span class="metric-sub">Separation index</span>
-                </div>
             </div>
 
-            <!-- Plots Grid -->
-            <div class="plots-grid">
-                <div class="card">
-                    <div class="card-header">
-                        <h4>Hierarchical Tree Dendrogram (Sample: {{ results.dendrogram_sample_size }} pts)</h4>
+            <!-- Visualizations Stack (Clean 1 chart per card) -->
+            <div style="margin-bottom: 24px; display: flex; flex-direction: column; gap: 24px;">
+                <div class="card" style="padding: 20px; text-align: center;">
+                    <div class="card-title" style="margin-bottom: 14px; text-align: left;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="3" width="6" height="4" rx="1"></rect><rect x="3" y="17" width="6" height="4" rx="1"></rect><rect x="15" y="17" width="6" height="4" rx="1"></rect><path d="M12 7v5"></path><path d="M6 17v-3a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3"></path></svg>
+                        <span>Hierarchical Agglomerative Dendrogram Tree (Sample: {{ results.dendrogram_sample_size }} records)</span>
                     </div>
-                    <div class="card-body" style="text-align: center;">
-                        <img src="{{ url_for('static', filename='charts/' + results.dendrogram_plot) }}" alt="Hierarchical Dendrogram" style="max-width: 100%; height: auto; border-radius: 8px;">
-                    </div>
+                    <img src="{{ url_for('static', filename='charts/' + results.dendrogram_plot) }}" alt="Hierarchical Dendrogram" style="max-width: 860px; width: 100%; border-radius: 8px; margin: 0 auto; display: block;">
                 </div>
-                <div class="card">
-                    <div class="card-header">
-                        <h4>Agglomerative Cluster Scatter Plot</h4>
-                    </div>
-                    <div class="card-body" style="text-align: center;">
-                        <img src="{{ url_for('static', filename='charts/' + results.scatter_plot) }}" alt="Hierarchical Scatter" style="max-width: 100%; height: auto; border-radius: 8px;">
-                    </div>
-                </div>
-            </div>
-        {% endif %}
 
-        <!-- 4. GEOGRAPHIC DENSITY SECTION -->
-        {% if active_tab == 'geographic' and results %}
-            <div class="card">
-                <div class="card-header">
-                    <h3>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
-                            <line x1="8" y1="2" x2="8" y2="18"></line>
-                            <line x1="16" y1="6" x2="16" y2="22"></line>
-                        </svg>
-                        <span>Geographic Accident Concentration & Spatial Density Analysis</span>
-                    </h3>
-                </div>
-                <div class="card-body" style="text-align: center;">
-                    <img src="{{ url_for('static', filename='charts/' + results.chart_filename) }}" alt="Geographic Accident Density" style="max-width: 100%; height: auto; border-radius: 8px; margin-bottom: 1.25rem; border: 1px solid var(--border-color);">
-                    <div class="alert-box alert-info" style="max-width: 780px; margin: 0 auto; text-align: left;">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <line x1="12" y1="16" x2="12" y2="12"></line>
-                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
-                        </svg>
-                        <div>
-                            <strong>Empirical Scope:</strong> {{ results.disclaimer }}
-                            <br>
-                            <span style="font-size: 12px; opacity: 0.85;">Coordinate Bounding Box: Latitude {{ results.lat_range[0] }}&deg; to {{ results.lat_range[1] }}&deg; N &bull; Longitude {{ results.lng_range[0] }}&deg; to {{ results.lng_range[1] }}&deg; W.</span>
-                        </div>
+                <div class="card" style="padding: 20px; text-align: center;">
+                    <div class="card-title" style="margin-bottom: 14px; text-align: left;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        <span>Agglomerative Cluster Geographic Scatter Plot</span>
                     </div>
+                    <img src="{{ url_for('static', filename='charts/' + results.scatter_plot) }}" alt="Hierarchical Scatter" style="max-width: 820px; width: 100%; border-radius: 8px; margin: 0 auto; display: block;">
                 </div>
             </div>
         {% endif %}

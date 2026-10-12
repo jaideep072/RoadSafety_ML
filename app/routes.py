@@ -59,12 +59,23 @@ def download_preprocessed_csv():
 
 @main_bp.route("/data-loading")
 def data_loading():
-    """Loads original or preprocessed dataset summary and renders the inspection page."""
+    """Loads original dataset summary and renders the paginated inspection page."""
     error = None
     summary = None
-    dataset_type = request.args.get("dataset", "original")
     try:
-        summary = get_data_summary(dataset_type=dataset_type)
+        page = request.args.get("page", default=1, type=int)
+        page_size = request.args.get("page_size", default=20, type=int)
+
+        if page_size not in [10, 20, 50, 100]:
+            page_size = 20
+
+        if page < 1:
+            page = 1
+
+        summary = get_data_summary(
+            page=page,
+            page_size=page_size
+        )
     except Exception as e:
         logger.error(f"Error in data_loading route: {e}")
         error = f"Error loading dataset: {e}"
@@ -73,7 +84,6 @@ def data_loading():
         "index.html",
         active="data-loading",
         summary=summary,
-        dataset_type=dataset_type,
         error=error,
     )
 
@@ -194,7 +204,9 @@ def decision_trees():
     """Decision Trees & Ensembles Studio supporting 7 tree algorithms."""
     error = None
     results = None
-    algo = request.values.get("algo", "dt")
+    algo = request.values.get("algo", "id3")
+    if algo not in ["id3", "rf", "adaboost", "gbm", "xgboost", "lightgbm"]:
+        algo = "id3"
 
     student_input = None
     if request.method == "POST":

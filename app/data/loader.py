@@ -8,6 +8,7 @@ import random
 import logging
 from pathlib import Path
 from typing import Dict, Any, Optional, Union
+import pickle
 import numpy as np
 import pandas as pd
 
@@ -127,10 +128,12 @@ def load_dataset(
     dataset_type: str = "original",
     path: Optional[Union[str, Path]] = None,
     nrows: Optional[int] = 100000,
-    optimize_memory: bool = False
+    optimize_memory: bool = False,
+    force_reload: bool = False,
+    deduplicate: bool = True
 ) -> pd.DataFrame:
     """
-    Loads traffic accident dataset with automatic fallback, row capping, and optional memory downcasting.
+    Loads traffic accident dataset with automatic fallback, row capping, optional caching and memory downcasting.
     """
     if path is None:
         target_path = resolve_dataset_path(dataset_type)
@@ -139,8 +142,21 @@ def load_dataset(
         if not target_path.exists():
             target_path = resolve_dataset_path(dataset_type)
 
+    cache_file = RAW_DATA_DIR / f".cache_{target_path.stem}_{nrows or 'all'}.pkl"
+
+    if not force_reload and cache_file.exists():
+        try:
+            with open(cache_file, "rb") as f:
+                df = pickle.load(f)
+            return df
+        except Exception:
+            pass
+
     logger.info(f"Loading dataset from: {target_path} (limit={nrows} rows)")
     df = pd.read_csv(target_path, nrows=nrows)
+
+    if deduplicate and "ID" in df.columns:
+        df = df.drop_duplicates(subset=["ID"], keep="first").reset_index(drop=True)
 
     if optimize_memory:
         for col in df.select_dtypes(include=["float64"]).columns:
@@ -148,66 +164,97 @@ def load_dataset(
         for col in df.select_dtypes(include=["int64"]).columns:
             df[col] = df[col].astype("int32")
 
+    try:
+        with open(cache_file, "wb") as f:
+            pickle.dump(df, f, protocol=pickle.HIGHEST_PROTOCOL)
+    except Exception as e:
+        logger.warning(f"Could not write cache file {cache_file}: {e}")
+
     return df
 
 
-def get_data_summary(dataset_type: str = "original", nrows: Optional[int] = 100000) -> Dict[str, Any]:
+def get_data_summary(
+    page: Union[int, str] = 1,
+    page_size: int = 20,
+    dataset_type: str = "original",
+    nrows: Optional[int] = 100000,
+    force_reload: bool = False,
+    **kwargs
+) -> Dict[str, Any]:
     """
-    Calculates detailed memory profiling, schema analysis, missing statistics,
-    and preview rows for web studio presentation.
+    Calculates dataset overview statistics and paginated record preview.
+    Fully compatible with RentRadar structure and existing API endpoints.
     """
+    # Allow positional passing of dataset_type e.g. get_data_summary("original")
+    if isinstance(page, str):
+        dataset_type = page
+        page = 1
+
     target_path = resolve_dataset_path(dataset_type)
-    df = load_dataset(path=target_path, nrows=nrows)
+    df = load_dataset(dataset_type=dataset_type, path=target_path, nrows=nrows, force_reload=force_reload)
 
-    # Convert preview NaN to None for clean JSON serialization
-    preview_df = df.head(10).replace({np.nan: None})
+    total_rows = int(df.shape[0])
+    total_columns = int(df.shape[1])
+    total_cells = int(total_rows * total_columns)
 
-    total_cells = int(df.shape[0] * df.shape[1])
+    duplicate_rows = int(df.duplicated(subset=["ID"]).sum()) if "ID" in df.columns else int(df.duplicated().sum())
+
+    memory_bytes = df.memory_usage(deep=True).sum()
+    memory_mb = memory_bytes / (1024 * 1024)
+
+    files = [{
+        "name": target_path.name,
+        "rows": total_rows
+    }]
+
+    # Pagination calculation
+    total_pages = max(1, (total_rows + page_size - 1) // page_size)
+    current_page = max(1, min(int(page), total_pages))
+
+    start = (current_page - 1) * page_size
+    end = start + page_size
+
+    page_df = df.iloc[start:end].copy()
+    page_df = page_df.where(pd.notnull(page_df), "-")
+    records = page_df.to_dict(orient="records")
+
     total_missing = int(df.isnull().sum().sum())
     completeness_pct = round(100.0 - (total_missing / total_cells * 100.0), 2) if total_cells > 0 else 100.0
-    memory_mb = round(df.memory_usage(deep=True).sum() / (1024 * 1024), 2)
 
     numeric_cols = list(df.select_dtypes(include=[np.number]).columns)
     categorical_cols = list(df.select_dtypes(include=["object", "category", "string", "str"]).columns)
     bool_cols = list(df.select_dtypes(include=["bool"]).columns)
 
-    column_details = []
-    for col in df.columns:
-        dtype_str = str(df[col].dtype)
-        missing_cnt = int(df[col].isnull().sum())
-        missing_pct = round((missing_cnt / df.shape[0]) * 100.0, 2) if df.shape[0] > 0 else 0.0
-        unique_cnt = int(df[col].nunique(dropna=True))
-
-        column_details.append({
-            "name": col,
-            "dtype": dtype_str,
-            "missing_count": missing_cnt,
-            "missing_pct": missing_pct,
-            "unique_count": unique_cnt,
-            "is_numeric": col in numeric_cols,
-            "is_categorical": col in categorical_cols,
-            "is_bool": col in bool_cols,
-        })
-
-    summary = {
-        "n_rows": df.shape[0],
-        "n_cols": df.shape[1],
-        "formatted_rows": f"{df.shape[0]:,}",
-        "formatted_cols": f"{df.shape[1]:,}",
+    return {
+        # RentRadar aligned metrics
+        "total_rows": total_rows,
+        "total_columns": total_columns,
         "total_cells": total_cells,
+        "duplicate_rows": duplicate_rows,
+        "memory_usage": f"{memory_mb:.2f} MB",
+        "files": files,
+        "columns": list(df.columns),
+        "records": records,
+        "page": current_page,
+        "page_size": page_size,
+        "total_pages": total_pages,
+        "has_previous": current_page > 1,
+        "has_next": current_page < total_pages,
+
+        # Backward compatibility fields
+        "n_rows": total_rows,
+        "n_cols": total_columns,
+        "formatted_rows": f"{total_rows:,}",
+        "formatted_cols": f"{total_columns:,}",
         "total_missing": total_missing,
         "completeness_pct": completeness_pct,
-        "memory_mb": memory_mb,
+        "memory_mb": round(memory_mb, 2),
+        "dtypes": {col: str(df[col].dtype) for col in df.columns},
+        "missing_counts": {col: int(df[col].isnull().sum()) for col in df.columns},
         "numeric_cols_count": len(numeric_cols),
         "categorical_cols_count": len(categorical_cols),
         "bool_cols_count": len(bool_cols),
-        "other_cols_count": len(df.columns) - (len(numeric_cols) + len(categorical_cols) + len(bool_cols)),
-        "columns": list(df.columns),
-        "dtypes": {col: str(df[col].dtype) for col in df.columns},
-        "missing_counts": {col: int(df[col].isnull().sum()) for col in df.columns},
-        "column_details": column_details,
-        "preview": preview_df.to_dict("records"),
+        "preview": records,
         "filename": target_path.name,
         "dataset_type": dataset_type
     }
-    return summary

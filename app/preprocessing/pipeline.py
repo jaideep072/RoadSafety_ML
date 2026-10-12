@@ -36,6 +36,20 @@ from app.preprocessing.scaling import apply_standard_scaling, apply_minmax_scali
 
 logger = logging.getLogger(__name__)
 
+EXCLUDED_COLUMNS_RATIONALE = {
+    "ID": "Arbitrary database primary key with no generalizable relationship to crash severity. Overfits if retained.",
+    "Description": "Unstructured free-form incident text. Excluded to ensure consistent tabular schema.",
+    "Country": "Zero-variance constant feature: 100% of observations are 'US'. Provides zero predictive variance.",
+    "End_Lat": "High missingness (>60% nulls). Geographically redundant with primary Start_Lat coordinate.",
+    "End_Lng": "High missingness (>60% nulls). Geographically redundant with primary Start_Lng coordinate.",
+    "Number": "Street address number with high missingness (>65% nulls). Continuous latitude and longitude coordinates used instead.",
+    "Street": "High-cardinality nominal text identifier (>30,000 unique levels). Prone to severe overfitting.",
+    "Zipcode": "High-cardinality postal code string. Geographic latitude and longitude coordinates provide continuous spatial density.",
+    "Weather_Timestamp": "Data collection timestamp metadata with no predictive bearing on road physics.",
+    "End_Time": "Incident clearance timestamp: recorded post-accident, introducing post-event observation leakage.",
+    "Airport_Code": "Weather station identifier: redundant with direct atmospheric readings (Temperature, Pressure, Humidity)."
+}
+
 
 def run_preprocessing_pipeline(
     force_run: bool = False,
@@ -178,8 +192,51 @@ def run_preprocessing_pipeline(
     joblib.dump(std_scaler, SCALERS_DIR / "scaler.pkl")
     joblib.dump(fitted_imputer, ENCODERS_DIR / "imputer.pkl")
 
-    # 10. Cache Preprocessing Summary
+    # 10. Missing report and feature space diagnostics
+    missing_report = {}
+    for col in df.columns:
+        cnt = int(df[col].isnull().sum())
+        if cnt > 0:
+            strat = (
+                "SimpleImputer(strategy='median') + StandardScaler()"
+                if col in missing_cols or col in DEFAULT_NUMERIC_FEATURES
+                else "SimpleImputer(strategy='most_frequent') + OneHotEncoder()"
+                if str(df[col].dtype) in ("object", "category", "string")
+                else "Median Imputation"
+            )
+            missing_report[col] = {
+                "count": cnt,
+                "pct": round((cnt / len(df)) * 100, 2),
+                "strategy": strat
+            }
+
+    # 11. Cache Preprocessing Summary
     pipeline_results = {
+        # RentRadar aligned execution summary & diagnostics
+        "original_rows": len(df),
+        "cleaned_rows": len(clean_export_df),
+        "target_name": "Severity (Classification) & Distance(mi) (Regression)",
+        "training_samples": len(train_df),
+        "testing_samples": len(test_df),
+        "processed_features": clean_export_df.shape[1],
+        "dropped_reasons": EXCLUDED_COLUMNS_RATIONALE,
+        "engineered_infrastructure": [
+            "Traffic_Signal", "Crossing", "Junction", "Amenity",
+            "Stop", "Station", "Railway", "Roundabout",
+            "Give_Way", "Traffic_Calming", "Bump", "No_Exit"
+        ],
+        "engineered_environmental": [
+            "Temperature(F)", "Humidity(%)", "Pressure(in)",
+            "Visibility(mi)", "Wind_Speed(mph)"
+        ],
+        "engineered_spatial_temporal": [
+            "Start_Lat", "Start_Lng", "Distance(mi)",
+            "Sunrise_Sunset_Day", "Civil_Twilight_Day"
+        ],
+        "categorical_features": ["Side", "Timezone", "Weather_Condition", "Wind_Direction"],
+        "missing_report": missing_report,
+
+        # Preserved baseline analytical artifacts
         "missing": {
             "per_column": missing_before_dict,
             "grouped": {str(k): f"{v:.2f}%" for k, v in missing_by_sunset.items()}

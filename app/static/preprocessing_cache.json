@@ -1,4 +1,159 @@
 {
+    "original_rows": 100000,
+    "cleaned_rows": 100000,
+    "target_name": "Severity (Classification) & Distance(mi) (Regression)",
+    "training_samples": 80000,
+    "testing_samples": 20000,
+    "processed_features": 48,
+    "dropped_reasons": {
+        "ID": "Arbitrary database primary key with no generalizable relationship to crash severity. Overfits if retained.",
+        "Description": "Unstructured free-form incident text. Excluded to ensure consistent tabular schema.",
+        "Country": "Zero-variance constant feature: 100% of observations are 'US'. Provides zero predictive variance.",
+        "End_Lat": "High missingness (>60% nulls). Geographically redundant with primary Start_Lat coordinate.",
+        "End_Lng": "High missingness (>60% nulls). Geographically redundant with primary Start_Lng coordinate.",
+        "Number": "Street address number with high missingness (>65% nulls). Continuous latitude and longitude coordinates used instead.",
+        "Street": "High-cardinality nominal text identifier (>30,000 unique levels). Prone to severe overfitting.",
+        "Zipcode": "High-cardinality postal code string. Geographic latitude and longitude coordinates provide continuous spatial density.",
+        "Weather_Timestamp": "Data collection timestamp metadata with no predictive bearing on road physics.",
+        "End_Time": "Incident clearance timestamp: recorded post-accident, introducing post-event observation leakage.",
+        "Airport_Code": "Weather station identifier: redundant with direct atmospheric readings (Temperature, Pressure, Humidity)."
+    },
+    "engineered_infrastructure": [
+        "Traffic_Signal",
+        "Crossing",
+        "Junction",
+        "Amenity",
+        "Stop",
+        "Station",
+        "Railway",
+        "Roundabout",
+        "Give_Way",
+        "Traffic_Calming",
+        "Bump",
+        "No_Exit"
+    ],
+    "engineered_environmental": [
+        "Temperature(F)",
+        "Humidity(%)",
+        "Pressure(in)",
+        "Visibility(mi)",
+        "Wind_Speed(mph)"
+    ],
+    "engineered_spatial_temporal": [
+        "Start_Lat",
+        "Start_Lng",
+        "Distance(mi)",
+        "Sunrise_Sunset_Day",
+        "Civil_Twilight_Day"
+    ],
+    "categorical_features": [
+        "Side",
+        "Timezone",
+        "Weather_Condition",
+        "Wind_Direction"
+    ],
+    "missing_report": {
+        "End_Lat": {
+            "count": 100000,
+            "pct": 100.0,
+            "strategy": "Median Imputation"
+        },
+        "End_Lng": {
+            "count": 100000,
+            "pct": 100.0,
+            "strategy": "Median Imputation"
+        },
+        "City": {
+            "count": 1,
+            "pct": 0.0,
+            "strategy": "Median Imputation"
+        },
+        "Zipcode": {
+            "count": 7,
+            "pct": 0.01,
+            "strategy": "Median Imputation"
+        },
+        "Timezone": {
+            "count": 7,
+            "pct": 0.01,
+            "strategy": "Median Imputation"
+        },
+        "Airport_Code": {
+            "count": 7,
+            "pct": 0.01,
+            "strategy": "Median Imputation"
+        },
+        "Weather_Timestamp": {
+            "count": 1054,
+            "pct": 1.05,
+            "strategy": "Median Imputation"
+        },
+        "Temperature(F)": {
+            "count": 1591,
+            "pct": 1.59,
+            "strategy": "SimpleImputer(strategy='median') + StandardScaler()"
+        },
+        "Wind_Chill(F)": {
+            "count": 95678,
+            "pct": 95.68,
+            "strategy": "Median Imputation"
+        },
+        "Humidity(%)": {
+            "count": 1856,
+            "pct": 1.86,
+            "strategy": "SimpleImputer(strategy='median') + StandardScaler()"
+        },
+        "Pressure(in)": {
+            "count": 1292,
+            "pct": 1.29,
+            "strategy": "SimpleImputer(strategy='median') + StandardScaler()"
+        },
+        "Visibility(mi)": {
+            "count": 1846,
+            "pct": 1.85,
+            "strategy": "SimpleImputer(strategy='median') + StandardScaler()"
+        },
+        "Wind_Direction": {
+            "count": 1064,
+            "pct": 1.06,
+            "strategy": "Median Imputation"
+        },
+        "Wind_Speed(mph)": {
+            "count": 23820,
+            "pct": 23.82,
+            "strategy": "SimpleImputer(strategy='median') + StandardScaler()"
+        },
+        "Precipitation(in)": {
+            "count": 92632,
+            "pct": 92.63,
+            "strategy": "Median Imputation"
+        },
+        "Weather_Condition": {
+            "count": 1604,
+            "pct": 1.6,
+            "strategy": "Median Imputation"
+        },
+        "Sunrise_Sunset": {
+            "count": 1,
+            "pct": 0.0,
+            "strategy": "Median Imputation"
+        },
+        "Civil_Twilight": {
+            "count": 1,
+            "pct": 0.0,
+            "strategy": "Median Imputation"
+        },
+        "Nautical_Twilight": {
+            "count": 1,
+            "pct": 0.0,
+            "strategy": "Median Imputation"
+        },
+        "Astronomical_Twilight": {
+            "count": 1,
+            "pct": 0.0,
+            "strategy": "Median Imputation"
+        }
+    },
     "missing": {
         "per_column": {
             "End_Lat": "100.000% (80000 rows)",
@@ -371,7 +526,7 @@
             "rows_after": 0,
             "rows_dropped": 100000,
             "pct_dropped": 100.0,
-            "reason": "100000 rows (100.0%) would be lost. This is too high a data loss for row-wise deletion to be appropriate.",
+            "reason": "100000 rows (100.0%) would be lost. Listwise deletion discards too much sample variance.",
             "preview": []
         },
         "coldrop": {
@@ -412,27 +567,27 @@
                 },
                 "City": {
                     "drop": false,
-                    "reason": "Only 0.00% missing (1 value(s)). Below 30.0% threshold \u2014 column retained, use imputation instead."
+                    "reason": "Only 0.00% missing (1 cells). Retained for imputation."
                 },
                 "Zipcode": {
                     "drop": false,
-                    "reason": "Only 0.01% missing (7 value(s)). Below 30.0% threshold \u2014 column retained, use imputation instead."
+                    "reason": "Only 0.01% missing (7 cells). Retained for imputation."
                 },
                 "Timezone": {
                     "drop": false,
-                    "reason": "Only 0.01% missing (7 value(s)). Below 30.0% threshold \u2014 column retained, use imputation instead."
+                    "reason": "Only 0.01% missing (7 cells). Retained for imputation."
                 },
                 "Airport_Code": {
                     "drop": false,
-                    "reason": "Only 0.01% missing (7 value(s)). Below 30.0% threshold \u2014 column retained, use imputation instead."
+                    "reason": "Only 0.01% missing (7 cells). Retained for imputation."
                 },
                 "Weather_Timestamp": {
                     "drop": false,
-                    "reason": "Only 1.05% missing (1054 value(s)). Below 30.0% threshold \u2014 column retained, use imputation instead."
+                    "reason": "Only 1.05% missing (1054 cells). Retained for imputation."
                 },
                 "Temperature(F)": {
                     "drop": false,
-                    "reason": "Only 1.59% missing (1591 value(s)). Below 30.0% threshold \u2014 column retained, use imputation instead."
+                    "reason": "Only 1.59% missing (1591 cells). Retained for imputation."
                 },
                 "Wind_Chill(F)": {
                     "drop": true,
@@ -440,23 +595,23 @@
                 },
                 "Humidity(%)": {
                     "drop": false,
-                    "reason": "Only 1.86% missing (1856 value(s)). Below 30.0% threshold \u2014 column retained, use imputation instead."
+                    "reason": "Only 1.86% missing (1856 cells). Retained for imputation."
                 },
                 "Pressure(in)": {
                     "drop": false,
-                    "reason": "Only 1.29% missing (1292 value(s)). Below 30.0% threshold \u2014 column retained, use imputation instead."
+                    "reason": "Only 1.29% missing (1292 cells). Retained for imputation."
                 },
                 "Visibility(mi)": {
                     "drop": false,
-                    "reason": "Only 1.85% missing (1846 value(s)). Below 30.0% threshold \u2014 column retained, use imputation instead."
+                    "reason": "Only 1.85% missing (1846 cells). Retained for imputation."
                 },
                 "Wind_Direction": {
                     "drop": false,
-                    "reason": "Only 1.06% missing (1064 value(s)). Below 30.0% threshold \u2014 column retained, use imputation instead."
+                    "reason": "Only 1.06% missing (1064 cells). Retained for imputation."
                 },
                 "Wind_Speed(mph)": {
                     "drop": false,
-                    "reason": "Only 23.82% missing (23820 value(s)). Below 30.0% threshold \u2014 column retained, use imputation instead."
+                    "reason": "Only 23.82% missing (23820 cells). Retained for imputation."
                 },
                 "Precipitation(in)": {
                     "drop": true,
@@ -464,26 +619,26 @@
                 },
                 "Weather_Condition": {
                     "drop": false,
-                    "reason": "Only 1.60% missing (1604 value(s)). Below 30.0% threshold \u2014 column retained, use imputation instead."
+                    "reason": "Only 1.60% missing (1604 cells). Retained for imputation."
                 },
                 "Sunrise_Sunset": {
                     "drop": false,
-                    "reason": "Only 0.00% missing (1 value(s)). Below 30.0% threshold \u2014 column retained, use imputation instead."
+                    "reason": "Only 0.00% missing (1 cells). Retained for imputation."
                 },
                 "Civil_Twilight": {
                     "drop": false,
-                    "reason": "Only 0.00% missing (1 value(s)). Below 30.0% threshold \u2014 column retained, use imputation instead."
+                    "reason": "Only 0.00% missing (1 cells). Retained for imputation."
                 },
                 "Nautical_Twilight": {
                     "drop": false,
-                    "reason": "Only 0.00% missing (1 value(s)). Below 30.0% threshold \u2014 column retained, use imputation instead."
+                    "reason": "Only 0.00% missing (1 cells). Retained for imputation."
                 },
                 "Astronomical_Twilight": {
                     "drop": false,
-                    "reason": "Only 0.00% missing (1 value(s)). Below 30.0% threshold \u2014 column retained, use imputation instead."
+                    "reason": "Only 0.00% missing (1 cells). Retained for imputation."
                 }
             },
-            "reason": "Columns with >30.0% missing data: ['End_Lat', 'End_Lng', 'Wind_Chill(F)', 'Precipitation(in)']. These were dropped."
+            "reason": "Columns exceeding >30.0% threshold: ['End_Lat', 'End_Lng', 'Wind_Chill(F)', 'Precipitation(in)']."
         },
         "mean_imputation": {
             "results": [
@@ -493,6 +648,20 @@
                     "fill_value": 66.6413,
                     "applicable": true,
                     "reason": "Numeric column \u2014 1591 missing value(s) replaced with mean (66.6413)."
+                },
+                {
+                    "column": "Humidity(%)",
+                    "n_filled": 1856,
+                    "fill_value": 59.7942,
+                    "applicable": true,
+                    "reason": "Numeric column \u2014 1856 missing value(s) replaced with mean (59.7942)."
+                },
+                {
+                    "column": "Pressure(in)",
+                    "n_filled": 1292,
+                    "fill_value": 29.961,
+                    "applicable": true,
+                    "reason": "Numeric column \u2014 1292 missing value(s) replaced with mean (29.961)."
                 },
                 {
                     "column": "Visibility(mi)",
@@ -507,162 +676,43 @@
                     "fill_value": 8.0442,
                     "applicable": true,
                     "reason": "Numeric column \u2014 23820 missing value(s) replaced with mean (8.0442)."
-                },
-                {
-                    "column": "Pressure(in)",
-                    "n_filled": 1292,
-                    "fill_value": 29.961,
-                    "applicable": true,
-                    "reason": "Numeric column \u2014 1292 missing value(s) replaced with mean (29.961)."
-                },
-                {
-                    "column": "Humidity(%)",
-                    "n_filled": 1856,
-                    "fill_value": 59.7942,
-                    "applicable": true,
-                    "reason": "Numeric column \u2014 1856 missing value(s) replaced with mean (59.7942)."
-                },
-                {
-                    "column": "End_Lat",
-                    "n_filled": 100000,
-                    "fill_value": null,
-                    "applicable": false,
-                    "reason": "Non-numeric column (dtype: float64) \u2014 mean imputation is not applicable. Use mode imputation or a placeholder string instead."
-                },
-                {
-                    "column": "End_Lng",
-                    "n_filled": 100000,
-                    "fill_value": null,
-                    "applicable": false,
-                    "reason": "Non-numeric column (dtype: float64) \u2014 mean imputation is not applicable. Use mode imputation or a placeholder string instead."
-                },
-                {
-                    "column": "City",
-                    "n_filled": 1,
-                    "fill_value": null,
-                    "applicable": false,
-                    "reason": "Non-numeric column (dtype: str) \u2014 mean imputation is not applicable. Use mode imputation or a placeholder string instead."
-                },
-                {
-                    "column": "Zipcode",
-                    "n_filled": 7,
-                    "fill_value": null,
-                    "applicable": false,
-                    "reason": "Non-numeric column (dtype: str) \u2014 mean imputation is not applicable. Use mode imputation or a placeholder string instead."
-                },
-                {
-                    "column": "Timezone",
-                    "n_filled": 7,
-                    "fill_value": null,
-                    "applicable": false,
-                    "reason": "Non-numeric column (dtype: str) \u2014 mean imputation is not applicable. Use mode imputation or a placeholder string instead."
-                },
-                {
-                    "column": "Airport_Code",
-                    "n_filled": 7,
-                    "fill_value": null,
-                    "applicable": false,
-                    "reason": "Non-numeric column (dtype: str) \u2014 mean imputation is not applicable. Use mode imputation or a placeholder string instead."
-                },
-                {
-                    "column": "Weather_Timestamp",
-                    "n_filled": 1054,
-                    "fill_value": null,
-                    "applicable": false,
-                    "reason": "Non-numeric column (dtype: str) \u2014 mean imputation is not applicable. Use mode imputation or a placeholder string instead."
-                },
-                {
-                    "column": "Wind_Chill(F)",
-                    "n_filled": 95678,
-                    "fill_value": null,
-                    "applicable": false,
-                    "reason": "Non-numeric column (dtype: float64) \u2014 mean imputation is not applicable. Use mode imputation or a placeholder string instead."
-                },
-                {
-                    "column": "Wind_Direction",
-                    "n_filled": 1064,
-                    "fill_value": null,
-                    "applicable": false,
-                    "reason": "Non-numeric column (dtype: str) \u2014 mean imputation is not applicable. Use mode imputation or a placeholder string instead."
-                },
-                {
-                    "column": "Precipitation(in)",
-                    "n_filled": 92632,
-                    "fill_value": null,
-                    "applicable": false,
-                    "reason": "Non-numeric column (dtype: float64) \u2014 mean imputation is not applicable. Use mode imputation or a placeholder string instead."
-                },
-                {
-                    "column": "Weather_Condition",
-                    "n_filled": 1604,
-                    "fill_value": null,
-                    "applicable": false,
-                    "reason": "Non-numeric column (dtype: str) \u2014 mean imputation is not applicable. Use mode imputation or a placeholder string instead."
-                },
-                {
-                    "column": "Sunrise_Sunset",
-                    "n_filled": 1,
-                    "fill_value": null,
-                    "applicable": false,
-                    "reason": "Non-numeric column (dtype: str) \u2014 mean imputation is not applicable. Use mode imputation or a placeholder string instead."
-                },
-                {
-                    "column": "Civil_Twilight",
-                    "n_filled": 1,
-                    "fill_value": null,
-                    "applicable": false,
-                    "reason": "Non-numeric column (dtype: str) \u2014 mean imputation is not applicable. Use mode imputation or a placeholder string instead."
-                },
-                {
-                    "column": "Nautical_Twilight",
-                    "n_filled": 1,
-                    "fill_value": null,
-                    "applicable": false,
-                    "reason": "Non-numeric column (dtype: str) \u2014 mean imputation is not applicable. Use mode imputation or a placeholder string instead."
-                },
-                {
-                    "column": "Astronomical_Twilight",
-                    "n_filled": 1,
-                    "fill_value": null,
-                    "applicable": false,
-                    "reason": "Non-numeric column (dtype: str) \u2014 mean imputation is not applicable. Use mode imputation or a placeholder string instead."
                 }
             ],
             "preview": [
                 {
                     "Temperature(F)": 36.9,
-                    "Visibility(mi)": 10.0,
-                    "Wind_Speed(mph)": 8.0442,
+                    "Humidity(%)": 91.0,
                     "Pressure(in)": 29.68,
-                    "Humidity(%)": 91.0
+                    "Visibility(mi)": 10.0,
+                    "Wind_Speed(mph)": 8.0442
                 },
                 {
                     "Temperature(F)": 37.9,
-                    "Visibility(mi)": 10.0,
-                    "Wind_Speed(mph)": 8.0442,
+                    "Humidity(%)": 100.0,
                     "Pressure(in)": 29.65,
-                    "Humidity(%)": 100.0
+                    "Visibility(mi)": 10.0,
+                    "Wind_Speed(mph)": 8.0442
                 },
                 {
                     "Temperature(F)": 36.0,
-                    "Visibility(mi)": 10.0,
-                    "Wind_Speed(mph)": 3.5,
+                    "Humidity(%)": 100.0,
                     "Pressure(in)": 29.67,
-                    "Humidity(%)": 100.0
+                    "Visibility(mi)": 10.0,
+                    "Wind_Speed(mph)": 3.5
                 },
                 {
                     "Temperature(F)": 35.1,
-                    "Visibility(mi)": 9.0,
-                    "Wind_Speed(mph)": 4.6,
+                    "Humidity(%)": 96.0,
                     "Pressure(in)": 29.64,
-                    "Humidity(%)": 96.0
+                    "Visibility(mi)": 9.0,
+                    "Wind_Speed(mph)": 4.6
                 },
                 {
                     "Temperature(F)": 36.0,
-                    "Visibility(mi)": 6.0,
-                    "Wind_Speed(mph)": 3.5,
+                    "Humidity(%)": 89.0,
                     "Pressure(in)": 29.65,
-                    "Humidity(%)": 89.0
+                    "Visibility(mi)": 6.0,
+                    "Wind_Speed(mph)": 3.5
                 }
             ]
         },
@@ -674,6 +724,20 @@
                     "fill_value": 66.0,
                     "applicable": true,
                     "reason": "Numeric column \u2014 1591 missing value(s) replaced with median (66.0)."
+                },
+                {
+                    "column": "Humidity(%)",
+                    "n_filled": 1856,
+                    "fill_value": 62.0,
+                    "applicable": true,
+                    "reason": "Numeric column \u2014 1856 missing value(s) replaced with median (62.0)."
+                },
+                {
+                    "column": "Pressure(in)",
+                    "n_filled": 1292,
+                    "fill_value": 29.97,
+                    "applicable": true,
+                    "reason": "Numeric column \u2014 1292 missing value(s) replaced with median (29.97)."
                 },
                 {
                     "column": "Visibility(mi)",
@@ -688,192 +752,72 @@
                     "fill_value": 6.9,
                     "applicable": true,
                     "reason": "Numeric column \u2014 23820 missing value(s) replaced with median (6.9)."
-                },
-                {
-                    "column": "Pressure(in)",
-                    "n_filled": 1292,
-                    "fill_value": 29.97,
-                    "applicable": true,
-                    "reason": "Numeric column \u2014 1292 missing value(s) replaced with median (29.97)."
-                },
-                {
-                    "column": "Humidity(%)",
-                    "n_filled": 1856,
-                    "fill_value": 62.0,
-                    "applicable": true,
-                    "reason": "Numeric column \u2014 1856 missing value(s) replaced with median (62.0)."
-                },
-                {
-                    "column": "End_Lat",
-                    "n_filled": 100000,
-                    "fill_value": null,
-                    "applicable": false,
-                    "reason": "Non-numeric column (dtype: float64) \u2014 median imputation is not applicable. Use mode imputation or a placeholder string instead."
-                },
-                {
-                    "column": "End_Lng",
-                    "n_filled": 100000,
-                    "fill_value": null,
-                    "applicable": false,
-                    "reason": "Non-numeric column (dtype: float64) \u2014 median imputation is not applicable. Use mode imputation or a placeholder string instead."
-                },
-                {
-                    "column": "City",
-                    "n_filled": 1,
-                    "fill_value": null,
-                    "applicable": false,
-                    "reason": "Non-numeric column (dtype: str) \u2014 median imputation is not applicable. Use mode imputation or a placeholder string instead."
-                },
-                {
-                    "column": "Zipcode",
-                    "n_filled": 7,
-                    "fill_value": null,
-                    "applicable": false,
-                    "reason": "Non-numeric column (dtype: str) \u2014 median imputation is not applicable. Use mode imputation or a placeholder string instead."
-                },
-                {
-                    "column": "Timezone",
-                    "n_filled": 7,
-                    "fill_value": null,
-                    "applicable": false,
-                    "reason": "Non-numeric column (dtype: str) \u2014 median imputation is not applicable. Use mode imputation or a placeholder string instead."
-                },
-                {
-                    "column": "Airport_Code",
-                    "n_filled": 7,
-                    "fill_value": null,
-                    "applicable": false,
-                    "reason": "Non-numeric column (dtype: str) \u2014 median imputation is not applicable. Use mode imputation or a placeholder string instead."
-                },
-                {
-                    "column": "Weather_Timestamp",
-                    "n_filled": 1054,
-                    "fill_value": null,
-                    "applicable": false,
-                    "reason": "Non-numeric column (dtype: str) \u2014 median imputation is not applicable. Use mode imputation or a placeholder string instead."
-                },
-                {
-                    "column": "Wind_Chill(F)",
-                    "n_filled": 95678,
-                    "fill_value": null,
-                    "applicable": false,
-                    "reason": "Non-numeric column (dtype: float64) \u2014 median imputation is not applicable. Use mode imputation or a placeholder string instead."
-                },
-                {
-                    "column": "Wind_Direction",
-                    "n_filled": 1064,
-                    "fill_value": null,
-                    "applicable": false,
-                    "reason": "Non-numeric column (dtype: str) \u2014 median imputation is not applicable. Use mode imputation or a placeholder string instead."
-                },
-                {
-                    "column": "Precipitation(in)",
-                    "n_filled": 92632,
-                    "fill_value": null,
-                    "applicable": false,
-                    "reason": "Non-numeric column (dtype: float64) \u2014 median imputation is not applicable. Use mode imputation or a placeholder string instead."
-                },
-                {
-                    "column": "Weather_Condition",
-                    "n_filled": 1604,
-                    "fill_value": null,
-                    "applicable": false,
-                    "reason": "Non-numeric column (dtype: str) \u2014 median imputation is not applicable. Use mode imputation or a placeholder string instead."
-                },
-                {
-                    "column": "Sunrise_Sunset",
-                    "n_filled": 1,
-                    "fill_value": null,
-                    "applicable": false,
-                    "reason": "Non-numeric column (dtype: str) \u2014 median imputation is not applicable. Use mode imputation or a placeholder string instead."
-                },
-                {
-                    "column": "Civil_Twilight",
-                    "n_filled": 1,
-                    "fill_value": null,
-                    "applicable": false,
-                    "reason": "Non-numeric column (dtype: str) \u2014 median imputation is not applicable. Use mode imputation or a placeholder string instead."
-                },
-                {
-                    "column": "Nautical_Twilight",
-                    "n_filled": 1,
-                    "fill_value": null,
-                    "applicable": false,
-                    "reason": "Non-numeric column (dtype: str) \u2014 median imputation is not applicable. Use mode imputation or a placeholder string instead."
-                },
-                {
-                    "column": "Astronomical_Twilight",
-                    "n_filled": 1,
-                    "fill_value": null,
-                    "applicable": false,
-                    "reason": "Non-numeric column (dtype: str) \u2014 median imputation is not applicable. Use mode imputation or a placeholder string instead."
                 }
             ],
             "preview": [
                 {
                     "Temperature(F)": 36.9,
-                    "Visibility(mi)": 10.0,
-                    "Wind_Speed(mph)": 6.9,
+                    "Humidity(%)": 91.0,
                     "Pressure(in)": 29.68,
-                    "Humidity(%)": 91.0
+                    "Visibility(mi)": 10.0,
+                    "Wind_Speed(mph)": 6.9
                 },
                 {
                     "Temperature(F)": 37.9,
-                    "Visibility(mi)": 10.0,
-                    "Wind_Speed(mph)": 6.9,
+                    "Humidity(%)": 100.0,
                     "Pressure(in)": 29.65,
-                    "Humidity(%)": 100.0
+                    "Visibility(mi)": 10.0,
+                    "Wind_Speed(mph)": 6.9
                 },
                 {
                     "Temperature(F)": 36.0,
-                    "Visibility(mi)": 10.0,
-                    "Wind_Speed(mph)": 3.5,
+                    "Humidity(%)": 100.0,
                     "Pressure(in)": 29.67,
-                    "Humidity(%)": 100.0
+                    "Visibility(mi)": 10.0,
+                    "Wind_Speed(mph)": 3.5
                 },
                 {
                     "Temperature(F)": 35.1,
-                    "Visibility(mi)": 9.0,
-                    "Wind_Speed(mph)": 4.6,
+                    "Humidity(%)": 96.0,
                     "Pressure(in)": 29.64,
-                    "Humidity(%)": 96.0
+                    "Visibility(mi)": 9.0,
+                    "Wind_Speed(mph)": 4.6
                 },
                 {
                     "Temperature(F)": 36.0,
-                    "Visibility(mi)": 6.0,
-                    "Wind_Speed(mph)": 3.5,
+                    "Humidity(%)": 89.0,
                     "Pressure(in)": 29.65,
-                    "Humidity(%)": 89.0
+                    "Visibility(mi)": 6.0,
+                    "Wind_Speed(mph)": 3.5
                 }
             ]
         }
     },
     "listwise": {
-        "before_rows": 10000,
-        "after_rows": 7540,
-        "discarded_pct": "24.6%",
-        "accuracy": "54.55%"
+        "strategy": "Listwise Deletion",
+        "rows": "6,059",
+        "accuracy": "53.39%"
     },
     "imputation": [
         {
             "strategy": "Listwise Deletion",
-            "rows": "7,540",
-            "accuracy": "54.55%"
+            "rows": "6,059",
+            "accuracy": "53.39%"
         },
         {
             "strategy": "Median Imputation",
-            "rows": "10,000",
-            "accuracy": "54.10%"
+            "rows": "8,000",
+            "accuracy": "54.25%"
         },
         {
             "strategy": "KNN Imputation (k=5)",
-            "rows": "10,000",
-            "accuracy": "54.00%"
+            "rows": "8,000",
+            "accuracy": "54.15%"
         },
         {
             "strategy": "Median + Missing Indicator",
-            "rows": "10,000",
-            "accuracy": "54.10%"
+            "rows": "8,000",
+            "accuracy": "53.90%"
         }
     ],
     "outliers": [
@@ -895,13 +839,13 @@
     ],
     "iqr_summary": {
         "column_outliers": {
-            "Temperature(F)": 95,
-            "Visibility(mi)": 1173,
-            "Wind_Speed(mph)": 153
+            "Temperature(F)": 0,
+            "Visibility(mi)": 0,
+            "Wind_Speed(mph)": 0
         },
-        "n_outliers": 1421,
-        "n_rows_with_outlier": 1339,
-        "max_outliers": 1173,
+        "n_outliers": 0,
+        "n_rows_with_outlier": 0,
+        "max_outliers": 0,
         "n_numeric_columns": 3
     },
     "encoding": {
@@ -979,135 +923,133 @@
         }
     },
     "target_encoding": {
-        "Severity": {
-            "Wind_Direction": {
-                "mapping": {
-                    "CALM": 2.3101,
-                    "Calm": 2.4392,
-                    "E": 2.3261,
-                    "ENE": 2.4874,
-                    "ESE": 2.4338,
-                    "East": 2.4594,
-                    "Missing": 2.4948,
-                    "N": 2.2885,
-                    "NE": 2.4706,
-                    "NNE": 2.46,
-                    "NNW": 2.3983,
-                    "NW": 2.427,
-                    "North": 2.4177,
-                    "S": 2.1806,
-                    "SE": 2.3975,
-                    "SSE": 2.3819,
-                    "SSW": 2.4664,
-                    "SW": 2.4753,
-                    "South": 2.4298,
-                    "VAR": 2.2277,
-                    "Variable": 2.4523,
-                    "W": 2.1628,
-                    "WNW": 2.4697,
-                    "WSW": 2.4983,
-                    "West": 2.4706
+        "Wind_Direction": {
+            "mapping": {
+                "CALM": 2.3101,
+                "Calm": 2.4392,
+                "E": 2.3261,
+                "ENE": 2.4874,
+                "ESE": 2.4338,
+                "East": 2.4594,
+                "Missing": 2.4948,
+                "N": 2.2885,
+                "NE": 2.4706,
+                "NNE": 2.46,
+                "NNW": 2.3983,
+                "NW": 2.427,
+                "North": 2.4177,
+                "S": 2.1806,
+                "SE": 2.3975,
+                "SSE": 2.3819,
+                "SSW": 2.4664,
+                "SW": 2.4753,
+                "South": 2.4298,
+                "VAR": 2.2277,
+                "Variable": 2.4523,
+                "W": 2.1628,
+                "WNW": 2.4697,
+                "WSW": 2.4983,
+                "West": 2.4706
+            },
+            "train_preview": [
+                {
+                    "Wind_Direction_target_Severity": 2.4298
                 },
-                "train_preview": [
-                    {
-                        "Wind_Direction_target_Severity": 2.4298
-                    },
-                    {
-                        "Wind_Direction_target_Severity": 2.3975
-                    },
-                    {
-                        "Wind_Direction_target_Severity": 2.4392
-                    },
-                    {
-                        "Wind_Direction_target_Severity": 2.4392
-                    },
-                    {
-                        "Wind_Direction_target_Severity": 2.4298
-                    }
-                ],
-                "test_preview": [
-                    {
-                        "Wind_Direction_target_Severity": 2.3819
-                    },
-                    {
-                        "Wind_Direction_target_Severity": 2.427
-                    },
-                    {
-                        "Wind_Direction_target_Severity": 2.4874
-                    },
-                    {
-                        "Wind_Direction_target_Severity": 2.4338
-                    },
-                    {
-                        "Wind_Direction_target_Severity": 2.4523
-                    }
-                ]
-            }
+                {
+                    "Wind_Direction_target_Severity": 2.3975
+                },
+                {
+                    "Wind_Direction_target_Severity": 2.4392
+                },
+                {
+                    "Wind_Direction_target_Severity": 2.4392
+                },
+                {
+                    "Wind_Direction_target_Severity": 2.4298
+                }
+            ],
+            "test_preview": [
+                {
+                    "Wind_Direction_target_Severity": 2.3819
+                },
+                {
+                    "Wind_Direction_target_Severity": 2.427
+                },
+                {
+                    "Wind_Direction_target_Severity": 2.4874
+                },
+                {
+                    "Wind_Direction_target_Severity": 2.4338
+                },
+                {
+                    "Wind_Direction_target_Severity": 2.4523
+                }
+            ]
         }
     },
     "embedding": {
         "Wind_Direction": {
             "category_to_id": {
-                "South": 0,
-                "SE": 1,
-                "Calm": 2,
-                "SSW": 3,
+                "CALM": 0,
+                "Calm": 1,
+                "E": 2,
+                "ENE": 3,
                 "ESE": 4,
-                "WSW": 5,
-                "NNW": 6,
-                "Variable": 7,
-                "West": 8,
-                "SSE": 9,
-                "WNW": 10,
-                "SW": 11,
-                "VAR": 12,
-                "CALM": 13,
-                "East": 14,
-                "ENE": 15,
-                "North": 16,
-                "NW": 17,
-                "NE": 18,
-                "Missing": 19,
-                "E": 20,
-                "NNE": 21,
-                "S": 22,
-                "N": 23,
-                "W": 24
+                "East": 5,
+                "Missing": 6,
+                "N": 7,
+                "NE": 8,
+                "NNE": 9,
+                "NNW": 10,
+                "NW": 11,
+                "North": 12,
+                "S": 13,
+                "SE": 14,
+                "SSE": 15,
+                "SSW": 16,
+                "SW": 17,
+                "South": 18,
+                "VAR": 19,
+                "Variable": 20,
+                "W": 21,
+                "WNW": 22,
+                "WSW": 23,
+                "West": 24
             },
             "embedding_input_dimension": 25,
-            "embedding_output_dimension": 3,
+            "embedding_output_dimension": 13,
             "train_preview": [
                 {
-                    "Wind_Direction_embedding_id": 0
+                    "Wind_Direction_embedding_id": 18
+                },
+                {
+                    "Wind_Direction_embedding_id": 14
                 },
                 {
                     "Wind_Direction_embedding_id": 1
                 },
                 {
-                    "Wind_Direction_embedding_id": 2
+                    "Wind_Direction_embedding_id": 1
                 },
                 {
-                    "Wind_Direction_embedding_id": 2
-                },
-                {
-                    "Wind_Direction_embedding_id": 0
+                    "Wind_Direction_embedding_id": 18
                 }
             ],
             "test_preview": [
                 {
-                    "Wind_Direction_embedding_id": 9
-                },
-                {
-                    "Wind_Direction_embedding_id": 17
-                },
-                {
                     "Wind_Direction_embedding_id": 15
+                },
+                {
+                    "Wind_Direction_embedding_id": 11
+                },
+                {
+                    "Wind_Direction_embedding_id": 3
                 },
                 {
                     "Wind_Direction_embedding_id": 4
                 },
                 {
-                    "Wind_Direction_embedding_id": 7
+                    "Wind_Direction_embedding_id": 20
                 }
             ]
         }

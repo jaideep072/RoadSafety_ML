@@ -169,7 +169,7 @@
     <main class="content">
         <div class="page-header">
             <h2>Logistic Regression — Accident Severity Classification (Severe vs. Minor)</h2>
-            <p>Classifies crash outcomes into binary severity: <strong>Severe (Level 3–4)</strong> vs. <strong>Minor/Moderate (Level 1–2)</strong>. Evaluates Sigmoid activation probabilities, odds ratios, and regularized loss penalization.</p>
+            <p>Classifies crash outcomes into binary severity: <strong>Severe (Level 3–4)</strong> vs. <strong>Minor/Moderate (Level 1–2)</strong>. Evaluates Sigmoid probabilities, odds ratios, and regularized loss penalization.</p>
         </div>
 
         {% if error %}
@@ -180,7 +180,7 @@
         <div class="dropdown-panel">
             <div style="display: flex; align-items: center; gap: 8px;">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="m4.93 4.93 4.24 4.24"></path></svg>
-                <strong>Regularization Penalty:</strong>
+                <strong>Regularization Scheme:</strong>
             </div>
             <form method="GET" action="{{ url_for('logistic_regression') }}" id="logRegForm">
                 <select name="reg_type" class="select-input" onchange="document.getElementById('logRegForm').submit();">
@@ -198,37 +198,141 @@
         </div>
 
         {% if results %}
-            <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 20px;">
-                <h3 style="color: var(--text-primary); font-size: 18px; font-weight: 800; margin: 0;">Model: {{ results.model_name }}</h3>
-                <span class="badge badge-active">Binary Target: Severity_Severe</span>
+            <!-- Target Variable & Anti-Leakage Rationale Card -->
+            <div class="card" style="margin-bottom: 28px;">
+                <div class="card-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    </svg>
+                    <span>Target Variable Formulation & Anti-Leakage Protocol</span>
+                </div>
+                <div class="table-wrapper" style="border: none;">
+                    <table class="data-table">
+                        <tbody>
+                            <tr>
+                                <td style="width: 260px; text-align: left;"><strong>Target Classification Classes</strong></td>
+                                <td style="text-align: left;">
+                                    <span class="tag" style="background: rgba(37, 99, 235, 0.12); color: #2563eb; font-weight: 700; margin-right: 8px;">Class 0: Minor / Moderate (Severity 1–2)</span>
+                                    <span class="tag" style="background: rgba(220, 38, 38, 0.12); color: #dc2626; font-weight: 700;">Class 1: Severe / Critical (Severity 3–4)</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: left;"><strong>Target Leakage Prevention</strong></td>
+                                <td style="text-align: left;">
+                                    <strong style="color: #10b981;">Guaranteed Zero Leakage:</strong> Outcome proxies (raw <code>Severity</code> levels, post-crash duration <code>End_Time</code>, and <code>Distance(mi)</code>) are completely quarantined from predictor matrix \(X\). Only pre-incident roadway features, weather observations, and temporal phase are visible to the model.
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: left;"><strong>Evaluation Test Samples</strong></td>
+                                <td style="text-align: left;">
+                                    <strong>{{ "{:,}".format(results.total_test) }}</strong> held-out unseen crash events (stratified 20% test split)
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
-            <!-- 4 Metric Cards (Centered) -->
-            <div class="metric-grid" style="grid-template-columns: repeat(4, 1fr);">
-                <div class="metric-card">
-                    <span class="metric-title">Testing Accuracy</span>
-                    <div class="metric-val">{{ results.metrics.test_accuracy }}%</div>
-                    <span class="metric-sub">Generalization on test split</span>
+            <!-- Regularization Comparison Benchmark Table -->
+            <div class="card" style="margin-bottom: 28px;">
+                <div class="card-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="20" x2="18" y2="10"></line>
+                        <line x1="12" y1="20" x2="12" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="14"></line>
+                    </svg>
+                    <span>Regularization Comparison (Solver & Penalty Impact on Generalization)</span>
                 </div>
-                <div class="metric-card">
-                    <span class="metric-title">Training Accuracy</span>
-                    <div class="metric-val">{{ results.metrics.train_accuracy }}%</div>
-                    <span class="metric-sub">Convergence on training data</span>
+                <div class="table-wrapper" style="border: none;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="text-align: left;">Algorithm</th>
+                                <th style="text-align: left;">Penalty</th>
+                                <th>Train Acc (%)</th>
+                                <th>Test Acc (%)</th>
+                                <th>Precision (%)</th>
+                                <th>Recall (%)</th>
+                                <th>F1-Score (%)</th>
+                                <th>ROC-AUC</th>
+                                <th>Pruned Features</th>
+                                <th>Overfitting Gap</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for b in results.benchmark %}
+                            <tr {% if b.key == results.reg_type %}style="background: var(--table-row-hover); font-weight: 600;"{% endif %}>
+                                <td style="text-align: left;">
+                                    <strong>{{ b.name }}</strong>
+                                    {% if b.key == results.reg_type %}
+                                        <span class="badge badge-active" style="margin-left: 6px; font-size: 10px;">Selected</span>
+                                    {% endif %}
+                                </td>
+                                <td style="text-align: left;">
+                                    <span class="tag">{{ b.penalty }}</span>
+                                </td>
+                                <td>{{ b.train_accuracy }}%</td>
+                                <td><strong style="color: var(--primary);">{{ b.test_accuracy }}%</strong></td>
+                                <td>{{ b.precision }}%</td>
+                                <td>{{ b.recall }}%</td>
+                                <td>{{ b.f1 }}%</td>
+                                <td><strong>{{ b.roc_auc }}</strong></td>
+                                <td>
+                                    {% if b.zero_features > 0 %}
+                                        <span class="badge badge-pruned">{{ b.zero_features }} Features Pruned</span>
+                                    {% else %}
+                                        <span style="color: var(--text-muted);">0 (Dense)</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ "{:+.2f}".format(b.overfitting_gap) }}%</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
-                <div class="metric-card">
-                    <span class="metric-title">Precision (Severe)</span>
-                    <div class="metric-val">{{ results.metrics.precision }}%</div>
-                    <span class="metric-sub">TP / (TP + FP)</span>
+            </div>
+
+            <!-- Per-Class Performance Breakdown Table -->
+            <div class="card" style="margin-bottom: 28px;">
+                <div class="card-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                    </svg>
+                    <span>Class-Level Precision, Recall &amp; F1 Breakdown ({{ results.model_name }})</span>
                 </div>
-                <div class="metric-card">
-                    <span class="metric-title">Recall (Severe)</span>
-                    <div class="metric-val">{{ results.metrics.recall }}%</div>
-                    <span class="metric-sub">TP / (TP + FN)</span>
+                <div class="table-wrapper" style="border: none;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="text-align: left;">Accident Severity Tier</th>
+                                <th>Precision (%)</th>
+                                <th>Recall (%)</th>
+                                <th>F1-Score (%)</th>
+                                <th>Support (Crash Count)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for c in results.per_class %}
+                            <tr>
+                                <td style="text-align: left;">
+                                    <strong>{{ c.class }}</strong>
+                                </td>
+                                <td>{{ c.precision }}%</td>
+                                <td>{{ c.recall }}%</td>
+                                <td><strong style="color: var(--primary);">{{ c.f1 }}%</strong></td>
+                                <td>{{ "{:,}".format(c.support) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
             <!-- Confusion Matrix Breakdown Cards -->
-            <div class="card">
+            <div class="card" style="margin-bottom: 28px;">
                 <div class="card-title">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="12" x2="21" y2="12"></line><line x1="12" y1="3" x2="12" y2="21"></line></svg>
                     <span>Confusion Matrix Classification Outcomes (Test Set Breakdown)</span>
@@ -236,29 +340,29 @@
                 <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 10px;">
                     <div style="background: var(--gray-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; text-align: center;">
                         <span style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: var(--text-muted);">True Positives (TP)</span>
-                        <div style="font-size: 24px; font-weight: 800; color: var(--text-primary); margin-top: 4px;">{{ results.metrics.tp }}</div>
+                        <div style="font-size: 24px; font-weight: 800; color: #10b981; margin-top: 4px;">{{ results.metrics.tp }}</div>
                         <small style="color: var(--text-muted); font-size: 11px;">Correctly identified Severe</small>
                     </div>
                     <div style="background: var(--gray-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; text-align: center;">
                         <span style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: var(--text-muted);">True Negatives (TN)</span>
-                        <div style="font-size: 24px; font-weight: 800; color: var(--text-primary); margin-top: 4px;">{{ results.metrics.tn }}</div>
+                        <div style="font-size: 24px; font-weight: 800; color: #2563eb; margin-top: 4px;">{{ results.metrics.tn }}</div>
                         <small style="color: var(--text-muted); font-size: 11px;">Correctly identified Minor</small>
                     </div>
                     <div style="background: var(--gray-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; text-align: center;">
                         <span style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: var(--text-muted);">False Positives (FP)</span>
-                        <div style="font-size: 24px; font-weight: 800; color: var(--text-primary); margin-top: 4px;">{{ results.metrics.fp }}</div>
+                        <div style="font-size: 24px; font-weight: 800; color: #f59e0b; margin-top: 4px;">{{ results.metrics.fp }}</div>
                         <small style="color: var(--text-muted); font-size: 11px;">Type I Error (False Alarm)</small>
                     </div>
                     <div style="background: var(--gray-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; text-align: center;">
                         <span style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: var(--text-muted);">False Negatives (FN)</span>
-                        <div style="font-size: 24px; font-weight: 800; color: var(--text-primary); margin-top: 4px;">{{ results.metrics.fn }}</div>
+                        <div style="font-size: 24px; font-weight: 800; color: #ef4444; margin-top: 4px;">{{ results.metrics.fn }}</div>
                         <small style="color: var(--text-muted); font-size: 11px;">Type II Error (Missed Severe)</small>
                     </div>
                 </div>
             </div>
 
-            <!-- Learned Sigmoid Decision Boundary -->
-            <div class="card">
+            <!-- Learned Sigmoid Decision Boundary & Mathematical Formulation -->
+            <div class="card" style="margin-bottom: 28px;">
                 <div class="card-title">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
                     <span>Learned Log-Odds Linear Decision Boundary (z = &theta;<sup>T</sup> x)</span>
@@ -266,22 +370,22 @@
                 <div class="equation-box">
                     {{ results.equation }}
                 </div>
-                <p style="font-size: 13px; color: var(--text-muted); margin-top: 6px; text-align: center;">
-                    * Predicted probability: <code>P(Severe = 1 | x) = 1 / (1 + e⁻ᶻ)</code>. Threshold &ge; <strong>0.50</strong> &rarr; <strong>Severe</strong>.
+                <p style="font-size: 13px; color: var(--text-muted); margin-top: 8px; text-align: center;">
+                    * Predicted probability: <code>P(Severe = 1 | x) = 1 / (1 + e⁻ᶻ)</code>. Threshold &ge; <strong>0.50</strong> &rarr; <strong>Severe Accident</strong>.
                 </p>
             </div>
 
-            <!-- Coefficients & Odds Ratios Table -->
-            <div class="card">
+            <!-- Learned Weights & Odds Ratios Table -->
+            <div class="card" style="margin-bottom: 28px;">
                 <div class="card-title">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"></line><line x1="18" y1="20" x2="18" y2="4"></line><line x1="6" y1="20" x2="6" y2="16"></line></svg>
-                    <span>Learned Weights (&theta;) & Multiplicative Odds Ratios (e<sup>&theta;</sup>)</span>
+                    <span>Learned Weights (&theta;) &amp; Multiplicative Odds Ratios (e<sup>&theta;</sup>)</span>
                 </div>
                 <div class="table-wrapper">
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th>Feature Name</th>
+                                <th style="text-align: left;">Feature Name</th>
                                 <th>Learned Weight (&theta;)</th>
                                 <th>Odds Ratio (e<sup>&theta;</sup>)</th>
                                 <th>Effect on Severity Likelihood</th>
@@ -291,14 +395,14 @@
                         <tbody>
                             {% for c in results.coefficients %}
                             <tr>
-                                <td><strong>{{ c.feature }}</strong></td>
+                                <td style="text-align: left;"><strong>{{ c.feature }}</strong></td>
                                 <td><code>{{ c.weight }}</code></td>
                                 <td><strong>{{ c.odds_ratio }}x</strong></td>
                                 <td>
                                     {% if c.weight > 0 %}
-                                        <strong>+{{ ((c.odds_ratio - 1) * 100)|round(1) }}% odds of severe</strong>
+                                        <span style="color: #dc2626; font-weight: 700;">+{{ ((c.odds_ratio - 1) * 100)|round(1) }}% odds of severe</span>
                                     {% elif c.weight < 0 %}
-                                        <strong>-{{ ((1 - c.odds_ratio) * 100)|round(1) }}% odds of severe</strong>
+                                        <span style="color: #2563eb; font-weight: 700;">-{{ ((1 - c.odds_ratio) * 100)|round(1) }}% odds of severe</span>
                                     {% else %}
                                         <span style="color: var(--text-muted); font-style: italic;">Zero impact (Eliminated)</span>
                                     {% endif %}
@@ -321,14 +425,33 @@
                 </div>
             </div>
 
-            <!-- Confusion Matrix Heatmap -->
-            <div class="card">
-                <div class="card-title">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                    <span>Confusion Matrix Visualization</span>
-                </div>
-                <div style="text-align: center; padding: 16px;">
-                    <img src="{{ url_for('static', filename=results.plots.cm_plot) }}" alt="Confusion Matrix Heatmap" style="max-width: 480px; width: 100%; border-radius: 8px;">
+            <!-- Classification Visualizations Stack (Clean 1 chart per card) -->
+            <div style="margin-top: 30px; margin-bottom: 28px;">
+                <div style="display: flex; flex-direction: column; gap: 24px;">
+                    <!-- Top Predictor Features Bar Chart -->
+                    <div class="card" style="padding: 20px; text-align: center;">
+                        <div class="card-title" style="margin-bottom: 14px; text-align: left;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="20" x2="18" y2="10"></line>
+                                <line x1="12" y1="20" x2="12" y2="4"></line>
+                                <line x1="6" y1="20" x2="6" y2="14"></line>
+                            </svg>
+                            <span>Top Feature Weights Impact on Severe Accident Probability</span>
+                        </div>
+                        <img src="{{ url_for('static', filename=results.plots.feature_imp_plot) }}" alt="Top Features Predicting Severity Tier" style="max-width: 820px; width: 100%; border-radius: 8px; margin: 0 auto; display: block;">
+                    </div>
+
+                    <!-- Confusion Matrix Heatmap -->
+                    <div class="card" style="padding: 20px; text-align: center;">
+                        <div class="card-title" style="margin-bottom: 14px; text-align: left;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                            <span>Normalized Confusion Matrix Heatmap</span>
+                        </div>
+                        <img src="{{ url_for('static', filename=results.plots.cm_plot) }}" alt="Confusion Matrix Heatmap" style="max-width: 580px; width: 100%; border-radius: 8px; margin: 0 auto; display: block;">
+                    </div>
                 </div>
             </div>
 
@@ -472,6 +595,17 @@
                     </small>
                 </div>
                 {% endif %}
+            </div>
+
+            <!-- Workflow Next Step Navigation Button -->
+            <div style="margin-top: 35px; margin-bottom: 30px; display: flex; justify-content: flex-end;">
+                <a href="{{ url_for('decision_trees') }}" class="btn-primary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; font-size: 14px; font-weight: 700; border-radius: 8px;">
+                    <span>Continue to Decision Trees &amp; Ensembles</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </a>
             </div>
         {% endif %}
     </main>

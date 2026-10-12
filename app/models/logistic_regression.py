@@ -1,7 +1,9 @@
 """
 Logistic Regression models module for RoadSafety_ML.
 Implements binary accident severity classification (Severe vs. Moderate/Minor)
-with Unregularized (None), Ridge (L2), Lasso (L1), and ElasticNet penalties.
+with Unregularized (None), Ridge (L2), and Lasso (L1) penalties.
+Includes cross-model regularization benchmark comparison, class breakdown,
+learned odds ratios, confusion matrices, and feature importance drivers.
 """
 
 from pathlib import Path
@@ -14,6 +16,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import classification_report
 import joblib
 
 from app.config import (
@@ -59,7 +62,7 @@ def train_and_evaluate_logistic(
 ) -> Dict[str, Any]:
     """
     Trains and evaluates logistic regression models, computes Odds Ratios,
-    generates Confusion Matrix plot, and performs live inference.
+    generates Confusion Matrix and Feature Importance plots, and runs live inference.
     """
     CHARTS_DIR.mkdir(parents=True, exist_ok=True)
     STATIC_DIR.mkdir(parents=True, exist_ok=True)
@@ -110,24 +113,94 @@ def train_and_evaluate_logistic(
 
     equation_str = f"logit(P) = {intercept} " + " ".join(eq_terms)
 
+    # 3-Model Regularization Benchmark Comparison for Road Safety
+    comparison_models = [
+        {"key": "none", "name": "Standard Logistic Regression", "penalty": "None (Log-Loss)"},
+        {"key": "ridge", "name": "Ridge Logistic Regression", "penalty": "L2 Penalty (C=1.0)"},
+        {"key": "lasso", "name": "Lasso Logistic Regression", "penalty": "L1 Penalty (C=1.0)"}
+    ]
+
+    benchmark_list = []
+    for cm in comparison_models:
+        if cm["key"] == reg_type:
+            mod = model
+        else:
+            mod, _ = get_logistic_model(cm["key"])
+            mod.fit(X_train, y_train)
+        tr_p = mod.predict(X_train)
+        te_p = mod.predict(X_test)
+        te_prob = mod.predict_proba(X_test)[:, 1]
+
+        tr_ev = evaluate_classification_model(y_train, tr_p)
+        te_ev = evaluate_classification_model(y_test, te_p, y_prob=te_prob)
+        zero_cnt = int(sum(1 for c in mod.coef_[0] if abs(c) < 1e-4))
+
+        benchmark_list.append({
+            "key": cm["key"],
+            "name": cm["name"],
+            "penalty": cm["penalty"],
+            "train_accuracy": tr_ev.accuracy,
+            "test_accuracy": te_ev.accuracy,
+            "precision": te_ev.precision,
+            "recall": te_ev.recall,
+            "f1": te_ev.f1,
+            "roc_auc": round(float(te_ev.roc_auc), 4) if te_ev.roc_auc else None,
+            "zero_features": zero_cnt,
+            "overfitting_gap": round(float(tr_ev.accuracy - te_ev.accuracy), 2)
+        })
+
+    # Class-Level Precision, Recall, and F1 Breakdown
+    class_names = ["Minor / Moderate (1-2)", "Severe (3-4)"]
+    rep_dict = classification_report(y_test, y_test_pred, target_names=class_names, output_dict=True, zero_division=0)
+    per_class_metrics = []
+    for cname in class_names:
+        if cname in rep_dict:
+            per_class_metrics.append({
+                "class": cname,
+                "precision": round(rep_dict[cname]["precision"] * 100, 2),
+                "recall": round(rep_dict[cname]["recall"] * 100, 2),
+                "f1": round(rep_dict[cname]["f1-score"] * 100, 2),
+                "support": int(rep_dict[cname]["support"])
+            })
+
     # Confusion Matrix Visualization
     cm_plot = f"log_cm_{reg_type}.png"
     cm = np.array(test_metrics.confusion_matrix)
 
-    plt.figure(figsize=(5, 4), dpi=130)
+    plt.figure(figsize=(6, 4.5), dpi=130)
     sns.heatmap(
-        cm, annot=True, fmt="d", cmap="Blues", cbar=False,
-        xticklabels=["Moderate/Minor", "Severe"],
-        yticklabels=["Moderate/Minor", "Severe"],
-        annot_kws={"size": 13, "weight": "bold"}
+        cm, annot=True, fmt="d", cmap="Blues", cbar=True,
+        xticklabels=["Minor / Moderate", "Severe"],
+        yticklabels=["Minor / Moderate", "Severe"],
+        annot_kws={"size": 12, "weight": "bold"}
     )
-    plt.xlabel("Predicted Severity", fontsize=10, fontweight="bold")
-    plt.ylabel("Actual Severity", fontsize=10, fontweight="bold")
-    plt.title(f"Confusion Matrix ({model_name})", fontsize=10, fontweight="bold", pad=10)
+    plt.xlabel("Predicted Severity Class", fontsize=10, fontweight="bold", color="#1e293b", labelpad=8)
+    plt.ylabel("Actual Severity Class", fontsize=10, fontweight="bold", color="#1e293b", labelpad=8)
+    plt.title(f"Confusion Matrix — {model_name}", fontsize=11, fontweight="bold", color="#0f172a", pad=10)
     plt.tight_layout()
     plt.savefig(STATIC_DIR / cm_plot)
     plt.savefig(CHARTS_DIR / cm_plot)
-    plt.close()
+    plt.close("all")
+
+    # Feature Importance Visualization (Drivers of Severe Crashes)
+    feature_imp_plot = f"log_feat_imp_{reg_type}.png"
+    coef_vals = model.coef_[0]
+    sorted_idx = np.argsort(coef_vals)
+    sorted_features = [active_features[i] for i in sorted_idx]
+    sorted_weights = [coef_vals[i] for i in sorted_idx]
+
+    plt.figure(figsize=(7.5, 4.8), dpi=130)
+    colors = ["#ef4444" if w > 0 else "#2563eb" for w in sorted_weights]
+    y_pos = np.arange(len(sorted_features))
+    plt.barh(y_pos, sorted_weights, color=colors, height=0.55, edgecolor="none")
+    plt.yticks(y_pos, sorted_features, fontsize=9.5, fontweight="600")
+    plt.axvline(0, color="#94a3b8", linestyle="--", linewidth=1.2)
+    plt.title(f"Learned Feature Weights Impact on Severe Accidents ({model_name})", fontsize=11, fontweight="bold", color="#0f172a", pad=10)
+    plt.xlabel("Log-Odds Impact (Red: Increases Severe Risk | Blue: Reduces Risk)", fontsize=9.5, color="#334155", labelpad=6)
+    plt.tight_layout()
+    plt.savefig(STATIC_DIR / feature_imp_plot)
+    plt.savefig(CHARTS_DIR / feature_imp_plot)
+    plt.close("all")
 
     # Live Predictor
     prediction = None
@@ -139,26 +212,32 @@ def train_and_evaluate_logistic(
         model_filename = f"logistic_{reg_type}.pkl" if reg_type != "none" else "logistic_reg.pkl"
         joblib.dump(model, MODELS_DIR / model_filename)
 
+    total_test_samples = len(y_test)
+
     return {
         "reg_type": reg_type,
         "model_name": model_name,
+        "total_test": total_test_samples,
         "metrics": {
             "test_accuracy": test_metrics.accuracy,
             "train_accuracy": train_metrics.accuracy,
             "precision": test_metrics.precision,
             "recall": test_metrics.recall,
             "f1": test_metrics.f1,
-            "roc_auc": test_metrics.roc_auc,
+            "roc_auc": round(float(test_metrics.roc_auc), 4) if test_metrics.roc_auc else None,
             "tp": test_metrics.tp,
             "tn": test_metrics.tn,
             "fp": test_metrics.fp,
             "fn": test_metrics.fn
         },
+        "benchmark": benchmark_list,
+        "per_class": per_class_metrics,
         "intercept": intercept,
         "coefficients": coefficients,
         "equation": equation_str,
         "plots": {
-            "cm_plot": cm_plot
+            "cm_plot": cm_plot,
+            "feature_imp_plot": feature_imp_plot
         },
         "prediction": prediction,
         "features": active_features
@@ -177,7 +256,7 @@ def predict_logistic_severity(
         pred_class = int(model.predict(input_df)[0])
         prob = round(float(model.predict_proba(input_df)[0][1]) * 100, 1)
         return {
-            "class": "Severe Accident" if pred_class == 1 else "Minor / Moderate Accident",
+            "class": "Severe Accident (Severity 3-4)" if pred_class == 1 else "Minor / Moderate Accident (Severity 1-2)",
             "is_severe": pred_class == 1,
             "probability": prob
         }
