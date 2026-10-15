@@ -1,8 +1,3 @@
-"""
-Imputation strategies and comparative benchmark studies for RoadSafety_ML.
-Implements Listwise Deletion, Mean, Median, KNN, and Missing Indicator transformations
-while strictly preventing data leakage across train/test splits.
-"""
 
 from typing import List, Dict, Any, Tuple
 import pandas as pd
@@ -20,13 +15,7 @@ def compare_imputation_strategies(
     target_col: str = "Severity",
     sample_size: int = 10000
 ) -> List[Dict[str, Any]]:
-    """
-    Empirically benchmarks four missing data strategies on a controlled split:
-    1. Listwise Deletion (row drop)
-    2. Median Imputation
-    3. KNN Imputation (k=5)
-    4. Median + Missing Indicator
-    """
+
     clean_df = df[numeric_cols + [target_col]].dropna(subset=[target_col]).copy()
     if len(clean_df) > sample_size:
         clean_df = clean_df.sample(n=sample_size, random_state=42)

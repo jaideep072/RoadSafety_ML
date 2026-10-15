@@ -35,10 +35,10 @@
     <div class="topbar-meta">
         <div class="badge-pill">
             <span class="status-indicator"></span>
-            <span>Dataset: 50,000 Records</span>
+            <span>Dataset: 100,000 Records</span>
         </div>
         <div class="badge-pill">
-            <span>7 Ensembles Active</span>
+            <span>6 Tree Models Active</span>
         </div>
         <button id="themeToggleBtn" class="theme-toggle-btn" title="Toggle Light / Dark Mode" onclick="toggleTheme()" type="button">
             <svg class="theme-icon-sun" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -134,7 +134,7 @@
                             <rect x="14" y="14" width="7" height="7"></rect>
                             <rect x="3" y="14" width="7" height="7"></rect>
                         </svg>
-                        <span>Decision Trees (7 Models)</span>
+                        <span>Decision Trees (6 Models)</span>
                     </a>
                 </li>
             </ul>
@@ -254,7 +254,6 @@
                                 <th>Precision (%)</th>
                                 <th>Recall (%)</th>
                                 <th>F1-Score (%)</th>
-                                <th>ROC-AUC</th>
                                 <th>Pruned Features</th>
                                 <th>Overfitting Gap</th>
                             </tr>
@@ -276,7 +275,6 @@
                                 <td>{{ b.precision }}%</td>
                                 <td>{{ b.recall }}%</td>
                                 <td>{{ b.f1 }}%</td>
-                                <td><strong>{{ b.roc_auc }}</strong></td>
                                 <td>
                                     {% if b.zero_features > 0 %}
                                         <span class="badge badge-pruned">{{ b.zero_features }} Features Pruned</span>

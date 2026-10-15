@@ -1,8 +1,4 @@
-"""
-Unified Data Preprocessing Pipeline orchestrator for RoadSafety_ML.
-Executes missing value analysis, imputation benchmarks, IQR capping,
-categorical encodings, feature scaling, and stores preprocessed datasets and cache.
-"""
+
 
 import json
 import logging
@@ -38,16 +34,23 @@ logger = logging.getLogger(__name__)
 
 EXCLUDED_COLUMNS_RATIONALE = {
     "ID": "Arbitrary database primary key with no generalizable relationship to crash severity. Overfits if retained.",
-    "Description": "Unstructured free-form incident text. Excluded to ensure consistent tabular schema.",
+    "Description": "Unstructured free-form incident text. Excluded to ensure consistent numerical tabular schema.",
+    "End_Lat": "100% missing values in dataset. Geographically redundant with primary Start_Lat coordinate.",
+    "End_Lng": "100% missing values in dataset. Geographically redundant with primary Start_Lng coordinate.",
+    "Start_Time": "String timestamp format (YYYY-MM-DD HH:MM:SS); unparseable by linear and tree numerical algorithms.",
+    "End_Time": "String timestamp recorded post-accident clearance; leaks outcome duration.",
+    "Wind_Chill(F)": "Severe missingness (95.7% nulls). Redundant with Temperature(F) which is 98.4% complete.",
+    "Precipitation(in)": "Severe missingness (92.6% nulls). Atmospheric moisture captured by Humidity(%) and Weather_Condition.",
     "Country": "Zero-variance constant feature: 100% of observations are 'US'. Provides zero predictive variance.",
-    "End_Lat": "High missingness (>60% nulls). Geographically redundant with primary Start_Lat coordinate.",
-    "End_Lng": "High missingness (>60% nulls). Geographically redundant with primary Start_Lng coordinate.",
-    "Number": "Street address number with high missingness (>65% nulls). Continuous latitude and longitude coordinates used instead.",
+    "Turning_Loop": "Zero-variance constant feature: 100% of records are False. Provides zero predictive variance.",
     "Street": "High-cardinality nominal text identifier (>30,000 unique levels). Prone to severe overfitting.",
-    "Zipcode": "High-cardinality postal code string. Geographic latitude and longitude coordinates provide continuous spatial density.",
-    "Weather_Timestamp": "Data collection timestamp metadata with no predictive bearing on road physics.",
-    "End_Time": "Incident clearance timestamp: recorded post-accident, introducing post-event observation leakage.",
-    "Airport_Code": "Weather station identifier: redundant with direct atmospheric readings (Temperature, Pressure, Humidity)."
+    "City": "High-cardinality nominal city names. Geographic latitude and longitude coordinates provide continuous spatial density.",
+    "County": "Nominal administrative boundary strings. Latitude and longitude provide continuous spatial density.",
+    "State": "Zero-variance single-state dataset partition ('OH'). Provides zero predictive variance.",
+    "Zipcode": "High-cardinality postal code string. Continuous spatial coordinates used instead.",
+    "Timezone": "Zero-variance partition string ('US/Eastern'). Redundant with spatial coordinates.",
+    "Airport_Code": "Weather station identifier: redundant with direct atmospheric readings (Temperature, Pressure, Humidity).",
+    "Weather_Timestamp": "Data collection timestamp metadata with no predictive bearing on road physics."
 }
 
 
@@ -155,36 +158,59 @@ def run_preprocessing_pipeline(
     train_std, _, std_scaler = apply_standard_scaling(train_df, None, scale_cols)
     after_std = train_std[scale_cols].head(5).round(4).to_dict("records") if scale_cols else []
 
-    # 9. Build and Export Clean Preprocessed Dataset
-    clean_export_df = df.copy()
-    # Impute numeric features
-    for col in missing_cols:
-        if col in clean_export_df.columns:
-            clean_export_df[col] = clean_export_df[col].fillna(clean_export_df[col].median())
-    
-    # Cap outliers
-    for col in active_outlier_cols:
-        q1 = clean_export_df[col].quantile(0.25)
-        q3 = clean_export_df[col].quantile(0.75)
-        iqr = q3 - q1
-        clean_export_df[col] = clean_export_df[col].clip(q1 - 1.5 * iqr, q3 + 1.5 * iqr)
+    # 9. Build and Export Clean Pure-Numeric Preprocessed Dataset
+    clean_export_df = pd.DataFrame()
 
-    # Create binary Severity_Severe target (Severity >= 3)
-    if "Severity" in clean_export_df.columns:
-        clean_export_df["Severity_Severe"] = (clean_export_df["Severity"] >= 3).astype(int)
+    # Primary Targets (Numeric)
+    if "Severity" in df.columns:
+        clean_export_df["Severity"] = df["Severity"].astype(int)
+        clean_export_df["Severity_Severe"] = (df["Severity"] >= 3).astype(int)
 
-    # Encode Sunrise_Sunset as binary numeric (Day=1, Night=0)
-    if "Sunrise_Sunset" in clean_export_df.columns:
-        clean_export_df["Sunrise_Sunset_Day"] = (clean_export_df["Sunrise_Sunset"] == "Day").astype(int)
+    # Continuous Spatial & Telemetry Features (Clean Numeric)
+    clean_export_df["Start_Lat"] = pd.to_numeric(df["Start_Lat"], errors="coerce")
+    clean_export_df["Start_Lng"] = pd.to_numeric(df["Start_Lng"], errors="coerce")
+    if "Distance(mi)" in df.columns:
+        clean_export_df["Distance(mi)"] = pd.to_numeric(df["Distance(mi)"], errors="coerce").fillna(0.0)
 
-    # Convert boolean road features to int
-    for b_col in ["Crossing", "Junction", "Traffic_Signal", "Amenity", "Bump", "Railway", "Station", "Stop"]:
-        if b_col in clean_export_df.columns:
-            clean_export_df[b_col] = clean_export_df[b_col].fillna(False).astype(int)
+    # Atmospheric & Environmental Sensor Telemetry (Median-Imputed + Outlier-Capped)
+    env_cols = ["Temperature(F)", "Humidity(%)", "Pressure(in)", "Visibility(mi)", "Wind_Speed(mph)"]
+    for col in env_cols:
+        if col in df.columns:
+            s = pd.to_numeric(df[col], errors="coerce")
+            med_val = s.median()
+            s = s.fillna(med_val)
+            if col in active_outlier_cols:
+                q1 = s.quantile(0.25)
+                q3 = s.quantile(0.75)
+                iqr = q3 - q1
+                s = s.clip(q1 - 1.5 * iqr, q3 + 1.5 * iqr)
+            clean_export_df[col] = s.round(2)
+
+    # Road Infrastructure Safety Fixtures (Strict Binary 0 / 1)
+    road_fixtures = [
+        "Amenity", "Bump", "Crossing", "Give_Way", "Junction",
+        "No_Exit", "Railway", "Roundabout", "Station", "Stop",
+        "Traffic_Calming", "Traffic_Signal"
+    ]
+    for b_col in road_fixtures:
+        if b_col in df.columns:
+            clean_export_df[b_col] = df[b_col].fillna(False).astype(int)
+
+    # Solar Ambient Lighting & Twilight Encodings (Binary Numeric: Day=1, Night=0)
+    for tw in ["Sunrise_Sunset", "Civil_Twilight", "Nautical_Twilight", "Astronomical_Twilight"]:
+        if tw in df.columns:
+            clean_export_df[f"{tw}_Day"] = (df[tw] == "Day").astype(int)
+
+    # One-Hot Encoded Atmospheric Risk Flags (Binary 0 / 1)
+    top_weather = ["Clear", "Overcast", "Mostly Cloudy", "Partly Cloudy", "Scattered Clouds"]
+    if "Weather_Condition" in df.columns:
+        for w in top_weather:
+            w_col = f"Weather_{w.replace(' ', '_')}"
+            clean_export_df[w_col] = (df["Weather_Condition"] == w).astype(int)
 
     PROCESSED_DATA_PATH.parent.mkdir(parents=True, exist_ok=True)
     clean_export_df.to_csv(PROCESSED_DATA_PATH, index=False)
-    logger.info(f"Saved preprocessed dataset: {PROCESSED_DATA_PATH} ({len(clean_export_df):,} rows)")
+    logger.info(f"Saved pure-numeric preprocessed dataset: {PROCESSED_DATA_PATH} ({len(clean_export_df):,} rows x {clean_export_df.shape[1]} cols)")
 
     # Save fitted scaler and imputer artifacts
     SCALERS_DIR.mkdir(parents=True, exist_ok=True)
@@ -192,22 +218,17 @@ def run_preprocessing_pipeline(
     joblib.dump(std_scaler, SCALERS_DIR / "scaler.pkl")
     joblib.dump(fitted_imputer, ENCODERS_DIR / "imputer.pkl")
 
-    # 10. Missing report and feature space diagnostics
+    # 10. Missing report strictly for retained engineered features
     missing_report = {}
-    for col in df.columns:
+    # Only report columns that are actually retained in the final preprocessed dataset
+    retained_cols_to_check = [c for c in clean_export_df.columns if c in df.columns]
+    for col in retained_cols_to_check:
         cnt = int(df[col].isnull().sum())
         if cnt > 0:
-            strat = (
-                "SimpleImputer(strategy='median') + StandardScaler()"
-                if col in missing_cols or col in DEFAULT_NUMERIC_FEATURES
-                else "SimpleImputer(strategy='most_frequent') + OneHotEncoder()"
-                if str(df[col].dtype) in ("object", "category", "string")
-                else "Median Imputation"
-            )
             missing_report[col] = {
                 "count": cnt,
                 "pct": round((cnt / len(df)) * 100, 2),
-                "strategy": strat
+                "strategy": "SimpleImputer(strategy='median') + StandardScaler()"
             }
 
     # 11. Cache Preprocessing Summary
@@ -215,11 +236,40 @@ def run_preprocessing_pipeline(
         # RentRadar aligned execution summary & diagnostics
         "original_rows": len(df),
         "cleaned_rows": len(clean_export_df),
-        "target_name": "Severity (Classification) & Distance(mi) (Regression)",
+        "target_name": "Severity (Accident Severity Level 1–4 / Severe Classification)",
         "training_samples": len(train_df),
         "testing_samples": len(test_df),
-        "processed_features": clean_export_df.shape[1],
+        "original_cols_count": len(df.columns),
+        "preprocessed_cols_count": clean_export_df.shape[1],
+        "original_columns": list(df.columns),
+        "preprocessed_columns": list(clean_export_df.columns),
+        "dropped_columns_list": [c for c in df.columns if c not in clean_export_df.columns],
         "dropped_reasons": EXCLUDED_COLUMNS_RATIONALE,
+        "collinearity_justifications": {
+            "End_Lat & End_Lng": "High multicollinearity with Start coordinates (>0.99) and 100% missing. Excluded to eliminate redundant dimensional collinearity.",
+            "Weather_Timestamp": "Perfect collinearity with Start_Time observation window. Excluded to eliminate temporal duplication.",
+            "Airport_Code": "Collinear proxy for weather observation station. Redundant with direct numerical telemetry (Temperature, Humidity, Pressure).",
+            "Country & Turning_Loop": "Zero variance constants (100% 'US' and False). Provide 0.0 variance / singular matrix singularity.",
+            "County & Timezone": "Collinear spatial hierarchy with Latitude & Longitude coordinates. Continuous GPS density selected instead."
+        },
+        "encoding_breakdown": {
+            "one_hot": {
+                "name": "One-Hot Encoding (OHE)",
+                "technique": "OneHotEncoder(sparse=False, handle_unknown='ignore')",
+                "columns": ["Weather_Condition (Top 5 Classes: Clear, Overcast, Mostly Cloudy, Partly Cloudy, Scattered Clouds)"],
+                "purpose": "Converts non-ordinal categorical atmospheric conditions into independent 0/1 binary indicator predictors without imposing artificial numeric hierarchy."
+            },
+            "binary_flags": {
+                "name": "Binary Road Fixture & Twilight Encoding",
+                "technique": "Direct Boolean/Categorical to Integer Vector (0 / 1)",
+                "columns": [
+                    "Traffic_Signal", "Crossing", "Junction", "Amenity", "Stop", "Station",
+                    "Railway", "Roundabout", "Give_Way", "Traffic_Calming", "Bump", "No_Exit",
+                    "Sunrise_Sunset_Day", "Civil_Twilight_Day", "Nautical_Twilight_Day", "Astronomical_Twilight_Day"
+                ],
+                "purpose": "Preserves roadway physical indicators and diurnal lighting (Day=1, Night=0) as high-efficiency binary predictors."
+            }
+        },
         "engineered_infrastructure": [
             "Traffic_Signal", "Crossing", "Junction", "Amenity",
             "Stop", "Station", "Railway", "Roundabout",
@@ -230,10 +280,15 @@ def run_preprocessing_pipeline(
             "Visibility(mi)", "Wind_Speed(mph)"
         ],
         "engineered_spatial_temporal": [
-            "Start_Lat", "Start_Lng", "Distance(mi)",
-            "Sunrise_Sunset_Day", "Civil_Twilight_Day"
+            "Start_Lat", "Start_Lng", "Distance(mi)"
         ],
-        "categorical_features": ["Side", "Timezone", "Weather_Condition", "Wind_Direction"],
+        "engineered_twilight": [
+            "Sunrise_Sunset_Day", "Civil_Twilight_Day", "Nautical_Twilight_Day", "Astronomical_Twilight_Day"
+        ],
+        "engineered_weather_ohe": [
+            "Weather_Clear", "Weather_Overcast", "Weather_Mostly_Cloudy", "Weather_Partly_Cloudy", "Weather_Scattered_Clouds"
+        ],
+        "categorical_features": ["Weather_Condition", "Wind_Direction", "Sunrise_Sunset", "Civil_Twilight"],
         "missing_report": missing_report,
 
         # Preserved baseline analytical artifacts

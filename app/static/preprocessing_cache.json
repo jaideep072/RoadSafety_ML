@@ -1,22 +1,178 @@
 {
     "original_rows": 100000,
     "cleaned_rows": 100000,
-    "target_name": "Severity (Classification) & Distance(mi) (Regression)",
+    "target_name": "Severity (Accident Severity Level 1\u20134 / Severe Classification)",
     "training_samples": 80000,
     "testing_samples": 20000,
-    "processed_features": 48,
+    "original_cols_count": 46,
+    "preprocessed_cols_count": 31,
+    "original_columns": [
+        "ID",
+        "Source",
+        "Severity",
+        "Start_Time",
+        "End_Time",
+        "Start_Lat",
+        "Start_Lng",
+        "End_Lat",
+        "End_Lng",
+        "Distance(mi)",
+        "Description",
+        "Street",
+        "City",
+        "County",
+        "State",
+        "Zipcode",
+        "Country",
+        "Timezone",
+        "Airport_Code",
+        "Weather_Timestamp",
+        "Temperature(F)",
+        "Wind_Chill(F)",
+        "Humidity(%)",
+        "Pressure(in)",
+        "Visibility(mi)",
+        "Wind_Direction",
+        "Wind_Speed(mph)",
+        "Precipitation(in)",
+        "Weather_Condition",
+        "Amenity",
+        "Bump",
+        "Crossing",
+        "Give_Way",
+        "Junction",
+        "No_Exit",
+        "Railway",
+        "Roundabout",
+        "Station",
+        "Stop",
+        "Traffic_Calming",
+        "Traffic_Signal",
+        "Turning_Loop",
+        "Sunrise_Sunset",
+        "Civil_Twilight",
+        "Nautical_Twilight",
+        "Astronomical_Twilight"
+    ],
+    "preprocessed_columns": [
+        "Severity",
+        "Severity_Severe",
+        "Start_Lat",
+        "Start_Lng",
+        "Distance(mi)",
+        "Temperature(F)",
+        "Humidity(%)",
+        "Pressure(in)",
+        "Visibility(mi)",
+        "Wind_Speed(mph)",
+        "Amenity",
+        "Bump",
+        "Crossing",
+        "Give_Way",
+        "Junction",
+        "No_Exit",
+        "Railway",
+        "Roundabout",
+        "Station",
+        "Stop",
+        "Traffic_Calming",
+        "Traffic_Signal",
+        "Sunrise_Sunset_Day",
+        "Civil_Twilight_Day",
+        "Nautical_Twilight_Day",
+        "Astronomical_Twilight_Day",
+        "Weather_Clear",
+        "Weather_Overcast",
+        "Weather_Mostly_Cloudy",
+        "Weather_Partly_Cloudy",
+        "Weather_Scattered_Clouds"
+    ],
+    "dropped_columns_list": [
+        "ID",
+        "Source",
+        "Start_Time",
+        "End_Time",
+        "End_Lat",
+        "End_Lng",
+        "Description",
+        "Street",
+        "City",
+        "County",
+        "State",
+        "Zipcode",
+        "Country",
+        "Timezone",
+        "Airport_Code",
+        "Weather_Timestamp",
+        "Wind_Chill(F)",
+        "Wind_Direction",
+        "Precipitation(in)",
+        "Weather_Condition",
+        "Turning_Loop",
+        "Sunrise_Sunset",
+        "Civil_Twilight",
+        "Nautical_Twilight",
+        "Astronomical_Twilight"
+    ],
     "dropped_reasons": {
         "ID": "Arbitrary database primary key with no generalizable relationship to crash severity. Overfits if retained.",
-        "Description": "Unstructured free-form incident text. Excluded to ensure consistent tabular schema.",
+        "Description": "Unstructured free-form incident text. Excluded to ensure consistent numerical tabular schema.",
+        "End_Lat": "100% missing values in dataset. Geographically redundant with primary Start_Lat coordinate.",
+        "End_Lng": "100% missing values in dataset. Geographically redundant with primary Start_Lng coordinate.",
+        "Start_Time": "String timestamp format (YYYY-MM-DD HH:MM:SS); unparseable by linear and tree numerical algorithms.",
+        "End_Time": "String timestamp recorded post-accident clearance; leaks outcome duration.",
+        "Wind_Chill(F)": "Severe missingness (95.7% nulls). Redundant with Temperature(F) which is 98.4% complete.",
+        "Precipitation(in)": "Severe missingness (92.6% nulls). Atmospheric moisture captured by Humidity(%) and Weather_Condition.",
         "Country": "Zero-variance constant feature: 100% of observations are 'US'. Provides zero predictive variance.",
-        "End_Lat": "High missingness (>60% nulls). Geographically redundant with primary Start_Lat coordinate.",
-        "End_Lng": "High missingness (>60% nulls). Geographically redundant with primary Start_Lng coordinate.",
-        "Number": "Street address number with high missingness (>65% nulls). Continuous latitude and longitude coordinates used instead.",
+        "Turning_Loop": "Zero-variance constant feature: 100% of records are False. Provides zero predictive variance.",
         "Street": "High-cardinality nominal text identifier (>30,000 unique levels). Prone to severe overfitting.",
-        "Zipcode": "High-cardinality postal code string. Geographic latitude and longitude coordinates provide continuous spatial density.",
-        "Weather_Timestamp": "Data collection timestamp metadata with no predictive bearing on road physics.",
-        "End_Time": "Incident clearance timestamp: recorded post-accident, introducing post-event observation leakage.",
-        "Airport_Code": "Weather station identifier: redundant with direct atmospheric readings (Temperature, Pressure, Humidity)."
+        "City": "High-cardinality nominal city names. Geographic latitude and longitude coordinates provide continuous spatial density.",
+        "County": "Nominal administrative boundary strings. Latitude and longitude provide continuous spatial density.",
+        "State": "Zero-variance single-state dataset partition ('OH'). Provides zero predictive variance.",
+        "Zipcode": "High-cardinality postal code string. Continuous spatial coordinates used instead.",
+        "Timezone": "Zero-variance partition string ('US/Eastern'). Redundant with spatial coordinates.",
+        "Airport_Code": "Weather station identifier: redundant with direct atmospheric readings (Temperature, Pressure, Humidity).",
+        "Weather_Timestamp": "Data collection timestamp metadata with no predictive bearing on road physics."
+    },
+    "collinearity_justifications": {
+        "End_Lat & End_Lng": "High multicollinearity with Start coordinates (>0.99) and 100% missing. Excluded to eliminate redundant dimensional collinearity.",
+        "Weather_Timestamp": "Perfect collinearity with Start_Time observation window. Excluded to eliminate temporal duplication.",
+        "Airport_Code": "Collinear proxy for weather observation station. Redundant with direct numerical telemetry (Temperature, Humidity, Pressure).",
+        "Country & Turning_Loop": "Zero variance constants (100% 'US' and False). Provide 0.0 variance / singular matrix singularity.",
+        "County & Timezone": "Collinear spatial hierarchy with Latitude & Longitude coordinates. Continuous GPS density selected instead."
+    },
+    "encoding_breakdown": {
+        "one_hot": {
+            "name": "One-Hot Encoding (OHE)",
+            "technique": "OneHotEncoder(sparse=False, handle_unknown='ignore')",
+            "columns": [
+                "Weather_Condition (Top 5 Classes: Clear, Overcast, Mostly Cloudy, Partly Cloudy, Scattered Clouds)"
+            ],
+            "purpose": "Converts non-ordinal categorical atmospheric conditions into independent 0/1 binary indicator predictors without imposing artificial numeric hierarchy."
+        },
+        "binary_flags": {
+            "name": "Binary Road Fixture & Twilight Encoding",
+            "technique": "Direct Boolean/Categorical to Integer Vector (0 / 1)",
+            "columns": [
+                "Traffic_Signal",
+                "Crossing",
+                "Junction",
+                "Amenity",
+                "Stop",
+                "Station",
+                "Railway",
+                "Roundabout",
+                "Give_Way",
+                "Traffic_Calming",
+                "Bump",
+                "No_Exit",
+                "Sunrise_Sunset_Day",
+                "Civil_Twilight_Day",
+                "Nautical_Twilight_Day",
+                "Astronomical_Twilight_Day"
+            ],
+            "purpose": "Preserves roadway physical indicators and diurnal lighting (Day=1, Night=0) as high-efficiency binary predictors."
+        }
     },
     "engineered_infrastructure": [
         "Traffic_Signal",
@@ -42,61 +198,32 @@
     "engineered_spatial_temporal": [
         "Start_Lat",
         "Start_Lng",
-        "Distance(mi)",
+        "Distance(mi)"
+    ],
+    "engineered_twilight": [
         "Sunrise_Sunset_Day",
-        "Civil_Twilight_Day"
+        "Civil_Twilight_Day",
+        "Nautical_Twilight_Day",
+        "Astronomical_Twilight_Day"
+    ],
+    "engineered_weather_ohe": [
+        "Weather_Clear",
+        "Weather_Overcast",
+        "Weather_Mostly_Cloudy",
+        "Weather_Partly_Cloudy",
+        "Weather_Scattered_Clouds"
     ],
     "categorical_features": [
-        "Side",
-        "Timezone",
         "Weather_Condition",
-        "Wind_Direction"
+        "Wind_Direction",
+        "Sunrise_Sunset",
+        "Civil_Twilight"
     ],
     "missing_report": {
-        "End_Lat": {
-            "count": 100000,
-            "pct": 100.0,
-            "strategy": "Median Imputation"
-        },
-        "End_Lng": {
-            "count": 100000,
-            "pct": 100.0,
-            "strategy": "Median Imputation"
-        },
-        "City": {
-            "count": 1,
-            "pct": 0.0,
-            "strategy": "Median Imputation"
-        },
-        "Zipcode": {
-            "count": 7,
-            "pct": 0.01,
-            "strategy": "Median Imputation"
-        },
-        "Timezone": {
-            "count": 7,
-            "pct": 0.01,
-            "strategy": "Median Imputation"
-        },
-        "Airport_Code": {
-            "count": 7,
-            "pct": 0.01,
-            "strategy": "Median Imputation"
-        },
-        "Weather_Timestamp": {
-            "count": 1054,
-            "pct": 1.05,
-            "strategy": "Median Imputation"
-        },
         "Temperature(F)": {
             "count": 1591,
             "pct": 1.59,
             "strategy": "SimpleImputer(strategy='median') + StandardScaler()"
-        },
-        "Wind_Chill(F)": {
-            "count": 95678,
-            "pct": 95.68,
-            "strategy": "Median Imputation"
         },
         "Humidity(%)": {
             "count": 1856,
@@ -113,45 +240,10 @@
             "pct": 1.85,
             "strategy": "SimpleImputer(strategy='median') + StandardScaler()"
         },
-        "Wind_Direction": {
-            "count": 1064,
-            "pct": 1.06,
-            "strategy": "Median Imputation"
-        },
         "Wind_Speed(mph)": {
             "count": 23820,
             "pct": 23.82,
             "strategy": "SimpleImputer(strategy='median') + StandardScaler()"
-        },
-        "Precipitation(in)": {
-            "count": 92632,
-            "pct": 92.63,
-            "strategy": "Median Imputation"
-        },
-        "Weather_Condition": {
-            "count": 1604,
-            "pct": 1.6,
-            "strategy": "Median Imputation"
-        },
-        "Sunrise_Sunset": {
-            "count": 1,
-            "pct": 0.0,
-            "strategy": "Median Imputation"
-        },
-        "Civil_Twilight": {
-            "count": 1,
-            "pct": 0.0,
-            "strategy": "Median Imputation"
-        },
-        "Nautical_Twilight": {
-            "count": 1,
-            "pct": 0.0,
-            "strategy": "Median Imputation"
-        },
-        "Astronomical_Twilight": {
-            "count": 1,
-            "pct": 0.0,
-            "strategy": "Median Imputation"
         }
     },
     "missing": {

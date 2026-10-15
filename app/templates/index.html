@@ -35,10 +35,10 @@
     <div class="topbar-meta">
         <div class="badge-pill">
             <span class="status-indicator"></span>
-            <span>Dataset: 50,000 Records</span>
+            <span>Dataset: 100,000 Records</span>
         </div>
         <div class="badge-pill">
-            <span>7 Ensembles Active</span>
+            <span>6 Tree Models Active</span>
         </div>
         <button id="themeToggleBtn" class="theme-toggle-btn" title="Toggle Light / Dark Mode" onclick="toggleTheme()" type="button">
             <svg class="theme-icon-sun" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -134,7 +134,7 @@
                             <rect x="14" y="14" width="7" height="7"></rect>
                             <rect x="3" y="14" width="7" height="7"></rect>
                         </svg>
-                        <span>Decision Trees (7 Models)</span>
+                        <span>Decision Trees (6 Models)</span>
                     </a>
                 </li>
             </ul>
@@ -173,24 +173,24 @@
             <div class="hero-banner">
                 <span class="hero-tag">Machine Learning Pipeline</span>
                 <h2>Road Safety Analysis & Accident Severity Forecasting</h2>
-                <p>An end-to-end analytical framework analyzing 50,000 incident telemetry records, evaluating imputation strategies, and training regularized regression & ensemble models.</p>
+                <p>An end-to-end analytical framework analyzing 100,000 incident telemetry records, evaluating imputation strategies, and training regularized regression & ensemble models.</p>
 
                 <div class="hero-stats-row">
                     <div class="hero-stat-item">
-                        <div class="hero-stat-num">50,000</div>
+                        <div class="hero-stat-num">100,000</div>
                         <div class="hero-stat-label">Processed Crash Records</div>
                     </div>
                     <div class="hero-stat-item">
-                        <div class="hero-stat-num">34</div>
+                        <div class="hero-stat-num">31</div>
                         <div class="hero-stat-label">Engineered Features</div>
                     </div>
                     <div class="hero-stat-item">
-                        <div class="hero-stat-num">7</div>
-                        <div class="hero-stat-label">Ensemble Tree Models</div>
+                        <div class="hero-stat-num">6</div>
+                        <div class="hero-stat-label">Decision Tree Models</div>
                     </div>
                     <div class="hero-stat-item">
-                        <div class="hero-stat-num">93.8%</div>
-                        <div class="hero-stat-label">Benchmark Accuracy</div>
+                        <div class="hero-stat-num">80 : 20</div>
+                        <div class="hero-stat-label">Train / Test Split</div>
                     </div>
                 </div>
             </div>
@@ -207,7 +207,7 @@
                             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
                         </div>
                         <div class="module-card-title">1. Data Loading</div>
-                        <div class="module-card-desc">Compare the original raw dataset (46 columns) with the preprocessed cleaned matrix (34 columns) ready for ML models.</div>
+                        <div class="module-card-desc">Compare the original raw dataset (46 columns) with the preprocessed cleaned matrix (31 columns) ready for ML models.</div>
                     </div>
                     <span class="module-card-link">Explore Data Loading &rarr;</span>
                 </a>
@@ -262,9 +262,9 @@
                             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
                         </div>
                         <div class="module-card-title">6. Decision Trees & Ensembles</div>
-                        <div class="module-card-desc">Compare 7 progressive ensemble algorithms from base Decision Tree to Random Forest, AdaBoost, GBM, XGBoost, and LightGBM.</div>
+                        <div class="module-card-desc">Compare 6 progressive decision tree algorithms: CART, Random Forest, AdaBoost, Gradient Boosting, XGBoost, and LightGBM.</div>
                     </div>
-                    <span class="module-card-link">Evaluate 7 Ensembles &rarr;</span>
+                    <span class="module-card-link">Evaluate 6 Tree Models &rarr;</span>
                 </a>
 
                 <a href="{{ url_for('clustering') }}" class="module-card">

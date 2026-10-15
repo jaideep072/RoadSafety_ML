@@ -35,7 +35,7 @@
     <div class="topbar-meta">
         <div class="badge-pill">
             <span class="status-indicator"></span>
-            <span>Dataset: 50,000 Records</span>
+            <span>Dataset: 100,000 Records</span>
         </div>
         <div class="badge-pill">
             <span>6 Tree Models Active</span>
@@ -276,10 +276,6 @@
                                 <td style="font-weight: 600; color: var(--text-muted);">F1-Score</td>
                                 <td><strong style="color: var(--text-primary);">{{ results.metrics.f1 }}%</strong> <span style="font-size: 12px; color: var(--text-muted);">(Harmonic Mean)</span></td>
                             </tr>
-                            <tr>
-                                <td style="font-weight: 600; color: var(--text-muted);">ROC-AUC Score</td>
-                                <td><strong style="color: var(--text-primary);">{{ results.metrics.roc_auc }}</strong> <span style="font-size: 12px; color: var(--text-muted);">(Discriminative Ability)</span></td>
-                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -429,7 +425,6 @@
                             <th>Precision (%)</th>
                             <th>Recall (%)</th>
                             <th>F1 (%)</th>
-                            <th>ROC-AUC</th>
                             <th>Runtime</th>
                         </tr>
                     </thead>
@@ -458,7 +453,6 @@
                             <td>{{ item.precision }}%</td>
                             <td>{{ item.recall }}%</td>
                             <td><strong>{{ item.f1 }}%</strong></td>
-                            <td>{{ item.roc_auc }}</td>
                             <td>{{ item.training_time }}s</td>
                         </tr>
                         {% endfor %}
