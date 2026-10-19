@@ -81,18 +81,24 @@ def train_and_evaluate_logistic(
 
     X = df[active_features].copy()
 
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42, stratify=y
+    # 3-Way Disjoint Partition (Train ~70%, Validation ~15%, Test ~15%) - Module 5 Session M5-1
+    X_train, X_temp, y_train, y_temp = train_test_split(
+        X, y, test_size=0.30, random_state=42, stratify=y
+    )
+    X_val, X_test, y_val, y_test = train_test_split(
+        X_temp, y_temp, test_size=0.50, random_state=42, stratify=y_temp
     )
 
     model, model_name = get_logistic_model(reg_type)
     model.fit(X_train, y_train)
 
     y_train_pred = model.predict(X_train)
+    y_val_pred = model.predict(X_val)
     y_test_pred = model.predict(X_test)
     y_test_prob = model.predict_proba(X_test)[:, 1]
 
     train_metrics = evaluate_classification_model(y_train, y_train_pred)
+    val_metrics = evaluate_classification_model(y_val, y_val_pred)
     test_metrics = evaluate_classification_model(y_test, y_test_pred, y_prob=y_test_prob)
 
     intercept = round(float(model.intercept_[0]), 4)
@@ -212,14 +218,20 @@ def train_and_evaluate_logistic(
         model_filename = f"logistic_{reg_type}.pkl" if reg_type != "none" else "logistic_reg.pkl"
         joblib.dump(model, MODELS_DIR / model_filename)
 
+    total_train_samples = len(y_train)
+    total_val_samples = len(y_val)
     total_test_samples = len(y_test)
 
     return {
         "reg_type": reg_type,
         "model_name": model_name,
+        "total_train": total_train_samples,
+        "total_val": total_val_samples,
         "total_test": total_test_samples,
+        "split_description": "70% Train / 15% Validation / 15% Stratified Test Split (Module 5)",
         "metrics": {
             "test_accuracy": test_metrics.accuracy,
+            "val_accuracy": val_metrics.accuracy,
             "train_accuracy": train_metrics.accuracy,
             "precision": test_metrics.precision,
             "recall": test_metrics.recall,

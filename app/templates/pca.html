@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PCA Dimensionality Reduction — Road Safety Analytics</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('roadsafety_theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme') || 'light';
+            const next = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('roadsafety_theme', next);
+        }
+    </script>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<header class="topbar">
+    <a href="{{ url_for('index') }}" class="topbar-brand">
+        <div class="topbar-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+        </div>
+        <div class="topbar-titles">
+            <h1>Road Safety Analysis &amp; Severity Prediction</h1>
+        </div>
+    </a>
+
+    <div class="topbar-meta">
+        <div class="badge-pill">
+            <span class="status-indicator"></span>
+            <span>Dimensionality Reduction</span>
+        </div>
+        <button id="themeToggleBtn" class="theme-toggle-btn" title="Toggle Light / Dark Mode" onclick="toggleTheme()" type="button">
+            <svg class="theme-icon-sun" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="5"></circle>
+                <line x1="12" y1="1" x2="12" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="23"></line>
+            </svg>
+            <svg class="theme-icon-moon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+            <span>Theme</span>
+        </button>
+        <a href="{{ url_for('download_preprocessed_csv') }}" class="topbar-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            <span>Download CSV</span>
+        </a>
+    </div>
+</header>
+
+<div class="layout">
+    <!-- Left Navigation Sidebar -->
+    <nav class="sidebar">
+        <div class="sidebar-content">
+            <div class="sidebar-heading">Data Pipeline</div>
+            <ul>
+                <li><a href="{{ url_for('data_loading') }}" class="menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg><span>Data Loading</span></a></li>
+                <li><a href="{{ url_for('eda') }}" class="menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg><span>EDA Dashboard</span></a></li>
+                <li><a href="{{ url_for('preprocessing') }}" class="menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg><span>Preprocessing</span></a></li>
+            </ul>
+
+            <div class="sidebar-heading">Supervised Learning</div>
+            <ul>
+                <li><a href="{{ url_for('linear_regression') }}" class="menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg><span>Linear Regression</span></a></li>
+                <li><a href="{{ url_for('logistic_regression') }}" class="menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="m4.93 4.93 4.24 4.24"></path></svg><span>Logistic Regression</span></a></li>
+                <li><a href="{{ url_for('decision_trees') }}" class="menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect></svg><span>Decision Trees</span></a></li>
+            </ul>
+
+            <div class="sidebar-heading">Unsupervised Learning</div>
+            <ul>
+                <li><a href="{{ url_for('clustering') }}" class="menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle></svg><span>Clustering &amp; Density</span></a></li>
+                <li><a href="{{ url_for('pca_view') }}" class="menu-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg><span>PCA</span></a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="content">
+        <div class="page-header" style="margin-bottom: 24px;">
+            <h2>Principal Component Analysis (PCA)</h2>
+            <p class="page-subtitle" style="color: var(--text-muted); margin-top: -6px; font-size: 14.5px;">
+                Unsupervised Dimensionality Reduction &bull; Covariance Decomposition &bull; Explained Variance Ratio &bull; Scree Plot Analysis
+            </p>
+        </div>
+
+        {% if error %}
+            <div class="error" style="margin-bottom: 24px;">
+                <strong>Error:</strong> {{ error }}
+            </div>
+        {% endif %}
+
+        {% if results %}
+            <!-- Summary Stats Banner -->
+            <div class="card" style="margin-bottom: 24px; background: linear-gradient(135deg, rgba(2, 132, 199, 0.05), rgba(16, 185, 129, 0.05)); border: 1px solid rgba(2, 132, 199, 0.2);">
+                <div style="display: flex; flex-wrap: wrap; justify-content: space-around; align-items: center; gap: 16px; text-align: center;">
+                    <div>
+                        <div style="font-size: 11.5px; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Original Feature Space</div>
+                        <div style="font-size: 26px; font-weight: 800; color: var(--text-primary); margin-top: 4px;">{{ results.n_features }} Continuous Sensors</div>
+                        <div style="font-size: 12px; color: var(--text-muted);">Standardized via StandardScaler</div>
+                    </div>
+                    <div style="font-size: 22px; color: var(--primary);">&rarr;</div>
+                    <div>
+                        <div style="font-size: 11.5px; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">2D Projection (PC1 + PC2)</div>
+                        <div style="font-size: 26px; font-weight: 800; color: #0284c7; margin-top: 4px;">{{ results.top2_var_pct }}% Variance</div>
+                        <div style="font-size: 12px; color: var(--text-muted);">Information Retained in 2 Dimensions</div>
+                    </div>
+                    <div style="font-size: 22px; color: var(--primary);">&rarr;</div>
+                    <div>
+                        <div style="font-size: 11.5px; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Curriculum Goal</div>
+                        <div style="font-size: 26px; font-weight: 800; color: #10b981; margin-top: 4px;">Scree Elbow Detection</div>
+                        <div style="font-size: 12px; color: var(--text-muted);">Orthogonal Principal Axes</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visual Charts Grid: Scree Plot & 2D Projection -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 20px; margin-bottom: 28px;">
+                <!-- Chart 1: Scree Plot -->
+                <div class="card" style="margin-bottom: 0; text-align: center;">
+                    <div class="card-title" style="margin-bottom: 12px; text-align: left;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                        <span>PCA Scree Plot (Elbow &amp; Cumulative Explained Variance)</span>
+                    </div>
+                    <img src="{{ url_for('static', filename=results.scree_plot) }}" alt="PCA Scree Plot" style="max-width: 100%; border-radius: 6px;">
+                    <p style="font-size: 12.5px; color: var(--text-muted); margin-top: 8px; text-align: left;">
+                        * <strong>Scree Rule:</strong> The "elbow" marks the point of diminishing returns. Green dashed line shows the 80% total information retention threshold.
+                    </p>
+                </div>
+
+                <!-- Chart 2: 2D Scatter Projection -->
+                <div class="card" style="margin-bottom: 0; text-align: center;">
+                    <div class="card-title" style="margin-bottom: 12px; text-align: left;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><circle cx="6" cy="6" r="3"></circle><circle cx="18" cy="18" r="3"></circle></svg>
+                        <span>2D Principal Component Projection (PC1 vs. PC2)</span>
+                    </div>
+                    <img src="{{ url_for('static', filename=results.scatter_plot) }}" alt="2D Projection Scatter" style="max-width: 100%; border-radius: 6px;">
+                    <p style="font-size: 12.5px; color: var(--text-muted); margin-top: 8px; text-align: left;">
+                        * Projects {{ results.n_samples }} multi-sensor crash incidents onto orthogonal axes PC1 and PC2, colored by Severity (Blue = Minor, Red = Severe).
+                    </p>
+                </div>
+            </div>
+
+            <!-- Component Loadings & Eigenvectors Table -->
+            <div class="card" style="margin-bottom: 28px;">
+                <div class="card-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 7 4 4 20 4 20 7"></polyline><line x1="9" y1="20" x2="15" y2="20"></line><line x1="12" y1="4" x2="12" y2="20"></line></svg>
+                    <span>Principal Component Loadings (Eigenvectors &amp; Linear Combinations)</span>
+                </div>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;">
+                    Each Principal Component is an orthogonal linear combination $PC_i = w_1 X_1 + w_2 X_2 + \dots + w_p X_p$:
+                </p>
+                <div class="table-wrapper" style="border: none;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="text-align: left;">Component</th>
+                                <th>Eigenvalue (&lambda;)</th>
+                                <th>Explained Variance</th>
+                                <th>Cumulative Variance</th>
+                                {% for f in results.features %}
+                                    <th>{{ f }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in results.loadings %}
+                            <tr>
+                                <td style="text-align: left;"><strong>{{ row.pc }}</strong></td>
+                                <td><code>{{ row.eigenvalue }}</code></td>
+                                <td><strong style="color: var(--primary);">{{ row.variance_pct }}%</strong></td>
+                                <td>{{ row.cum_variance_pct }}%</td>
+                                {% for f in results.features %}
+                                    <td>
+                                        {% if row.weights[f] > 0.3 %}
+                                            <span style="color: #059669; font-weight: 700;">+{{ row.weights[f] }}</span>
+                                        {% elif row.weights[f] < -0.3 %}
+                                            <span style="color: #dc2626; font-weight: 700;">{{ row.weights[f] }}</span>
+                                        {% else %}
+                                            <span style="color: var(--text-muted);">{{ row.weights[f] }}</span>
+                                        {% endif %}
+                                    </td>
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Academic Viva Takeaways Card -->
+            <div class="card" style="margin-bottom: 28px; background: var(--card-bg);">
+                <div class="card-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                    <span>Key Theoretical &amp; Practical Principles of PCA</span>
+                </div>
+                <div style="font-size: 13.5px; color: var(--text-secondary); line-height: 1.6;">
+                    <ul style="padding-left: 20px; margin: 0;">
+                        <li style="margin-bottom: 8px;">
+                            <strong>Why Standardize before PCA?</strong> PCA seeks directions that maximize variance. If Temperature (range 0–100°F) has higher numerical variance than Pressure (range 28–31 in), PCA will artificially dominate on Temperature. <code>StandardScaler()</code> gives all sensors equal weighting ($\mu=0, \sigma^2=1$).
+                        </li>
+                        <li style="margin-bottom: 8px;">
+                            <strong>Orthogonality:</strong> Every principal component is mathematically uncorrelated with every other component ($Cov(PC_i, PC_j) = 0$), completely eliminating multicollinearity.
+                        </li>
+                        <li>
+                            <strong>Dimensionality Reduction:</strong> Retaining the top 2–3 components preserves &gt;75% of the total dataset information while cutting the feature space in half.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+        {% endif %}
+    </main>
+</div>
+
+</body>
+</html>

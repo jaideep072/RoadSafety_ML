@@ -1,0 +1,108 @@
+{
+    "learning_curve_plot": "charts/diagnostic_learning_curve.png",
+    "validation_curve_plot": "charts/diagnostic_validation_curve.png",
+    "sample_size_evaluated": 8000,
+    "gap_initial": 10.34,
+    "gap_final": 1.97,
+    "gap_convergence": "10.34% down to 1.97% (Generalization gap Delta shrinks as N increases)",
+    "optimal_depth": 6,
+    "optimal_val_accuracy": 56.69,
+    "underfitting_depth": 2,
+    "overfitting_depth": 14,
+    "learning_curve_table": [
+        {
+            "n_samples": 799,
+            "train_acc": 64.66,
+            "val_acc": 54.33,
+            "gap": 10.34
+        },
+        {
+            "n_samples": 1706,
+            "train_acc": 59.52,
+            "val_acc": 56.36,
+            "gap": 3.15
+        },
+        {
+            "n_samples": 2613,
+            "train_acc": 58.57,
+            "val_acc": 55.18,
+            "gap": 3.39
+        },
+        {
+            "n_samples": 3519,
+            "train_acc": 57.91,
+            "val_acc": 56.09,
+            "gap": 1.83
+        },
+        {
+            "n_samples": 4426,
+            "train_acc": 58.57,
+            "val_acc": 56.41,
+            "gap": 2.16
+        },
+        {
+            "n_samples": 5333,
+            "train_acc": 58.44,
+            "val_acc": 56.48,
+            "gap": 1.97
+        }
+    ],
+    "validation_curve_table": [
+        {
+            "depth": 2,
+            "train_acc": 55.01,
+            "val_acc": 54.98,
+            "is_peak": false,
+            "zone": "Underfitting Zone"
+        },
+        {
+            "depth": 3,
+            "train_acc": 56.96,
+            "val_acc": 55.85,
+            "is_peak": false,
+            "zone": "Underfitting Zone"
+        },
+        {
+            "depth": 4,
+            "train_acc": 57.73,
+            "val_acc": 55.57,
+            "is_peak": false,
+            "zone": "Underfitting Zone"
+        },
+        {
+            "depth": 5,
+            "train_acc": 58.44,
+            "val_acc": 56.48,
+            "is_peak": false,
+            "zone": "Underfitting Zone"
+        },
+        {
+            "depth": 6,
+            "train_acc": 59.61,
+            "val_acc": 56.69,
+            "is_peak": true,
+            "zone": "Optimal Peak (Good Fit)"
+        },
+        {
+            "depth": 8,
+            "train_acc": 61.58,
+            "val_acc": 55.65,
+            "is_peak": false,
+            "zone": "Overfitting Zone"
+        },
+        {
+            "depth": 10,
+            "train_acc": 63.97,
+            "val_acc": 55.0,
+            "is_peak": false,
+            "zone": "Overfitting Zone"
+        },
+        {
+            "depth": 14,
+            "train_acc": 71.44,
+            "val_acc": 54.45,
+            "is_peak": false,
+            "zone": "Overfitting Zone"
+        }
+    ]
+}

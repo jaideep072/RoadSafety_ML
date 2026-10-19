@@ -73,14 +73,18 @@ def run_preprocessing_pipeline(
     # 1. Load Raw Dataset
     df = load_dataset(dataset_type="original", nrows=nrows)
 
-    # 2. Stratified Train/Test Split (80/20)
+    # 2. Three-Way Disjoint Partition (Train ~70%, Validation ~15%, Test ~15%) - Module 5 Session M5-1
     target_split_col = "Severity" if "Severity" in df.columns else None
     if target_split_col:
-        train_df, test_df = train_test_split(
-            df, test_size=0.2, random_state=42, stratify=df[target_split_col]
+        train_df, temp_df = train_test_split(
+            df, test_size=0.30, random_state=42, stratify=df[target_split_col]
+        )
+        val_df, test_df = train_test_split(
+            temp_df, test_size=0.50, random_state=42, stratify=temp_df[target_split_col]
         )
     else:
-        train_df, test_df = train_test_split(df, test_size=0.2, random_state=42)
+        train_df, temp_df = train_test_split(df, test_size=0.30, random_state=42)
+        val_df, test_df = train_test_split(temp_df, test_size=0.50, random_state=42)
 
     missing_cols = [c for c in DEFAULT_NUMERIC_FEATURES if c in df.columns]
 
@@ -238,7 +242,9 @@ def run_preprocessing_pipeline(
         "cleaned_rows": len(clean_export_df),
         "target_name": "Severity (Accident Severity Level 1–4 / Severe Classification)",
         "training_samples": len(train_df),
+        "validation_samples": len(val_df),
         "testing_samples": len(test_df),
+        "split_ratio": "70% Train (70,000) / 15% Validation (15,000) / 15% Test (15,000)",
         "original_cols_count": len(df.columns),
         "preprocessed_cols_count": clean_export_df.shape[1],
         "original_columns": list(df.columns),

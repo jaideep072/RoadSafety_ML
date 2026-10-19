@@ -69,9 +69,12 @@ def run_models_pipeline(force_run: bool = False) -> Dict[str, Any]:
     else:
         y_clf = (df["Severity"] >= 3).astype(int)
 
-    # Train/Test Splits
-    X_reg_tr, X_reg_te, y_reg_tr, y_reg_te = train_test_split(X_reg, y_reg, test_size=0.2, random_state=42)
-    X_clf_tr, X_clf_te, y_clf_tr, y_clf_te = train_test_split(X_clf, y_clf, test_size=0.2, random_state=42, stratify=y_clf)
+    # 3-Way Disjoint Partition (70% Train, 15% Val, 15% Test) - Module 5 Session M5-1
+    X_reg_tr, X_reg_temp, y_reg_tr, y_reg_temp = train_test_split(X_reg, y_reg, test_size=0.30, random_state=42)
+    X_reg_val, X_reg_te, y_reg_val, y_reg_te = train_test_split(X_reg_temp, y_reg_temp, test_size=0.50, random_state=42)
+
+    X_clf_tr, X_clf_temp, y_clf_tr, y_clf_temp = train_test_split(X_clf, y_clf, test_size=0.30, random_state=42, stratify=y_clf)
+    X_clf_val, X_clf_te, y_clf_val, y_clf_te = train_test_split(X_clf_temp, y_clf_temp, test_size=0.50, random_state=42, stratify=y_clf_temp)
 
     # 2. Train and Evaluate Regression Models
     regression_models = {

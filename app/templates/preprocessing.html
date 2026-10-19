@@ -155,6 +155,16 @@
                         <span>Clustering &amp; Density</span>
                     </a>
                 </li>
+                <li>
+                    <a href="{{ url_for('pca_view') }}" class="menu-item {% if active == 'pca' %}active{% endif %}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="3" y1="9" x2="21" y2="9"></line>
+                            <line x1="9" y1="21" x2="9" y2="9"></line>
+                        </svg>
+                        <span>PCA</span>
+                    </a>
+                </li>
             </ul>
         </div>
 
@@ -208,12 +218,16 @@
                             <td><strong>{{ "{:,}".format(results.cleaned_rows) }}</strong> records (100% complete feature matrix)</td>
                         </tr>
                         <tr>
-                            <td style="font-weight: 600;">Training Split (80%)</td>
-                            <td><strong>{{ "{:,}".format(results.training_samples) }}</strong> samples (Fitted strictly on train split to prevent data leakage)</td>
+                            <td style="font-weight: 600;">Training Split (70%)</td>
+                            <td><strong>{{ "{:,}".format(results.training_samples) }}</strong> samples (Fit parameters W &amp; b; scalers and encoders fitted exclusively here)</td>
                         </tr>
                         <tr>
-                            <td style="font-weight: 600;">Held-Out Validation Split (20%)</td>
-                            <td><strong>{{ "{:,}".format(results.testing_samples) }}</strong> samples (Unseen evaluation)</td>
+                            <td style="font-weight: 600;">Validation Split (15%)</td>
+                            <td><strong>{{ "{:,}".format(results.validation_samples if results.validation_samples else 15000) }}</strong> samples (Hyperparameter tuning &amp; model selection)</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 600;">Held-Out Test Split (15%)</td>
+                            <td><strong>{{ "{:,}".format(results.testing_samples) }}</strong> samples (Vault-locked unbiased final generalization evaluation)</td>
                         </tr>
                         <tr>
                             <td style="font-weight: 600;">Feature Transformation Scale</td>
@@ -234,6 +248,65 @@
                     <span style="font-size: 13px; color: var(--text-muted);">
                         ({{ "{:,}".format(results.cleaned_rows) }} clean records × {{ results.preprocessed_cols_count }} engineered numeric columns, zero text/nulls)
                     </span>
+                </div>
+            </div>
+
+            <!-- =====================================================
+                 1B. MODULE 5: THREE-WAY PARTITION & ZERO DATA LEAKAGE CARD
+                 ===================================================== -->
+            <div class="card" style="margin-bottom: 28px; border-left: 4px solid var(--primary); background: linear-gradient(180deg, var(--card-bg) 0%, var(--gray-bg) 100%);">
+                <div class="card-title" style="display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                        </svg>
+                        <span style="font-size: 16px; font-weight: 700;">Dataset Splitting &amp; Zero Data Leakage Architecture</span>
+                    </div>
+                    <span class="badge badge-active" style="font-size: 12px;">70 : 15 : 15 Stratified Split</span>
+                </div>
+
+                <p style="font-size: 13.5px; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.55;">
+                    To prevent <strong>Empirical Overfitting</strong> and ensure strict generalization standards, all 100,000 accident records are partitioned into three isolated sets using target stratification:
+                </p>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-bottom: 16px;">
+                    <!-- Training Box -->
+                    <div style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                            <strong style="color: var(--primary); font-size: 14.5px;">1. Training Set</strong>
+                            <span class="badge" style="background: rgba(37,99,235,0.12); color: #2563eb; font-weight: 700;">70% (70,000 Rows)</span>
+                        </div>
+                        <p style="font-size: 12.5px; color: var(--text-muted); margin: 0; line-height: 1.5;">
+                            <strong>Fit Parameters:</strong> Computes model weights, biases, and tree splits. Feature transformers (<code style="font-size: 11px;">StandardScaler</code>, Imputer) compute statistics (<span style="font-family: serif; font-style: italic;">&mu;, &sigma;</span>) <em>exclusively</em> from this set.
+                        </p>
+                    </div>
+
+                    <!-- Validation Box -->
+                    <div style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                            <strong style="color: #d97706; font-size: 14.5px;">2. Validation Set</strong>
+                            <span class="badge" style="background: rgba(217,119,6,0.12); color: #d97706; font-weight: 700;">15% (15,000 Rows)</span>
+                        </div>
+                        <p style="font-size: 12.5px; color: var(--text-muted); margin: 0; line-height: 1.5;">
+                            <strong>Tune Hyperparameters:</strong> Evaluates candidate tree depths (<code style="font-size: 11px;">max_depth</code>), regularization penalty (<span style="font-family: serif; font-style: italic;">C, &alpha;</span>), and ensemble sizes to select the champion architecture before deployment.
+                        </p>
+                    </div>
+
+                    <!-- Test Box -->
+                    <div style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                            <strong style="color: #059669; font-size: 14.5px;">3. Vault-Locked Test Set</strong>
+                            <span class="badge" style="background: rgba(5,150,105,0.12); color: #059669; font-weight: 700;">15% (15,000 Rows)</span>
+                        </div>
+                        <p style="font-size: 12.5px; color: var(--text-muted); margin: 0; line-height: 1.5;">
+                            <strong>Unbiased Generalization:</strong> Evaluated strictly <em>ONCE</em> after all decisions are finalized. Never seen during training or tuning, guaranteeing zero evaluation or lookahead leakage.
+                        </p>
+                    </div>
+                </div>
+
+                <div style="background: rgba(37,99,235,0.05); border: 1px dashed rgba(37,99,235,0.3); border-radius: 6px; padding: 10px 14px; font-size: 12.5px; color: var(--text-secondary);">
+                    <strong>Zero Data Leakage Protocol:</strong> Preprocessing transformers are fitted using <code style="font-size: 11px;">scaler.fit_transform(X_train)</code>, while validation and test sets strictly receive <code style="font-size: 11px;">scaler.transform(X_val)</code> and <code style="font-size: 11px;">scaler.transform(X_test)</code> to prevent validation statistics from contaminating model weights.
                 </div>
             </div>
 

@@ -28,6 +28,7 @@ from app.config import (
 from app.data.loader import load_dataset
 from app.evaluation.classification import evaluate_classification_model
 from app.models.ensembles import ALGO_CONFIG, train_ensemble_model
+from app.models.diagnostic_curves import generate_diagnostic_curves
 
 BENCHMARK_CACHE_PATH = MODELS_DIR / "tree_benchmark_cache.pkl"
 
@@ -135,8 +136,12 @@ def train_and_evaluate_tree(
 
     X = df[active_features].copy()
 
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42, stratify=y
+    # 3-Way Disjoint Partition (Train ~70%, Validation ~15%, Test ~15%) - Module 5 Session M5-1
+    X_train, X_temp, y_train, y_temp = train_test_split(
+        X, y, test_size=0.30, random_state=42, stratify=y
+    )
+    X_val, X_test, y_val, y_test = train_test_split(
+        X_temp, y_temp, test_size=0.50, random_state=42, stratify=y_temp
     )
 
     t0 = time.time()
@@ -144,6 +149,7 @@ def train_and_evaluate_tree(
     training_time = round(time.time() - t0, 2)
 
     y_train_pred = model.predict(X_train)
+    y_val_pred = model.predict(X_val)
     y_test_pred = model.predict(X_test)
     
     y_test_prob = None
@@ -154,6 +160,7 @@ def train_and_evaluate_tree(
             y_test_prob = None
 
     train_metrics = evaluate_classification_model(y_train, y_train_pred)
+    val_metrics = evaluate_classification_model(y_val, y_val_pred)
     test_metrics = evaluate_classification_model(y_test, y_test_pred, y_prob=y_test_prob)
 
     # Feature Importances Extraction
@@ -261,13 +268,15 @@ def train_and_evaluate_tree(
         "hyperparams": hyperparams,
         "metadata": {
             "target_variable": "Severity_Severe (1 = Level 3-4, 0 = Level 1-2)",
-            "training_samples": f"{len(X_train):,}",
-            "testing_samples": f"{len(X_test):,}",
+            "training_samples": f"{len(X_train):,} (70%)",
+            "validation_samples": f"{len(X_val):,} (15%)",
+            "testing_samples": f"{len(X_test):,} (15%)",
             "features_evaluated": f"{len(active_features)} features",
-            "evaluation_split": "80% Train / 20% Stratified Test Split"
+            "evaluation_split": "70% Train / 15% Validation / 15% Stratified Test Split (Module 5)"
         },
         "metrics": {
             "test_accuracy": test_metrics.accuracy,
+            "val_accuracy": val_metrics.accuracy,
             "train_accuracy": train_metrics.accuracy,
             "precision": test_metrics.precision,
             "recall": test_metrics.recall,
@@ -289,7 +298,8 @@ def train_and_evaluate_tree(
         "algo_list": [(k, v["name"]) for k, v in ALGO_CONFIG.items()],
         "benchmark": benchmark_data["benchmark"],
         "champion": benchmark_data["champion"],
-        "features": active_features
+        "features": active_features,
+        "diagnostics": generate_diagnostic_curves()
     }
 
 

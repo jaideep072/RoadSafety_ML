@@ -61,17 +61,23 @@ def train_and_evaluate_linear(
     X = df[active_features].copy()
     y = df[target_col].copy()
 
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42
+    # 3-Way Disjoint Partition (Train ~70%, Validation ~15%, Test ~15%) - Module 5 Session M5-1
+    X_train, X_temp, y_train, y_temp = train_test_split(
+        X, y, test_size=0.30, random_state=42
+    )
+    X_val, X_test, y_val, y_test = train_test_split(
+        X_temp, y_temp, test_size=0.50, random_state=42
     )
 
     model, model_name = get_linear_model(reg_type)
     model.fit(X_train, y_train)
 
     y_train_pred = model.predict(X_train)
+    y_val_pred = model.predict(X_val)
     y_test_pred = model.predict(X_test)
 
     train_metrics = evaluate_regression_model(y_train, y_train_pred, n_features=len(active_features))
+    val_metrics = evaluate_regression_model(y_val, y_val_pred, n_features=len(active_features))
     test_metrics = evaluate_regression_model(y_test, y_test_pred, n_features=len(active_features))
 
     intercept = round(float(model.intercept_), 4)
@@ -162,11 +168,17 @@ def train_and_evaluate_linear(
     return {
         "reg_type": reg_type,
         "model_name": model_name,
+        "total_train": len(y_train),
+        "total_val": len(y_val),
+        "total_test": len(y_test),
+        "split_description": "70% Train / 15% Validation / 15% Test Split (Module 5)",
         "metrics": {
             "test_r2": test_metrics.r2,
+            "val_r2": val_metrics.r2,
             "train_r2": train_metrics.r2,
             "adj_r2": test_metrics.adj_r2,
             "rmse": test_metrics.rmse,
+            "val_rmse": val_metrics.rmse,
             "mae": test_metrics.mae,
             "mse": test_metrics.mse
         },

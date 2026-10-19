@@ -28,6 +28,7 @@ from app.clustering.knee_for_dbscan import find_knee_for_dbscan
 from app.clustering.hierarchical import run_hierarchical_clustering
 from app.clustering.geographic import run_geographic_analysis
 from app.services.prediction_service import prediction_service
+from app.models.pca_analysis import run_pca_analysis
 
 logger = logging.getLogger(__name__)
 
@@ -287,6 +288,28 @@ def clustering():
         active_tab=active_tab,
         results=results,
         error=error,
+    )
+
+
+@main_bp.route("/pca", methods=["GET", "POST"])
+def pca_view():
+    """Module 4 Session 4: Principal Component Analysis (PCA) Studio."""
+    error = None
+    results = None
+    n_components = int(request.values.get("n_components", 5))
+
+    try:
+        results = run_pca_analysis(n_components=n_components)
+    except Exception as e:
+        logger.error(f"PCA computation error: {e}")
+        error = f"PCA analysis error: {e}"
+
+    return render_template(
+        "pca.html",
+        active="pca",
+        results=results,
+        error=error,
+        n_components=n_components
     )
 
 

@@ -1,8 +1,3 @@
-"""
-RoadSafety_ML Application Runner.
-Entry point to launch the Flask Web Studio and REST API server.
-Usage: python run.py
-"""
 
 import os
 import sys
